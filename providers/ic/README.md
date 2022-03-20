@@ -3,8 +3,8 @@
 
 [npm-badge]: https://img.shields.io/npm/v/@papyrs/ic
 [npm-badge-url]: https://www.npmjs.com/package/@papyrs/ic
-[npm-license]: https://img.shields.io/npm/l/@papyrs/ic
-[npm-license-url]: https://github.com/papyrs/ic/blob/main/providers/ic/LICENSE.md
+[agpl-license]: https://img.shields.io/badge/License-AGPL%20v3-blue.svg
+[agpl-license-url]: https://github.com/papyrs/ic/blob/main/providers/ic/LICENSE.md
 
 # Papyrs - Internet Computer
 
