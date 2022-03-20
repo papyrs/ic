@@ -1,5 +1,5 @@
 [![npm][npm-badge]][npm-badge-url]
-[![license][npm-license]][npm-license-url]
+[![license][agpl-license]][agpl-license-url]
 
 [npm-badge]: https://img.shields.io/npm/v/@papyrs/ic
 [npm-badge-url]: https://www.npmjs.com/package/@papyrs/ic
