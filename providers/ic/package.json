@@ -1,6 +1,6 @@
 {
   "name": "@papyrs/ic",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "The Internet Computer providers of Papyrs",
   "main": "dist/index.cjs.js",
   "module": "dist/index.js",
@@ -47,7 +47,7 @@
     "internet-computer"
   ],
   "dependencies": {
-    "@deckdeckgo/editor": "^7.7.0",
+    "@deckdeckgo/editor": "^7.8.1",
     "@dfinity/agent": "^0.10.4",
     "@dfinity/auth-client": "^0.10.4",
     "@dfinity/authentication": "^0.10.4",
