@@ -19,15 +19,16 @@ module {
     };
     public type user_id = Principal;
     public type wasm_module = Blob;
+    public type canister_status_response = {
+        status : { #stopped; #stopping; #running };
+        memory_size : Nat;
+        cycles : Nat;
+        settings : definite_canister_settings;
+        module_hash : ?Blob;
+    };
 
     public type Self = actor {
-        canister_status : shared query { canister_id : canister_id } -> async {
-            status : { #stopped; #stopping; #running };
-            memory_size : Nat;
-            cycles : Nat;
-            settings : definite_canister_settings;
-            module_hash : ?Blob;
-        };
+        canister_status : shared query { canister_id : canister_id } -> async canister_status_response;
         create_canister : shared { settings : ?canister_settings } -> async {
             canister_id : canister_id;
         };

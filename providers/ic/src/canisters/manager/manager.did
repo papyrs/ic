@@ -1,4 +1,23 @@
+type definite_canister_settings = 
+ record {
+   compute_allocation: nat;
+   controllers: opt vec principal;
+   freezing_threshold: nat;
+   memory_allocation: nat;
+ };
 type UserId = principal;
+type CanisterStatus = 
+ record {
+   cycles: nat;
+   memory_size: nat;
+   module_hash: opt blob;
+   settings: definite_canister_settings;
+   status: variant {
+             running;
+             stopped;
+             stopping;
+           };
+ };
 type BucketId = principal;
 type Bucket = 
  record {
@@ -8,6 +27,11 @@ type Bucket =
 service : {
   delData: () -> (bool);
   delStorage: () -> (bool);
+  getCanistersStatus: () ->
+   (record {
+      data: CanisterStatus;
+      storage: CanisterStatus;
+    });
   getData: () -> (opt Bucket) query;
   getStorage: () -> (opt Bucket) query;
   initData: () -> (Bucket);
