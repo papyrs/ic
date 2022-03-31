@@ -1,4 +1,5 @@
 export * from './components';
+export * from './providers/admin/admin.providers';
 export * from './providers/auth/auth.providers';
 export * from './providers/data/deck.providers';
 export * from './providers/data/doc.providers';

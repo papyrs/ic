@@ -1,5 +1,6 @@
 import Principal "mo:base/Principal";
 import Blob "mo:base/Blob";
+import Error "mo:base/Error";
 
 import Types "../types/types";
 import IC "../types/ic.types";
@@ -9,6 +10,7 @@ module {
     private type UserId = Types.UserId;
 
     private type CanisterId = IC.canister_id;
+    private type CanisterStatus = IC.canister_status_response;
 
     public class CanisterUtils() {
 
@@ -50,6 +52,17 @@ module {
                 mode = #upgrade;
                 canister_id = canisterId;
             });
+        };
+
+        public func canisterStatus(canisterId: ?CanisterId): async (CanisterStatus) {
+            switch (canisterId) {
+                case (?canisterId) {
+                    return await ic.canister_status({ canister_id = canisterId });
+                };
+                case null {
+                    throw Error.reject("No canister Id to get canister status.");
+                };
+            }
         };
 
     }
