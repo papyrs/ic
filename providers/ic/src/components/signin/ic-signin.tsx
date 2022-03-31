@@ -8,7 +8,7 @@ import {
   Prop,
   State
 } from '@stencil/core';
-import {signIn} from '../../providers/auth/auth.ic';
+import {signIn} from '../../providers/auth/auth.providers';
 import {IconDfinity} from '../icons/dfinity';
 
 @Component({

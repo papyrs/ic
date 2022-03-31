@@ -13,7 +13,7 @@ import {
   syncSlideImage
 } from '../../utils/sync.window.utils';
 import {uploadWorker} from '../../workers/sync.ic.worker';
-import {getIdentity} from '../auth/auth.ic';
+import {getIdentity} from '../auth/auth.providers';
 
 // - we cannot use postmessage because of CORS
 // - we have to path the function separately in the function's call for serialisation reason (not within the object)

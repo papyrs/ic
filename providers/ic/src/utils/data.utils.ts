@@ -1,6 +1,6 @@
 import {Identity} from '@dfinity/agent';
 import {Data, DataFilter, _SERVICE as DataBucketActor} from '../canisters/data/data.did';
-import {getIdentity} from '../providers/auth/auth.ic';
+import {getIdentity} from '../providers/auth/auth.providers';
 import {LogWindow} from '../types/sync.window';
 import {
   fromArray,

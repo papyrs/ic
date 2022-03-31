@@ -10,7 +10,7 @@ import {
 import {Identity} from '@dfinity/agent';
 import {del, get} from 'idb-keyval';
 import {_SERVICE as StorageBucketActor} from '../canisters/storage/storage.did';
-import {uploadFileIC} from '../providers/storage/storage.ic';
+import {uploadFileIC} from '../providers/storage/storage.providers';
 import {SyncStorage, SyncStorageSlide} from '../types/sync.storage';
 import {LogWindow, SyncWindow, SyncWindowEventMsg} from '../types/sync.window';
 import {BucketActor} from './manager.utils';
