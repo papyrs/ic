@@ -1,3 +1,10 @@
+# 0.0.3 (2022-04-02)
+
+### Features
+
+- expose admin function to query data and storage canister status
+- publish `theme` option
+
 # 0.0.2 (2022-03-19)
 
 - support `cleanNode` that cleans attributes of children of HTML element too
