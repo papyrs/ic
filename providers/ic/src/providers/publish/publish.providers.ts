@@ -24,10 +24,16 @@ export const deckPublish: DeckPublish = async ({
   return updatedDeck;
 };
 
-export const docPublish: DocPublish = async ({doc}: {doc: Doc}): Promise<Doc> => {
+export const docPublish: DocPublish = async ({
+  doc,
+  config
+}: {
+  doc: Doc;
+  config: Record<string, string>;
+}): Promise<Doc> => {
   await uploadResources({meta: doc.data.meta});
 
-  const {storageUpload, publishData, doc: updatedDoc} = await publishDoc({doc});
+  const {storageUpload, publishData, doc: updatedDoc} = await publishDoc({doc, config});
 
   await publishOverview({storageUpload, publishData, dataId: updatedDoc.id});
 

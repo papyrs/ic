@@ -3,6 +3,7 @@
 ### Features
 
 - expose admin function to query data and storage canister status
+- publish `theme` option
 
 # 1.0.0 (2022-03-20)
 

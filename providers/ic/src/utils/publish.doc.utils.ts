@@ -11,9 +11,11 @@ import {
 } from './publish.utils';
 
 export const publishDoc = async ({
-  doc: docSource
+  doc: docSource,
+  config
 }: {
   doc: Doc;
+  config: Record<string, string>;
 }): Promise<{
   doc: Doc;
   storageUpload: StorageUpload;
@@ -24,7 +26,8 @@ export const publishDoc = async ({
 
   // 1. Init and fill HTML
   const indexHTML: {html: string; publishData: DocPublishData} = await initDocIndexHTML({
-    doc: docSource
+    doc: docSource,
+    config
   });
   const {storageUpload, publishData} = await initUpload({
     indexHTML,
@@ -61,13 +64,16 @@ export const publishDoc = async ({
 };
 
 const initDocIndexHTML = async ({
-  doc
+  doc,
+  config
 }: {
   doc: Doc;
+  config: Record<string, string>;
 }): Promise<{html: string; publishData: DocPublishData}> => {
   const publishData: DocPublishData = await docPublishData({
     doc,
-    fallbackAuthor: EnvStore.getInstance().get().author
+    fallbackAuthor: EnvStore.getInstance().get().author,
+    theme: config.theme
   });
 
   const {paragraphs} = publishData;
