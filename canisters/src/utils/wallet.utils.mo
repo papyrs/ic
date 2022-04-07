@@ -9,17 +9,17 @@ module {
 
         private let ic : IC.Self = actor "aaaaa-aa";
 
-        public func transferCycles(caller: Principal): async () {
-            let balance: Nat = Cycles.balance();
-
+        public func transferFreezingThresholdCycles(canisterId: Principal): async () {
             // TODO: determine effective threshold - get freezing_threshold_in_cycles via ic.canister_status()
+            // use freezing_threshold_in_cycles - https://github.com/dfinity/interface-spec/pull/18/files
 
-            // We have to retain some cycles to be able to transfer some
+            // We have to retain some cycles to be able to ultimately delete the canister
+            let balance: Nat = Cycles.balance();
             let cycles: Nat = balance - 100_000_000_000;
 
             if (cycles > 0) {
                 Cycles.add(cycles);
-                await ic.deposit_cycles({ canister_id = caller });
+                await ic.deposit_cycles({ canister_id = canisterId });
             };
         };
 

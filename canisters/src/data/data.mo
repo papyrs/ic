@@ -73,12 +73,12 @@ actor class DataBucket(owner: Types.UserId) = this {
    * Canister mgmt
    */
 
-  public shared({ caller }) func transferCycles(): async() {
+  public shared({ caller }) func transferFreezingThresholdCycles(): async() {
       if (not Utils.isManager(caller)) {
           throw Error.reject("Unauthorized access. Caller is not a manager.");
       };
 
-      await walletUtils.transferCycles(caller);
+      await walletUtils.transferFreezingThresholdCycles(caller);
   };
 
   system func preupgrade() {

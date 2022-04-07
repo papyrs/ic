@@ -19,9 +19,9 @@ module {
         public func deleteCanister(canisterId: ?CanisterId): async() {
             switch (canisterId) {
                 case (?canisterId) {
-                    let deckBucket = actor(Principal.toText(canisterId)): actor { transferCycles: () -> async () };
+                    let deckBucket = actor(Principal.toText(canisterId)): actor { transferFreezingThresholdCycles: () -> async () };
 
-                    await deckBucket.transferCycles();
+                    await deckBucket.transferFreezingThresholdCycles();
 
                     await ic.stop_canister({ canister_id = canisterId });
 
