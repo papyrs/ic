@@ -114,9 +114,9 @@ export const signIn = async ({
     onSuccess,
     onError,
     ...(EnvStore.getInstance().localIdentity() && {
-      identityProvider: `http://localhost:8000?canisterId=${
+      identityProvider: `http://${
         EnvStore.getInstance().get().localIdentityCanisterId
-      }#authorize`
+      }.localhost:8000?#authorize`
     })
   });
 };
