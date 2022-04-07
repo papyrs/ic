@@ -9,6 +9,11 @@ module {
 
         private let ic : IC.Self = actor "aaaaa-aa";
 
+        public func transferCycles(canisterId: Principal, amount : Nat): async () {
+            Cycles.add(amount);
+            await ic.deposit_cycles({ canister_id = canisterId });
+        };
+
         public func transferFreezingThresholdCycles(canisterId: Principal): async () {
             // TODO: determine effective threshold - get freezing_threshold_in_cycles via ic.canister_status()
             // use freezing_threshold_in_cycles - https://github.com/dfinity/interface-spec/pull/18/files

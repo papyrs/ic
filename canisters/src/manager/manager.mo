@@ -10,6 +10,7 @@ import Result "mo:base/Result";
 import Types "../types/types";
 
 import CanisterUtils "../utils/canister.utils";
+import WalletUtils "../utils/wallet.utils";
 
 import BucketTypes "./bucket.types";
 import BucketStore "./bucket.store";
@@ -27,6 +28,7 @@ actor Manager {
 
     private type Bucket = BucketTypes.Bucket;
 
+    private let walletUtils: WalletUtils.WalletUtils = WalletUtils.WalletUtils();
     private let canisterUtils: CanisterUtils.CanisterUtils = CanisterUtils.CanisterUtils();
 
     let dataStore: BucketStore.BucketStore = BucketStore.BucketStore();
@@ -185,6 +187,14 @@ actor Manager {
         };
 
         await canisterUtils.installCode(canisterId, owner, wasmModule);
+    };
+
+    public shared({ caller }) func transferCycles(canisterId: Principal, amount: Nat): async() {
+        if (not Utils.isAdmin(caller)) {
+            throw Error.reject("Unauthorized access. Caller is not an admin.");
+        };
+
+        await walletUtils.transferCycles(canisterId, amount);
     };
 
     /**
