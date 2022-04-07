@@ -23,6 +23,10 @@ module {
             };
         };
 
-    }
+        public func cyclesBalance(): Nat {
+            return Cycles.balance();
+        };
+    
+    };
 
 }
