@@ -8,7 +8,6 @@ import Text "mo:base/Text";
 import Result "mo:base/Result";
 
 import Types "../types/types";
-import IC "../types/ic.types";
 
 import CanisterUtils "../utils/canister.utils";
 
@@ -27,8 +26,6 @@ actor Manager {
     private type StorageBucket = StorageBucket.StorageBucket;
 
     private type Bucket = BucketTypes.Bucket;
-
-    private type CanisterStatus = IC.canister_status_response;
 
     private let canisterUtils: CanisterUtils.CanisterUtils = CanisterUtils.CanisterUtils();
 
@@ -160,38 +157,6 @@ actor Manager {
                 return exists;
             };
         };
-    };
-
-    /**
-     * Admin: for users
-     */
-
-    private func getCanisterStatus(data: Result.Result<?Bucket, Text>) : async (CanisterStatus) {
-        switch (data) {
-            case (#err error) {
-                throw Error.reject(error);
-            };
-            case (#ok bucket) {
-                switch (bucket) {
-                    case (?bucket) {
-                        return await canisterUtils.canisterStatus(bucket.bucketId);
-                    };
-                    case null {
-                        throw Error.reject("User has no bucket.");
-                    };
-                };
-            };
-        };
-    };
-
-    public shared({ caller }) func getCanistersStatus() : async ({data: CanisterStatus; storage: CanisterStatus}) {
-        let data: Result.Result<?Bucket, Text> = dataStore.getBucket(caller);
-        let dataCanisterStatus = await getCanisterStatus(data);    
-
-        let storage: Result.Result<?Bucket, Text> = storagesStore.getBucket(caller);
-        let storageCanisterStatus = await getCanisterStatus(storage);
-
-        return {data = dataCanisterStatus; storage = storageCanisterStatus};
     };
 
     /**
