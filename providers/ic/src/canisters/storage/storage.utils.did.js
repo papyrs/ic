@@ -60,6 +60,7 @@ export const idlFactory = ({IDL}) => {
       [],
       []
     ),
+    cyclesBalance: IDL.Func([], [IDL.Nat], ['query']),
     del: IDL.Func([IDL.Record({token: IDL.Opt(IDL.Text), fullPath: IDL.Text})], [], []),
     http_request: IDL.Func([HttpRequest], [HttpResponse], ['query']),
     http_request_streaming_callback: IDL.Func(
@@ -69,7 +70,7 @@ export const idlFactory = ({IDL}) => {
     ),
     initUpload: IDL.Func([AssetKey], [IDL.Record({batchId: IDL.Nat})], []),
     list: IDL.Func([IDL.Opt(IDL.Text)], [IDL.Vec(AssetKey)], ['query']),
-    transferCycles: IDL.Func([], [], []),
+    transferFreezingThresholdCycles: IDL.Func([], [], []),
     uploadChunk: IDL.Func([Chunk], [IDL.Record({chunkId: IDL.Nat})], [])
   });
   return StorageBucket;
