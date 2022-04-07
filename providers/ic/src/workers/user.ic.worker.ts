@@ -36,9 +36,9 @@ const initUser = async (
   onInitUserSuccess: (user: User) => Promise<void>,
   log: LogWindow
 ) =>
-  new Promise<void>(async (resolve) => {
+  new Promise<void>(async (resolve, reject) => {
     if (!delegationChain || !identityKey) {
-      resolve();
+      reject('No delegationChain or identityKey provided.');
       return;
     }
 
