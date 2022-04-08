@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 
-import {icpToCycles} from './services/cycles.services.mjs';
 import {managerActorIC} from './utils/actor.utils.mjs';
 import {fromNullable} from './utils/utils.mjs';
 
 const transferCycles = async ({actor, amount, bucketId}) => {
-  console.log(`Transfer ${amount} ICP to ${bucketId.toText()}`);
+  const oneTrillion = BigInt(1000000) * BigInt(1000000);
+  const cyclesAmount = parseFloat(amount) * Number(oneTrillion);
 
-  const cyclesAmount = await icpToCycles(amount);
+  console.log(`Transfer ${amount} (${cyclesAmount}) cycles to ${bucketId.toText()}`);
 
   await actor.transferCycles(bucketId, cyclesAmount);
 
@@ -21,7 +21,7 @@ const transferCycles = async ({actor, amount, bucketId}) => {
     console.log('Options:');
     console.log('--canisterId=<canister-id>');
     console.log('--amount=<amount>');
-    console.log('Note: amount in ICP');
+    console.log('Note: amount in trillion cycles - e.g. 13.5171 to transfer 13517100000000');
     return;
   }
 
