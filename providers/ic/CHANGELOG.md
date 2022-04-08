@@ -1,3 +1,15 @@
+# 0.0.4 (2022-04-08)
+
+### Features
+
+- transfer cycles from manager to bucket
+- replace canister status with query calls for balance
+- throw error if storage info are missing to init auth
+
+### Fix
+
+- host and identity to develop the lib locally
+
 # 0.0.3 (2022-04-02)
 
 ### Features
