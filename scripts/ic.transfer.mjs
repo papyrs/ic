@@ -1,40 +1,13 @@
 #!/usr/bin/env node
 
 import pkgAgent from '@dfinity/agent';
-import pkgIdentity from '@dfinity/identity';
-import pkgPrincipal from '@dfinity/principal';
-import crypto from 'crypto';
-import {readFileSync} from 'fs';
 import fetch from 'node-fetch';
-import {idlFactory} from '../.dfx/local/canisters/manager/manager.did.mjs';
 import {idlFactory as nnsIdlFactory} from '../ic/cycles/cycles.utils.did.mjs';
-import {E8S_PER_ICP, icpToE8s} from './icp.mjs';
-
-const {Principal} = pkgPrincipal;
-
-const {Secp256k1KeyIdentity} = pkgIdentity;
+import {managerActorIC} from './utils/actor.utils';
+import {fromNullable} from './utils/ic.utils';
+import {E8S_PER_ICP, icpToE8s} from './utils/icp.utils.mjs';
 
 const {HttpAgent, Actor} = pkgAgent;
-
-const managerPrincipal = () => {
-  const buffer = readFileSync('./.dfx/local/canister_ids.json');
-  const {manager} = JSON.parse(buffer.toString('utf-8'));
-  return Principal.fromText(manager.local);
-};
-
-/**
- * ! Replicating the dfx identity in a nodejs script is NOT possible at the moment !
- *
- * See: https://forum.dfinity.org/t/using-dfinity-agent-in-node-js/6169/41
- */
-const initIdentity = () => {
-  const buffer = readFileSync('/Users/daviddalbusco/.config/dfx/identity/default/identity.pem');
-  const key = buffer.toString('utf-8');
-
-  const privateKey = crypto.createHash('sha256').update(key).digest('base64');
-
-  return Secp256k1KeyIdentity.fromSecretKey(Buffer.from(privateKey, 'base64'));
-};
 
 const transferCycles = async ({actor, amount, bucketId}) => {
   console.log(`Transfer ${amount} ICP to ${bucketId.toText()}`);
@@ -46,15 +19,13 @@ const transferCycles = async ({actor, amount, bucketId}) => {
 
   const oneTrillion = BigInt(1000000) * BigInt(1000000);
 
-  console.log(`Converted to cycles ${Number(cyclesAmount) / Number(oneTrillion)} (${cyclesAmount})`);
+  console.log(
+    `Converted to cycles ${Number(cyclesAmount) / Number(oneTrillion)} (${cyclesAmount})`
+  );
 
   await actor.transferCycles(bucketId, cyclesAmount);
 
   console.log(`Done.`);
-};
-
-const fromNullable = (value) => {
-  return value?.[0];
 };
 
 const icpXdrConversionRate = async () => {
@@ -86,19 +57,6 @@ const icpXdrConversionRate = async () => {
   }
 
   try {
-    const managerCanisterId = managerPrincipal();
-
-    const identity = initIdentity();
-
-    const agent = new HttpAgent({identity, fetch, host: 'http://localhost:8000/'});
-
-    await agent.fetchRootKey();
-
-    const actor = Actor.createActor(idlFactory, {
-      agent,
-      canisterId: managerCanisterId
-    });
-
     const canisterId = process.argv
       .find((arg) => arg.indexOf('--canisterId=') > -1)
       ?.replace('--canisterId=', '');
@@ -116,6 +74,8 @@ const icpXdrConversionRate = async () => {
       console.log('No amount (in ICP) provided.');
       return;
     }
+
+    const actor = await managerActorIC();
 
     const [dataBuckets, storageBuckets] = await Promise.all([
       actor.list('data'),
