@@ -6,6 +6,7 @@ export interface Bucket {
 export type BucketId = Principal;
 export type UserId = Principal;
 export interface _SERVICE {
+  cyclesBalance: () => Promise<bigint>;
   delData: () => Promise<boolean>;
   delStorage: () => Promise<boolean>;
   getData: () => Promise<[] | [Bucket]>;

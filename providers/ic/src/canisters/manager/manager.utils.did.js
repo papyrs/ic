@@ -6,6 +6,7 @@ export const idlFactory = ({IDL}) => {
     bucketId: IDL.Opt(BucketId)
   });
   return IDL.Service({
+    cyclesBalance: IDL.Func([], [IDL.Nat], ['query']),
     delData: IDL.Func([], [IDL.Bool], []),
     delStorage: IDL.Func([], [IDL.Bool], []),
     getData: IDL.Func([], [IDL.Opt(Bucket)], ['query']),

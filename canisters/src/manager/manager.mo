@@ -197,6 +197,14 @@ actor Manager {
         await walletUtils.transferCycles(canisterId, amount);
     };
 
+    public shared query({ caller }) func cyclesBalance(): async (Nat) {
+        if (not Utils.isAdmin(caller)) {
+            throw Error.reject("Unauthorized access. Caller is not an admin.");
+        };
+
+        return walletUtils.cyclesBalance();
+    };
+
     /**
      * Stable memory for upgrade
      */

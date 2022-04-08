@@ -6,6 +6,7 @@ type Bucket =
    owner: UserId;
  };
 service : {
+  cyclesBalance: () -> (nat) query;
   delData: () -> (bool);
   delStorage: () -> (bool);
   getData: () -> (opt Bucket) query;
