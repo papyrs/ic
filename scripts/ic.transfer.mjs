@@ -1,8 +1,7 @@
 #!/usr/bin/env node
 
-import {icpXdrConversionRate} from './services/cycles.services.mjs';
+import {icpToCycles} from './services/cycles.services.mjs';
 import {managerActorIC} from './utils/actor.utils.mjs';
-import {E8S_PER_ICP, icpToE8s} from './utils/icp.utils.mjs';
 import {fromNullable} from './utils/utils.mjs';
 
 const transferCycles = async ({actor, amount, bucketId}) => {
@@ -15,21 +14,6 @@ const transferCycles = async ({actor, amount, bucketId}) => {
   console.log(`Done.`);
 };
 
-const icpToCycles = async (amount) => {
-  const trillionRatio = await icpXdrConversionRate();
-
-  const e8ToCycleRatio = trillionRatio / E8S_PER_ICP;
-  const cyclesAmount = icpToE8s(amount) * e8ToCycleRatio;
-
-  const oneTrillion = BigInt(1000000) * BigInt(1000000);
-
-  console.log(
-    `${amount} ICP equals ${Number(cyclesAmount) / Number(oneTrillion)} (${cyclesAmount}) cycles`
-  );
-
-  return cyclesAmount;
-};
-
 (async () => {
   const help = process.argv.find((arg) => arg.indexOf('--help') > -1);
 
@@ -38,18 +22,10 @@ const icpToCycles = async (amount) => {
     console.log('--canisterId=<canister-id>');
     console.log('--amount=<amount>');
     console.log('Note: amount in ICP');
-    console.log('--rate');
     return;
   }
 
   try {
-    const rate = process.argv.find((arg) => arg.indexOf('--rate') > -1);
-
-    if (rate) {
-      await icpToCycles('1.00');
-      return;
-    }
-
     const canisterId = process.argv
       .find((arg) => arg.indexOf('--canisterId=') > -1)
       ?.replace('--canisterId=', '');

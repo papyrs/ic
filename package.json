@@ -5,6 +5,7 @@
   "description": "Backend canisters and providers of Papyrs",
   "private": true,
   "scripts": {
+    "ic:admin": "node ./scripts/ic.admin.mjs",
     "ic:install": "node ./scripts/ic.installcode.mjs",
     "ic:transfer": "node ./scripts/ic.transfer.mjs",
     "ic:types": "node ./scripts/ic.types.js",
