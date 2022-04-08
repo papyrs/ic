@@ -1,17 +1,21 @@
 #!/usr/bin/env node
 
-import pkgAgent from '@dfinity/agent';
-import fetch from 'node-fetch';
-import {idlFactory as nnsIdlFactory} from '../ic/cycles/cycles.utils.did.mjs';
-import {managerActorIC} from './utils/actor.utils';
-import {fromNullable} from './utils/ic.utils';
+import {icpXdrConversionRate} from './services/cycles.services.mjs';
+import {managerActorIC} from './utils/actor.utils.mjs';
 import {E8S_PER_ICP, icpToE8s} from './utils/icp.utils.mjs';
-
-const {HttpAgent, Actor} = pkgAgent;
+import {fromNullable} from './utils/utils.mjs';
 
 const transferCycles = async ({actor, amount, bucketId}) => {
   console.log(`Transfer ${amount} ICP to ${bucketId.toText()}`);
 
+  const cyclesAmount = await icpToCycles(amount);
+
+  await actor.transferCycles(bucketId, cyclesAmount);
+
+  console.log(`Done.`);
+};
+
+const icpToCycles = async (amount) => {
   const trillionRatio = await icpXdrConversionRate();
 
   const e8ToCycleRatio = trillionRatio / E8S_PER_ICP;
@@ -20,29 +24,10 @@ const transferCycles = async ({actor, amount, bucketId}) => {
   const oneTrillion = BigInt(1000000) * BigInt(1000000);
 
   console.log(
-    `Converted to cycles ${Number(cyclesAmount) / Number(oneTrillion)} (${cyclesAmount})`
+    `${amount} ICP equals ${Number(cyclesAmount) / Number(oneTrillion)} (${cyclesAmount}) cycles`
   );
 
-  await actor.transferCycles(bucketId, cyclesAmount);
-
-  console.log(`Done.`);
-};
-
-const icpXdrConversionRate = async () => {
-  const agent = new HttpAgent({fetch, host: 'https://ic0.app'});
-
-  const actor = Actor.createActor(nnsIdlFactory, {
-    agent,
-    canisterId: 'rkp4c-7iaaa-aaaaa-aaaca-cai'
-  });
-
-  const {data} = await actor.get_icp_xdr_conversion_rate();
-  const {xdr_permyriad_per_icp} = data;
-
-  const CYCLES_PER_XDR = BigInt(1_000_000_000_000);
-
-  // trillionRatio
-  return (xdr_permyriad_per_icp * CYCLES_PER_XDR) / BigInt(10_000);
+  return cyclesAmount;
 };
 
 (async () => {
@@ -53,10 +38,18 @@ const icpXdrConversionRate = async () => {
     console.log('--canisterId=<canister-id>');
     console.log('--amount=<amount>');
     console.log('Note: amount in ICP');
+    console.log('--rate');
     return;
   }
 
   try {
+    const rate = process.argv.find((arg) => arg.indexOf('--rate') > -1);
+
+    if (rate) {
+      await icpToCycles('1.00');
+      return;
+    }
+
     const canisterId = process.argv
       .find((arg) => arg.indexOf('--canisterId=') > -1)
       ?.replace('--canisterId=', '');
