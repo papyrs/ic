@@ -29,6 +29,7 @@ export interface StorageBucket {
     chunkIds: Array<bigint>,
     batchId: bigint
   }) => Promise<undefined>;
+  cyclesBalance: () => Promise<bigint>;
   del: (arg_0: {token: [] | [string], fullPath: string}) => Promise<undefined>;
   http_request: (arg_0: HttpRequest) => Promise<HttpResponse>;
   http_request_streaming_callback: (
@@ -36,7 +37,7 @@ export interface StorageBucket {
   ) => Promise<StreamingCallbackHttpResponse>;
   initUpload: (arg_0: AssetKey) => Promise<{batchId: bigint}>;
   list: (arg_0: [] | [string]) => Promise<Array<AssetKey>>;
-  transferCycles: () => Promise<undefined>;
+  transferFreezingThresholdCycles: () => Promise<undefined>;
   uploadChunk: (arg_0: Chunk) => Promise<{chunkId: bigint}>;
 }
 export interface StreamingCallbackHttpResponse {

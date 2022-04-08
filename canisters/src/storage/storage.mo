@@ -228,12 +228,20 @@ actor class StorageBucket(owner: Types.UserId) = this {
     * Canister mgmt
     */
 
-    public shared({ caller }) func transferCycles(): async() {
+    public shared({ caller }) func transferFreezingThresholdCycles(): async() {
         if (not Utils.isManager(caller)) {
             throw Error.reject("Unauthorized access. Caller is not a manager.");
         };
 
-        await walletUtils.transferCycles(caller);
+        await walletUtils.transferFreezingThresholdCycles(caller);
+    };
+
+    public shared query({ caller }) func cyclesBalance(): async (Nat) {
+        if (Utils.isPrincipalNotEqual(caller, user)) {
+            throw Error.reject("User does not have the permission to read the balance of the cycles.");
+        };
+
+        return walletUtils.cyclesBalance();
     };
 
     system func preupgrade() {

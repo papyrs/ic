@@ -34,6 +34,7 @@ type StorageBucket =
        chunkIds: vec nat;
        headers: vec HeaderField__1;
      }) -> ();
+   cyclesBalance: () -> (nat) query;
    del: (record {
            fullPath: text;
            token: opt text;
@@ -43,7 +44,7 @@ type StorageBucket =
     (StreamingCallbackHttpResponse) query;
    initUpload: (AssetKey) -> (record {batchId: nat;});
    list: (opt text) -> (vec AssetKey) query;
-   transferCycles: () -> ();
+   transferFreezingThresholdCycles: () -> ();
    uploadChunk: (Chunk) -> (record {chunkId: nat;});
  };
 type HttpResponse = 

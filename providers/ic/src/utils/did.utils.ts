@@ -28,7 +28,7 @@ export const fromNullableTimestamp = (value?: [] | [Time]): Date | undefined => 
   return !isNaN(parseInt(`${value?.[0]}`)) ? new Date(`${value[0]}`) : undefined;
 };
 
-// Try to parse to number or boolean from string. It it fails, as for a string, use the value as it.
+// Try to parse to number or boolean from string. If it fails, as for a string, use the value as it.
 export const fromValue = (value: string): any => {
   try {
     return JSON.parse(value);

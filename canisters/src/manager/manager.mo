@@ -8,9 +8,9 @@ import Text "mo:base/Text";
 import Result "mo:base/Result";
 
 import Types "../types/types";
-import IC "../types/ic.types";
 
 import CanisterUtils "../utils/canister.utils";
+import WalletUtils "../utils/wallet.utils";
 
 import BucketTypes "./bucket.types";
 import BucketStore "./bucket.store";
@@ -28,8 +28,7 @@ actor Manager {
 
     private type Bucket = BucketTypes.Bucket;
 
-    private type CanisterStatus = IC.canister_status_response;
-
+    private let walletUtils: WalletUtils.WalletUtils = WalletUtils.WalletUtils();
     private let canisterUtils: CanisterUtils.CanisterUtils = CanisterUtils.CanisterUtils();
 
     let dataStore: BucketStore.BucketStore = BucketStore.BucketStore();
@@ -163,38 +162,6 @@ actor Manager {
     };
 
     /**
-     * Admin: for users
-     */
-
-    private func getCanisterStatus(data: Result.Result<?Bucket, Text>) : async (CanisterStatus) {
-        switch (data) {
-            case (#err error) {
-                throw Error.reject(error);
-            };
-            case (#ok bucket) {
-                switch (bucket) {
-                    case (?bucket) {
-                        return await canisterUtils.canisterStatus(bucket.bucketId);
-                    };
-                    case null {
-                        throw Error.reject("User has no bucket.");
-                    };
-                };
-            };
-        };
-    };
-
-    public shared({ caller }) func getCanistersStatus() : async ({data: CanisterStatus; storage: CanisterStatus}) {
-        let data: Result.Result<?Bucket, Text> = dataStore.getBucket(caller);
-        let dataCanisterStatus = await getCanisterStatus(data);    
-
-        let storage: Result.Result<?Bucket, Text> = storagesStore.getBucket(caller);
-        let storageCanisterStatus = await getCanisterStatus(storage);
-
-        return {data = dataCanisterStatus; storage = storageCanisterStatus};
-    };
-
-    /**
      * Admin: restricted for manager
      */
 
@@ -220,6 +187,14 @@ actor Manager {
         };
 
         await canisterUtils.installCode(canisterId, owner, wasmModule);
+    };
+
+    public shared({ caller }) func transferCycles(canisterId: Principal, amount: Nat): async() {
+        if (not Utils.isAdmin(caller)) {
+            throw Error.reject("Unauthorized access. Caller is not an admin.");
+        };
+
+        await walletUtils.transferCycles(canisterId, amount);
     };
 
     /**

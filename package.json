@@ -5,7 +5,8 @@
   "description": "Backend canisters and providers of Papyrs",
   "private": true,
   "scripts": {
-    "ic:install:data": "node ./scripts/ic.installcode.mjs",
+    "ic:install": "node ./scripts/ic.installcode.mjs",
+    "ic:transfer": "node ./scripts/ic.transfer.mjs",
     "ic:types": "node ./scripts/ic.types.js",
     "build": "npm run ic:types && cd providers/ic && npm run build",
     "postbuild": "npm run format",
