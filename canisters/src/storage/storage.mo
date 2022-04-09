@@ -237,8 +237,8 @@ actor class StorageBucket(owner: Types.UserId) = this {
     };
 
     public shared query({ caller }) func cyclesBalance(): async (Nat) {
-        if (Utils.isPrincipalNotEqual(caller, user)) {
-            throw Error.reject("User does not have the permission to read the balance of the cycles.");
+        if (not Utils.isManager(caller) and Utils.isPrincipalNotEqual(caller, user)) {
+            throw Error.reject("No permission to read the balance of the cycles.");
         };
 
         return walletUtils.cyclesBalance();
