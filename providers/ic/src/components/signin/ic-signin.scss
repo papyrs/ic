@@ -1,10 +1,13 @@
-deckgo-ic-signin {
-  div.actions {
-    display: flex;
-    justify-content: center;
-    align-content: center;
+ic-signin {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 
-    position: relative;
+  position: relative;
+
+  button {
+    font-size: inherit;
   }
 
   p.terms {

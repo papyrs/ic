@@ -6,7 +6,7 @@
  */
 import { HTMLStencilElement, JSXBase } from "@stencil/core/internal";
 export namespace Components {
-    interface DeckgoIcSignin {
+    interface IcSignin {
         "config": Record<string, string>;
         "i18n": Record<string, Record<string, string>>;
         "signInError": (err?: string) => void;
@@ -14,18 +14,18 @@ export namespace Components {
     }
 }
 declare global {
-    interface HTMLDeckgoIcSigninElement extends Components.DeckgoIcSignin, HTMLStencilElement {
+    interface HTMLIcSigninElement extends Components.IcSignin, HTMLStencilElement {
     }
-    var HTMLDeckgoIcSigninElement: {
-        prototype: HTMLDeckgoIcSigninElement;
-        new (): HTMLDeckgoIcSigninElement;
+    var HTMLIcSigninElement: {
+        prototype: HTMLIcSigninElement;
+        new (): HTMLIcSigninElement;
     };
     interface HTMLElementTagNameMap {
-        "deckgo-ic-signin": HTMLDeckgoIcSigninElement;
+        "ic-signin": HTMLIcSigninElement;
     }
 }
 declare namespace LocalJSX {
-    interface DeckgoIcSignin {
+    interface IcSignin {
         "config"?: Record<string, string>;
         "i18n"?: Record<string, Record<string, string>>;
         "onDdgSignInError"?: (event: CustomEvent<string | undefined>) => void;
@@ -35,14 +35,14 @@ declare namespace LocalJSX {
         "signInSuccess"?: () => void;
     }
     interface IntrinsicElements {
-        "deckgo-ic-signin": DeckgoIcSignin;
+        "ic-signin": IcSignin;
     }
 }
 export { LocalJSX as JSX };
 declare module "@stencil/core" {
     export namespace JSX {
         interface IntrinsicElements {
-            "deckgo-ic-signin": LocalJSX.DeckgoIcSignin & JSXBase.HTMLAttributes<HTMLDeckgoIcSigninElement>;
+            "ic-signin": LocalJSX.IcSignin & JSXBase.HTMLAttributes<HTMLIcSigninElement>;
         }
     }
 }

@@ -1,3 +1,10 @@
+# 0.0.5 (2022-04-14)
+
+### Features
+
+- rename `deckgo-ic-signin` into `ic-signin`
+- spacing and spinner display
+
 # 0.0.4 (2022-04-08)
 
 ### Features

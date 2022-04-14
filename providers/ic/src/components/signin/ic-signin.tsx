@@ -12,7 +12,7 @@ import {signIn} from '../../providers/auth/auth.providers';
 import {IconDfinity} from '../icons/dfinity';
 
 @Component({
-  tag: 'deckgo-ic-signin',
+  tag: 'ic-signin',
   styleUrl: 'ic-signin.scss'
 })
 export class IcSignin implements ComponentInterface {
@@ -61,11 +61,9 @@ export class IcSignin implements ComponentInterface {
   render() {
     return (
       <Host>
-        <div class="actions">
-          {this.renderSpinner()}
-          {this.renderAction()}
-        </div>
+        {this.renderSpinner()}
 
+        {this.renderAction()}
         {this.renderTerms()}
       </Host>
     );
@@ -93,6 +91,10 @@ export class IcSignin implements ComponentInterface {
   }
 
   private renderTerms() {
+    if (this.signInInProgress) {
+      return undefined;
+    }
+
     const {terms, privacy} = this.config || {};
 
     return (
