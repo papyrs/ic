@@ -1,3 +1,9 @@
+# 0.0.6 (2022-04-15)
+
+### Features
+
+- publish detailed cards for blog entries on overview page
+
 # 0.0.5 (2022-04-14)
 
 ### Features
