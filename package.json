@@ -1,6 +1,6 @@
 {
   "name": "ic",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "author": "David Dal Busco",
   "description": "Backend canisters and providers of Papyrs",
   "private": true,
