@@ -17,7 +17,7 @@ export const deckPublish: DeckPublish = async ({
 
   const {storageUpload, publishData, deck: updatedDeck} = await publishDeck({deck});
 
-  await publishOverview({storageUpload, publishData, dataId: updatedDeck.id});
+  await publishOverview({storageUpload, publishData, dataId: updatedDeck.id, meta: deck.data.meta});
 
   emitDeckPublished(updatedDeck);
 
@@ -35,7 +35,7 @@ export const docPublish: DocPublish = async ({
 
   const {storageUpload, publishData, doc: updatedDoc} = await publishDoc({doc, config});
 
-  await publishOverview({storageUpload, publishData, dataId: updatedDoc.id});
+  await publishOverview({storageUpload, publishData, dataId: updatedDoc.id, meta: doc.data.meta});
 
   emitDocPublished(updatedDoc);
 
