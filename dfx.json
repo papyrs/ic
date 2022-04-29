@@ -3,6 +3,12 @@
     "manager": {
       "main": "canisters/src/manager/manager.mo",
       "type": "motoko"
+    },
+    "internet_identity": {
+      "type": "custom",
+      "wasm": "internet_identity.wasm",
+      "candid": "internet_identity.did",
+      "build": "curl --fail -sSL \"https://github.com/dfinity/internet-identity/releases/download/release-2022-03-30/internet_identity_dev.wasm\" -o internet_identity.wasm"
     }
   },
   "defaults": {
