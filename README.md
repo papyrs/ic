@@ -9,6 +9,6 @@ Backend canisters and providers of [Papyrs].
 
 ## License
 
-GNU Affero General Public License. Copyright [David Dal Busco](mailto:david.dalbusco@outlook.com) and [Nicolas Mattia](mailto:nicolas@nmattia.com), Zürich, Switzerland. See [COPYING](COPYING) for more details.
+Have a look at the [LICENSE](LICENSE.md) for information about licensing and limitation.
 
 [papyrs]: https://papy.rs
