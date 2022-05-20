@@ -1,19 +1,66 @@
-import {log, Meta, PublishData, toDate} from '@deckdeckgo/editor';
+import {Deck, Doc, log, Meta, PublishData, toDate} from '@deckdeckgo/editor';
 import {_SERVICE as StorageBucketActor} from '../canisters/storage/storage.did';
+import {deckEntries} from '../providers/data/deck.providers';
+import {docEntries} from '../providers/data/doc.providers';
 import {EnvStore} from '../stores/env.store';
 import {StorageUpload, updateTemplate} from './publish.utils';
 import {upload} from './storage.utils';
+
+export const publishDeckOverview = async ({
+  owner_id,
+  dataId,
+  storageUpload,
+  publishData
+}: {
+  owner_id: string;
+  dataId: string;
+  storageUpload: StorageUpload;
+  publishData: PublishData;
+}): Promise<void> => {
+  const decks: Deck[] = await deckEntries(owner_id);
+
+  const metas: Meta[] = mapMetas(decks);
+
+  await publishOverview({storageUpload, publishData, dataId, metas});
+};
+
+export const publishDocOverview = async ({
+  owner_id,
+  dataId,
+  storageUpload,
+  publishData
+}: {
+  owner_id: string;
+  dataId: string;
+  storageUpload: StorageUpload;
+  publishData: PublishData;
+}): Promise<void> => {
+  const docs: Doc[] = await docEntries(owner_id);
+
+  const metas: Meta[] = mapMetas(docs);
+
+  await publishOverview({storageUpload, publishData, dataId, metas});
+};
+
+const mapMetas = (entries: (Doc | Deck)[]): Meta[] =>
+  entries
+    .filter(({data}: Doc | Deck) => data.meta?.published === true)
+    .map(({data}: Doc | Deck) => data.meta)
+    .sort(
+      ({published_at: published_at_a}: Meta, {published_at: published_at_b}: Meta) =>
+        (toDate(published_at_b)?.getTime() || 0) - (toDate(published_at_a)?.getTime() || 0)
+    );
 
 export const publishOverview = async ({
   dataId,
   storageUpload,
   publishData,
-  meta
+  metas
 }: {
   dataId: string;
   storageUpload: StorageUpload;
   publishData: PublishData;
-  meta: Meta | undefined;
+  metas: Meta[];
 }): Promise<void> => {
   const template: string = await htmlTemplate();
 
@@ -27,7 +74,7 @@ export const publishOverview = async ({
     template: html,
     publishData,
     storageUpload,
-    meta
+    metas
   });
 
   const {actor} = storageUpload;
@@ -62,40 +109,19 @@ const updateList = async ({
   template,
   storageUpload,
   publishData,
-  meta
+  metas
 }: {
   dataId: string;
   template: string;
   storageUpload: StorageUpload;
   publishData: PublishData;
-  meta: Meta | undefined;
+  metas: Meta[];
 }): Promise<string> => {
-  const source: string | undefined = await htmlSource(storageUpload);
+  const links: string[] = metas.map((meta: Meta) =>
+    newLink({dataId, meta, publishData, storageUpload})
+  );
 
-  const link: string = newLink({dataId, meta, publishData, storageUpload});
-
-  if (!source) {
-    return template.replace(/<!-- DECKDECKGO_DATA -->/, `${link}`);
-  }
-
-  const matches: RegExpMatchArray[] = [...source.matchAll(/<a data-id=".*?"[\s\S]*?a>/gm)];
-
-  if (!matches || matches.length <= 0) {
-    return template.replace(/<!-- DECKDECKGO_DATA -->/, `${link}`);
-  }
-
-  const list: string[] = matches.map((match: RegExpMatchArray) => match[0]);
-
-  const index: number = list.findIndex((a: string) => a.indexOf(dataId) > -1);
-
-  if (index > -1) {
-    return template.replace(
-      /<!-- DECKDECKGO_DATA -->/,
-      list.map((entry: string, i: number) => (i === index ? link : entry)).join('')
-    );
-  }
-
-  return template.replace(/<!-- DECKDECKGO_DATA -->/, [link, ...list].join(''));
+  return template.replace(/<!-- DECKDECKGO_DATA -->/, links.join(''));
 };
 
 const newLink = ({
@@ -107,10 +133,14 @@ const newLink = ({
   dataId: string;
   storageUpload: StorageUpload;
   publishData: PublishData;
-  meta: Meta | undefined;
+  meta: Meta;
 }): string => {
   const {title} = publishData;
-  const {fullUrl} = storageUpload;
+
+  const {bucketUrl} = storageUpload;
+  const {pathname} = meta;
+
+  const fullUrl: string = `${bucketUrl}${pathname}`;
 
   const detail: string =
     meta?.description !== undefined && meta?.description !== null && meta?.description !== ''
@@ -131,16 +161,6 @@ const newLink = ({
   const editedAt: string = `<p>Edited: ${format(toDate(meta?.updated_at) ?? new Date())}</p>`;
 
   return `<a data-id="${dataId}" href="${fullUrl}" rel="noopener noreferrer"><article><h3>${title}</h3>${detail}${publishedAt}${editedAt}</article></a>`;
-};
-
-const htmlSource = async ({bucketUrl}: StorageUpload): Promise<string | undefined> => {
-  const response: Response = await fetch(bucketUrl);
-
-  if (response.ok) {
-    return response.text();
-  }
-
-  return undefined;
 };
 
 const uploadOverviewIC = async ({
