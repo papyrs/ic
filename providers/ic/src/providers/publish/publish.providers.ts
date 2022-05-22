@@ -3,7 +3,7 @@ import {_SERVICE as StorageBucketActor} from '../../canisters/storage/storage.di
 import {BucketActor} from '../../utils/manager.utils';
 import {emitDeckPublished, publishDeck} from '../../utils/publish.deck.utils';
 import {emitDocPublished, publishDoc} from '../../utils/publish.doc.utils';
-import { publishDeckOverview, publishDocOverview } from "../../utils/publish.overview.utils";
+import { publishDeckMetas, publishDocMetas } from "../../utils/publish.metas.utils";
 import {uploadResources} from '../../utils/publish.resources.utils';
 import {getStorageActor} from '../../utils/storage.utils';
 
@@ -17,7 +17,7 @@ export const deckPublish: DeckPublish = async ({
 
   const {storageUpload, publishData, deck: updatedDeck} = await publishDeck({deck});
 
-  await publishDeckOverview({
+  await publishDeckMetas({
     storageUpload,
     publishData,
     dataId: updatedDeck.id,
@@ -40,7 +40,7 @@ export const docPublish: DocPublish = async ({
 
   const {storageUpload, publishData, doc: updatedDoc} = await publishDoc({doc, config});
 
-  await publishDocOverview({
+  await publishDocMetas({
     storageUpload,
     publishData,
     dataId: updatedDoc.id,
