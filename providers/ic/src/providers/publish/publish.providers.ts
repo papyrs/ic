@@ -3,8 +3,9 @@ import {_SERVICE as StorageBucketActor} from '../../canisters/storage/storage.di
 import {BucketActor} from '../../utils/manager.utils';
 import {emitDeckPublished, publishDeck} from '../../utils/publish.deck.utils';
 import {emitDocPublished, publishDoc} from '../../utils/publish.doc.utils';
-import { publishDeckMetas, publishDocMetas } from "../../utils/publish.metas.utils";
+import {publishDeckMetas, publishDocMetas} from '../../utils/publish.metas.utils';
 import {uploadResources} from '../../utils/publish.resources.utils';
+import {author} from '../../utils/publish.utils';
 import {getStorageActor} from '../../utils/storage.utils';
 
 export const deckPublish: DeckPublish = async ({
@@ -21,7 +22,8 @@ export const deckPublish: DeckPublish = async ({
     storageUpload,
     publishData,
     dataId: updatedDeck.id,
-    owner_id: deck.data.owner_id
+    owner_id: deck.data.owner_id,
+    author: author(deck.data.meta)
   });
 
   emitDeckPublished(updatedDeck);
@@ -44,7 +46,8 @@ export const docPublish: DocPublish = async ({
     storageUpload,
     publishData,
     dataId: updatedDoc.id,
-    owner_id: doc.data.owner_id
+    owner_id: doc.data.owner_id,
+    author: author(doc.data.meta)
   });
 
   emitDocPublished(updatedDoc);

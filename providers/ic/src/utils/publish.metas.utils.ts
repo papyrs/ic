@@ -3,6 +3,7 @@ import {_SERVICE as StorageBucketActor} from '../canisters/storage/storage.did';
 import {deckEntries} from '../providers/data/deck.providers';
 import {docEntries} from '../providers/data/doc.providers';
 import {prepareIndexHtml} from './publish.index-html.utils';
+import {prepareRSS} from './publish.rss.utils';
 import {prepareSitemap} from './publish.sitemap.utils';
 import {StorageUpload} from './publish.utils';
 import {upload} from './storage.utils';
@@ -11,32 +12,36 @@ export const publishDeckMetas = async ({
   owner_id,
   dataId,
   storageUpload,
-  publishData
+  publishData,
+  author
 }: {
   owner_id: string;
   dataId: string;
   storageUpload: StorageUpload;
   publishData: PublishData;
+  author: string;
 }): Promise<void> => {
   const decks: Deck[] = await deckEntries(owner_id);
 
-  await publishMetas({storageUpload, publishData, dataId, entries: decks});
+  await publishMetas({storageUpload, publishData, dataId, entries: decks, author});
 };
 
 export const publishDocMetas = async ({
   owner_id,
   dataId,
   storageUpload,
-  publishData
+  publishData,
+  author
 }: {
   owner_id: string;
   dataId: string;
   storageUpload: StorageUpload;
   publishData: PublishData;
+  author: string;
 }): Promise<void> => {
   const docs: Doc[] = await docEntries(owner_id);
 
-  await publishMetas({storageUpload, publishData, dataId, entries: docs});
+  await publishMetas({storageUpload, publishData, dataId, entries: docs, author});
 };
 
 const mapMetas = (entries: (Doc | Deck)[]): Meta[] =>
@@ -52,21 +57,40 @@ const publishMetas = async ({
   dataId,
   storageUpload,
   publishData,
-  entries
+  entries,
+  author
 }: {
   dataId: string;
   storageUpload: StorageUpload;
   publishData: PublishData;
   entries: (Doc | Deck)[];
+  author: string;
 }): Promise<void> => {
   const metas: Meta[] = mapMetas(entries);
 
   const promises: Promise<void>[] = [
     publishIndexHtml({storageUpload, publishData, dataId, metas}),
-    publishSitemap({storageUpload, metas})
-  ]
+    publishSitemap({storageUpload, metas}),
+    publishRSS({storageUpload, metas, author}),
+  ];
 
   await Promise.all(promises);
+};
+
+export const publishRSS = async ({
+  storageUpload,
+  metas,
+  author
+}: {
+  storageUpload: StorageUpload;
+  metas: Meta[];
+  author: string;
+}): Promise<void> => {
+  const {bucketUrl, actor} = storageUpload;
+
+  const rss: string = prepareRSS({bucketUrl, metas, author});
+
+  await uploadRSSIC({rss, actor});
 };
 
 export const publishSitemap = async ({
@@ -128,7 +152,18 @@ const uploadSitemapIC = async ({
     content: sitemap,
     mimeType: 'application/xml',
     fullPath: '/sitemap.xml',
-    filename: 'sitemap.xml'
+    filename: 'sitemap.xml',
+    maxAge: 3600
+  });
+
+const uploadRSSIC = async ({rss, actor}: {rss: string; actor: StorageBucketActor}): Promise<void> =>
+  uploadResourceIC({
+    actor,
+    content: rss,
+    mimeType: 'application/xml',
+    fullPath: '/rss.xml',
+    filename: 'rss.xml',
+    maxAge: 3600
   });
 
 const uploadResourceIC = async ({
@@ -136,20 +171,22 @@ const uploadResourceIC = async ({
   actor,
   mimeType,
   filename,
-  fullPath
+  fullPath,
+  maxAge = 0
 }: {
   content: string;
   actor: StorageBucketActor;
   mimeType: 'application/xml' | 'text/html';
   filename: string;
   fullPath: string;
+  maxAge?: number;
 }): Promise<void> => {
   await upload({
     data: new Blob([content], {type: mimeType}),
     filename,
     folder: 'resources',
     storageActor: actor,
-    headers: [['Cache-Control', 'max-age=0']],
+    headers: [['Cache-Control', `max-age=${maxAge}`]],
     fullPath,
     log
   });
