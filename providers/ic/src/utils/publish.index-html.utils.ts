@@ -63,9 +63,7 @@ const updateList = async ({
   bucketUrl: string;
   metas: Meta[];
 }): Promise<string> => {
-  const links: string[] = metas.map((meta: Meta) =>
-    newLink({dataId, meta, bucketUrl})
-  );
+  const links: string[] = metas.map((meta: Meta) => newLink({dataId, meta, bucketUrl}));
 
   return template.replace(/<!-- DECKDECKGO_DATA -->/, links.join(''));
 };

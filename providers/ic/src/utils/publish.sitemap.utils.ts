@@ -19,7 +19,9 @@ const sitemapUrl = (url: string): string => `<url>
 
 export const prepareSitemap = ({bucketUrl, metas}: {bucketUrl: string; metas: Meta[]}): string => {
   const rootUrl: string = sitemapUrl(bucketUrl);
-  const postsUrls: string[] = metas.map(({pathname}: Meta) => sitemapUrl(`${bucketUrl}${pathname}`));
+  const postsUrls: string[] = metas.map(({pathname}: Meta) =>
+    sitemapUrl(`${bucketUrl}${pathname}`)
+  );
 
   return siteMapTemplate([rootUrl, ...postsUrls].join(''));
 };
