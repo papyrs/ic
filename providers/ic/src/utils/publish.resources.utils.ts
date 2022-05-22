@@ -7,6 +7,7 @@ import {
 import {EnvStore} from '../stores/env.store';
 import {toNullable} from './did.utils';
 import {BucketActor} from './manager.utils';
+import {author} from './publish.utils';
 import {getStorageActor, upload} from './storage.utils';
 
 type KitMimeType = 'text/javascript' | 'text/plain' | 'application/manifest+json' | 'text/css';
@@ -20,8 +21,6 @@ interface Kit {
 }
 
 const getKitPath = (): string => EnvStore.getInstance().get().kitPath;
-
-const getAuthor = (): string => EnvStore.getInstance().get().author;
 
 export const uploadResources = async ({meta}: {meta: Meta | undefined}) => {
   // 1. Get actor
@@ -159,7 +158,7 @@ const getKit = async (): Promise<Kit[]> => {
         src,
         mimeType: 'application/manifest+json',
         updateContent: ({content, meta}: {meta: Meta | undefined; content: string}) =>
-          content.replace('{{DECKDECKGO_AUTHOR}}', meta?.author?.name || getAuthor())
+          content.replace('{{DECKDECKGO_AUTHOR}}', author(meta))
       };
     }
 

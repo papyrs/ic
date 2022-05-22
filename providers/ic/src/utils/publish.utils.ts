@@ -187,3 +187,7 @@ export const uploadPublishFileIC = async ({
     log
   });
 };
+
+const getAuthor = (): string => EnvStore.getInstance().get().author;
+
+export const author = (meta: Meta | undefined) => meta?.author?.name || getAuthor()
