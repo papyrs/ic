@@ -23,7 +23,6 @@ export const prepareIndexHtml = async ({
   html = await updateList({
     dataId,
     template: html,
-    publishData,
     bucketUrl,
     metas
   });
@@ -57,17 +56,15 @@ const updateList = async ({
   dataId,
   template,
   bucketUrl,
-  publishData,
   metas
 }: {
   dataId: string;
   template: string;
   bucketUrl: string;
-  publishData: PublishData;
   metas: Meta[];
 }): Promise<string> => {
   const links: string[] = metas.map((meta: Meta) =>
-    newLink({dataId, meta, publishData, bucketUrl})
+    newLink({dataId, meta, bucketUrl})
   );
 
   return template.replace(/<!-- DECKDECKGO_DATA -->/, links.join(''));
@@ -76,17 +73,13 @@ const updateList = async ({
 const newLink = ({
   dataId,
   bucketUrl,
-  publishData,
   meta
 }: {
   dataId: string;
   bucketUrl: string;
-  publishData: PublishData;
   meta: Meta;
 }): string => {
-  const {title} = publishData;
-
-  const {pathname} = meta;
+  const {title, pathname} = meta;
 
   const fullUrl: string = `${bucketUrl}${pathname}`;
 
