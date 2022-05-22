@@ -1,8 +1,14 @@
-# 0.0.9 (2022-05-XX)
+# 0.0.9 (2022-05-22)
 
 ### Features
 
-- query docs / decks entries on publish to refresh the all list of published materials ("update list in index.html")
+- query all docs / decks entries on publish to refresh the list of published materials ("update list in index.html")
+- publish a `sitemap.xml`
+- publish a `rss.xml`
+
+### Build
+
+- bump all dependencies
 
 # 0.0.7 - 0.0.8 (2022-04-15)
 
