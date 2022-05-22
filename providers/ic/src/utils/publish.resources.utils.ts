@@ -7,7 +7,7 @@ import {
 import {EnvStore} from '../stores/env.store';
 import {toNullable} from './did.utils';
 import {BucketActor} from './manager.utils';
-import {author} from './publish.utils';
+import {getAuthor} from './publish.utils';
 import {getStorageActor, upload} from './storage.utils';
 
 type KitMimeType = 'text/javascript' | 'text/plain' | 'application/manifest+json' | 'text/css';
@@ -158,7 +158,7 @@ const getKit = async (): Promise<Kit[]> => {
         src,
         mimeType: 'application/manifest+json',
         updateContent: ({content, meta}: {meta: Meta | undefined; content: string}) =>
-          content.replace('{{DECKDECKGO_AUTHOR}}', author(meta))
+          content.replace('{{DECKDECKGO_AUTHOR}}', meta?.author?.name || getAuthor())
       };
     }
 

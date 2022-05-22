@@ -5,43 +5,39 @@ import {docEntries} from '../providers/data/doc.providers';
 import {prepareIndexHtml} from './publish.index-html.utils';
 import {prepareRSS} from './publish.rss.utils';
 import {prepareSitemap} from './publish.sitemap.utils';
-import {StorageUpload} from './publish.utils';
+import {getAuthor, StorageUpload} from './publish.utils';
 import {upload} from './storage.utils';
 
 export const publishDeckMetas = async ({
   owner_id,
   dataId,
   storageUpload,
-  publishData,
-  author
+  publishData
 }: {
   owner_id: string;
   dataId: string;
   storageUpload: StorageUpload;
   publishData: PublishData;
-  author: string;
 }): Promise<void> => {
   const decks: Deck[] = await deckEntries(owner_id);
 
-  await publishMetas({storageUpload, publishData, dataId, entries: decks, author});
+  await publishMetas({storageUpload, publishData, dataId, entries: decks});
 };
 
 export const publishDocMetas = async ({
   owner_id,
   dataId,
   storageUpload,
-  publishData,
-  author
+  publishData
 }: {
   owner_id: string;
   dataId: string;
   storageUpload: StorageUpload;
   publishData: PublishData;
-  author: string;
 }): Promise<void> => {
   const docs: Doc[] = await docEntries(owner_id);
 
-  await publishMetas({storageUpload, publishData, dataId, entries: docs, author});
+  await publishMetas({storageUpload, publishData, dataId, entries: docs});
 };
 
 const mapMetas = (entries: (Doc | Deck)[]): Meta[] =>
@@ -57,21 +53,19 @@ const publishMetas = async ({
   dataId,
   storageUpload,
   publishData,
-  entries,
-  author
+  entries
 }: {
   dataId: string;
   storageUpload: StorageUpload;
   publishData: PublishData;
   entries: (Doc | Deck)[];
-  author: string;
 }): Promise<void> => {
   const metas: Meta[] = mapMetas(entries);
 
   const promises: Promise<void>[] = [
     publishIndexHtml({storageUpload, publishData, dataId, metas}),
     publishSitemap({storageUpload, metas}),
-    publishRSS({storageUpload, metas, author}),
+    publishRSS({storageUpload, metas, publishData})
   ];
 
   await Promise.all(promises);
@@ -80,15 +74,17 @@ const publishMetas = async ({
 export const publishRSS = async ({
   storageUpload,
   metas,
-  author
+  publishData
 }: {
   storageUpload: StorageUpload;
   metas: Meta[];
-  author: string;
+  publishData: PublishData;
 }): Promise<void> => {
   const {bucketUrl, actor} = storageUpload;
 
-  const rss: string = prepareRSS({bucketUrl, metas, author});
+  const {author} = publishData;
+
+  const rss: string = prepareRSS({bucketUrl, metas, author: author || getAuthor()});
 
   await uploadRSSIC({rss, actor});
 };
