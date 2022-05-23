@@ -11,15 +11,15 @@ const siteRSS = ({
 }): string => {
   const lastBuildDate: string = new Date().toUTCString();
 
-  return `<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+  return `<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" version="2.0">
     <channel>
         <title><![CDATA[${author} blog]]></title>
         <description><![CDATA[The latest blog posts of ${author}]]></description>
         <link>${bucketUrl}</link>
         <lastBuildDate>${lastBuildDate}</lastBuildDate>
+        
+        ${items}
     </channel>
-    
-    ${items}
 </rss>`;
 };
 
