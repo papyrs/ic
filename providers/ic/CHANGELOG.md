@@ -1,3 +1,10 @@
+# 0.0.10 (2022-05-23)
+
+### Fix
+
+- do not update `published_at` date if already published - keep original publish date
+- remove unused dtd in rss and move `items` as `channel` child 
+
 # 0.0.9 (2022-05-22)
 
 ### Features
