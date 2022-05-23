@@ -161,7 +161,7 @@ export const updateMetaData = <T>({
       ...(meta || {title: name}),
       pathname,
       published: true,
-      published_at: now,
+      published_at: meta.published_at ?? now,
       updated_at: now
     }
   };
