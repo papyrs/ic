@@ -132,9 +132,15 @@ const updateImagesDOM = async ({
   folder?: 'images' | 'data';
   src: string;
 }) => {
-  const matchingImages: HTMLDeckgoLazyImgElement[] = images.filter(
-    (img: HTMLDeckgoLazyImgElement) => img.imgSrc === src
-  );
+  const match = (img: HTMLDeckgoLazyImgElement): boolean => {
+    if (folder === 'data') {
+      return img.getAttribute('data-src') === src;
+    }
+
+    return img.imgSrc === src;
+  };
+
+  const matchingImages: HTMLDeckgoLazyImgElement[] = images.filter(match);
 
   if (!matchingImages || matchingImages.length <= 0) {
     return;
