@@ -19,9 +19,9 @@ export const updateDeckBackground = ({
     data: {
       ...deck.data,
       updated_at: new Date(),
-      background: updateContentImgSrcAlt({
+      background: updateContentImg({
         data: deck.data.background,
-        imgSrc,
+        src: imgSrc,
         storageFile
       })
     }
@@ -46,10 +46,10 @@ export const updateSlideImages = ({
   let {content} = slide.data;
 
   validImages.forEach(({src, storageFile}: SyncStorage) => {
-    content = updateContentImgSrcAlt({
+    content = updateContentImg({
       data: content,
       storageFile,
-      imgSrc: src
+      src
     });
   });
 
@@ -63,18 +63,18 @@ export const updateSlideImages = ({
   };
 };
 
-export const updateParagraphImages = ({
+export const updateParagraphAssets = ({
   paragraph,
-  images
+  files
 }: {
   paragraph: Paragraph;
-  images: SyncStorage[] | undefined;
+  files: SyncStorage[] | undefined;
 }): Paragraph => {
-  if (!images) {
+  if (!files) {
     return {...paragraph};
   }
 
-  const validImages: {src: string; storageFile: StorageFile}[] = images.filter(
+  const validFiles: {src: string; storageFile: StorageFile}[] = files.filter(
     ({src, storageFile}: SyncStorage) => src !== undefined && storageFile !== undefined
   );
 
@@ -82,21 +82,21 @@ export const updateParagraphImages = ({
 
   // The paragraph itself might be an image
   if (nodeName === 'deckgo-lazy-img' && attributes) {
-    validImages.forEach(({src, storageFile}: SyncStorage) => {
-      attributes = updateAttributeImgSrc({
+    validFiles.forEach(({src, storageFile}: SyncStorage) => {
+      attributes = updateAttributeImg({
         attributes,
         storageFile,
-        imgSrc: src
+        src
       });
     });
   }
 
   children = children?.map((content: string) => {
-    validImages.forEach(({src, storageFile}: SyncStorage) => {
-      content = updateContentImgSrcAlt({
+    validFiles.forEach(({src, storageFile}: SyncStorage) => {
+      content = updateContentImg({
         data: content,
         storageFile,
-        imgSrc: src
+        src
       });
     });
 
@@ -152,37 +152,38 @@ export const updateSlideChart = ({
   };
 };
 
-const updateContentImgSrcAlt = ({
+const updateContentImg = ({
   data,
   storageFile,
-  imgSrc
+  src
 }: {
   data: string;
   storageFile: StorageFile;
-  imgSrc: string;
+  src: string;
 }): string => {
   const {downloadUrl, name} = storageFile;
 
-  let updateData: string = data.replaceAll(`img-src="${imgSrc}"`, `img-src="${downloadUrl}"`);
-  updateData = updateData.replaceAll(`img-alt="${imgSrc}"`, `img-alt="${name}"`);
+  let updateData: string = data.replaceAll(`img-src="${src}"`, `img-src="${downloadUrl}"`);
+  updateData = updateData.replaceAll(`img-alt="${src}"`, `img-alt="${name}"`);
+  updateData = updateData.replaceAll(`data-src="${src}"`, `data-src="${downloadUrl}"`);
 
   return updateData;
 };
 
-const updateAttributeImgSrc = ({
+const updateAttributeImg = ({
   attributes,
   storageFile,
-  imgSrc
+  src
 }: {
   attributes: Record<string, string | number | boolean | undefined>;
   storageFile: StorageFile;
-  imgSrc: string;
+  src: string;
 }): Record<string, string | number | boolean | undefined> => {
   const {downloadUrl} = storageFile;
 
   return Object.keys(attributes).reduce(
     (acc: Record<string, string | number | boolean | undefined>, key: string) => {
-      acc[key] = attributes[key] === imgSrc ? downloadUrl : attributes[key];
+      acc[key] = attributes[key] === src ? downloadUrl : attributes[key];
       return acc;
     },
     {}

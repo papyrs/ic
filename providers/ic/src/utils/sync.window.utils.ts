@@ -3,7 +3,7 @@ import {get, set} from 'idb-keyval';
 import {SyncWindowData} from '../types/sync.window';
 import {
   updateDeckBackground,
-  updateParagraphImages,
+  updateParagraphAssets,
   updateSlideChart,
   updateSlideImages
 } from './sync.attributes.utils';
@@ -78,7 +78,7 @@ const updateDeckDOM = ({storageFile}: SyncWindowData) => {
   img.imgAlt = name;
 };
 
-const updateElementImagesDOM = async ({selector, storageFile, src}: SyncWindowData) => {
+const updateElementImagesDOM = async ({selector, storageFile, folder, src}: SyncWindowData) => {
   const element: HTMLElement | null = document.querySelector(selector);
 
   // The paragraph might be an image itself
@@ -86,6 +86,7 @@ const updateElementImagesDOM = async ({selector, storageFile, src}: SyncWindowDa
     await updateImagesDOM({
       images: [element as HTMLDeckgoLazyImgElement],
       storageFile,
+      folder,
       src
     });
     return;
@@ -93,7 +94,7 @@ const updateElementImagesDOM = async ({selector, storageFile, src}: SyncWindowDa
 
   const images: NodeListOf<HTMLDeckgoLazyImgElement> = element?.querySelectorAll('deckgo-lazy-img');
 
-  await updateImagesDOM({images: Array.from(images), storageFile, src});
+  await updateImagesDOM({images: Array.from(images), storageFile, folder, src});
 };
 
 const updateSlideChartDOM = ({selector, storageFile}: SyncWindowData) => {
@@ -122,11 +123,13 @@ const updateSlidesDOM = async ({storageFile, src}: SyncWindowData) => {
 
 const updateImagesDOM = async ({
   storageFile,
+  folder = 'images',
   images,
   src
 }: {
   images: HTMLDeckgoLazyImgElement[];
   storageFile: StorageFile;
+  folder?: 'images' | 'data';
   src: string;
 }) => {
   const matchingImages: HTMLDeckgoLazyImgElement[] = images.filter(
@@ -139,13 +142,17 @@ const updateImagesDOM = async ({
 
   const updateImage = async (img: HTMLDeckgoLazyImgElement) => {
     const {downloadUrl, name} = storageFile;
-
     img.imgSrc = downloadUrl;
     img.imgAlt = name;
   };
 
+  const updateData = async (img: HTMLDeckgoLazyImgElement) => {
+    const {downloadUrl: dataDownloadUrl} = storageFile;
+    img.setAttribute('data-src', dataDownloadUrl);
+  };
+
   const promises: Promise<void>[] = Array.from(matchingImages).map(
-    (img: HTMLDeckgoLazyImgElement) => updateImage(img)
+    (img: HTMLDeckgoLazyImgElement) => (folder === 'data' ? updateData(img) : updateImage(img))
   );
 
   await Promise.all(promises);
@@ -182,9 +189,9 @@ const updateSlideImagesIDB = async ({storageFile, src, key}: SyncWindowData) => 
 const updateParagraphImagesIDB = async ({storageFile, src, key}: SyncWindowData) => {
   const paragraph: Paragraph = await getData<Paragraph>({key});
 
-  const updateParagraph: Paragraph = updateParagraphImages({
+  const updateParagraph: Paragraph = updateParagraphAssets({
     paragraph,
-    images: [
+    files: [
       {
         src,
         storageFile

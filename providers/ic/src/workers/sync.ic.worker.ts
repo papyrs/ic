@@ -22,7 +22,7 @@ import {initIdentity} from '../utils/identity.utils';
 import {BucketActor, getDataBucket, getStorageBucket} from '../utils/manager.utils';
 import {
   updateDeckBackground,
-  updateParagraphImages,
+  updateParagraphAssets,
   updateSlideChart,
   updateSlideImages
 } from '../utils/sync.attributes.utils';
@@ -34,7 +34,7 @@ import {
 } from '../utils/sync.data.utils';
 import {
   uploadDeckBackgroundAssets,
-  uploadParagraphImages,
+  uploadParagraphAssets,
   uploadSlideAssets
 } from '../utils/sync.storage.utils';
 
@@ -371,7 +371,7 @@ const uploadParagraph = async ({
   }
 
   // 1. We upload the asset to the IC (worker side), update DOM and IDB (window side for thread safe reason) and clean the asset from IDB
-  const images: SyncStorage[] | undefined = await uploadParagraphImages({
+  const files: SyncStorage[] | undefined = await uploadParagraphAssets({
     paragraph,
     docId,
     storageBucket,
@@ -381,9 +381,9 @@ const uploadParagraph = async ({
   });
 
   // 2. If we uploaded assets, there URL have changed (no more local but available online)
-  const updateParagraph: Paragraph = updateParagraphImages({
+  const updateParagraph: Paragraph = updateParagraphAssets({
     paragraph: paragraph,
-    images
+    files
   });
 
   // 3. We can update the data in the IC
