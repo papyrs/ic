@@ -1,3 +1,10 @@
+# 0.0.11 (2022-06-12)
+
+### Features
+
+- support for `data-src` on images - needed to persist source data of the images such as those generated with Excalidraw
+- clean attributes `paragraph_id` and `data-src` on publish
+
 # 0.0.10 (2022-05-23)
 
 ### Fix
