@@ -16,6 +16,7 @@ import {LogWindow, SyncWindow, SyncWindowEventMsg} from '../types/sync.window';
 import {BucketActor} from './manager.utils';
 
 const imagesRegex: RegExp = /((<deckgo-lazy-img.*?)(img-src=)(.*?")(.*?[^"]*)(.*?"))/g;
+const dataRegex: RegExp = /((<deckgo-lazy-img.*?)(data-src=)(.*?")(.*?[^"]*)(.*?"))/g;
 
 export const uploadDeckBackgroundAssets = async ({
   deck,
@@ -244,7 +245,8 @@ const uploadData = ({
           src,
           key,
           selector,
-          storageFile
+          storageFile,
+          folder
         }
       });
 
@@ -261,7 +263,7 @@ const uploadData = ({
   });
 };
 
-export const uploadParagraphImages = async ({
+export const uploadParagraphAssets = async ({
   docId,
   paragraph,
   identity,
@@ -278,19 +280,29 @@ export const uploadParagraphImages = async ({
 }): Promise<SyncStorage[] | undefined> => {
   const {children, nodeName, attributes} = paragraph.data;
 
+  const uploadParams: Omit<UploadParagraphAsset, 'src' | 'folder'> = {
+    docId,
+    paragraphId: paragraph.id,
+    identity,
+    syncWindow,
+    storageBucket,
+    log
+  };
+
   // The paragraph itself might be an image
   if (nodeName === 'deckgo-lazy-img') {
-    const syncStorage: SyncStorage = await uploadParagraphImage({
-      imgSrc: attributes?.['img-src'] as string | undefined,
-      docId,
-      paragraphId: paragraph.id,
-      identity,
-      syncWindow,
-      storageBucket,
-      log
-    });
-
-    return [syncStorage];
+    return Promise.all([
+      uploadParagraphAsset({
+        src: attributes?.['img-src'] as string | undefined,
+        ...uploadParams,
+        folder: 'images'
+      }),
+      uploadParagraphAsset({
+        src: attributes?.['data-src'] as string | undefined,
+        ...uploadParams,
+        folder: 'data'
+      })
+    ]);
   }
 
   if (!children || children.length <= 0) {
@@ -299,50 +311,76 @@ export const uploadParagraphImages = async ({
 
   const content: string = children.join('');
 
-  const results: string[][] = [...content.matchAll(imagesRegex)];
-
-  const promises: Promise<SyncStorage>[] | undefined = results?.map((result: string[]) => {
-    const imgSrc: string = result[5];
-
-    return uploadParagraphImage({
-      imgSrc: imgSrc,
-      docId,
-      paragraphId: paragraph.id,
-      identity,
-      syncWindow,
-      storageBucket,
-      log
-    });
+  const imagesPromises: Promise<SyncStorage>[] | undefined = extractUploadParagraphAssets({
+    content,
+    folder: 'images',
+    uploadParams,
+    regEx: imagesRegex
   });
 
-  return Promise.all(promises);
+  const dataPromises: Promise<SyncStorage>[] | undefined = extractUploadParagraphAssets({
+    content,
+    folder: 'data',
+    uploadParams,
+    regEx: dataRegex
+  });
+
+  return Promise.all([...(imagesPromises ?? []), ...(dataPromises ?? [])]);
 };
 
-const uploadParagraphImage = async ({
-  imgSrc,
-  docId,
-  paragraphId,
-  identity,
-  syncWindow,
-  storageBucket,
-  log
+const extractUploadParagraphAssets = ({
+  content,
+  uploadParams,
+  folder,
+  regEx
 }: {
-  imgSrc: string;
+  content: string;
+  uploadParams: Omit<UploadParagraphAsset, 'src' | 'folder'>;
+  folder: 'images' | 'data';
+  regEx: RegExp;
+}): Promise<SyncStorage>[] | undefined => {
+  const results: string[][] = [...content.matchAll(regEx)];
+
+  return results?.map((result: string[]) => {
+    const imgSrc: string = result[5];
+
+    return uploadParagraphAsset({
+      src: imgSrc,
+      folder,
+      ...uploadParams
+    });
+  });
+};
+
+interface UploadParagraphAsset {
+  src: string;
   docId: string;
   paragraphId: string;
   identity: Identity;
   syncWindow: SyncWindow;
   storageBucket: BucketActor<StorageBucketActor>;
   log: LogWindow;
-}): Promise<SyncStorage> => {
+  folder: 'images' | 'data';
+}
+
+const uploadParagraphAsset = async ({
+  src,
+  docId,
+  paragraphId,
+  identity,
+  syncWindow,
+  storageBucket,
+  log,
+  folder
+}: UploadParagraphAsset): Promise<SyncStorage> => {
   return uploadData({
-    src: imgSrc,
+    src,
     key: `/docs/${docId}/paragraphs/${paragraphId}`,
     selector: `${docSelector} > article *[paragraph_id="${paragraphId}"]`,
     identity,
     syncWindow,
     msg: 'deckdeckgo_sync_paragraph_image',
-    folder: 'images',
+    folder,
     storageBucket,
     log
   });

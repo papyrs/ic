@@ -6,6 +6,7 @@ export interface SyncWindowData {
   key: string;
   selector?: string;
   storageFile: StorageFile;
+  folder: 'images' | 'data';
 }
 
 export type SyncWindowEventMsg =
