@@ -4,6 +4,10 @@
 
 - set delegation identity expiration ("II session") to one hour
 
+### Build
+
+- bump `agent-js` and `nanoid`
+
 # 0.0.11 (2022-06-12)
 
 ### Features
