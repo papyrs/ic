@@ -1,3 +1,9 @@
+# 0.0.12 (2022-06-17)
+
+### Features
+
+- set delegation identity expiration ("II session") to one hour
+
 # 0.0.11 (2022-06-12)
 
 ### Features
