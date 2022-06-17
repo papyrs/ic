@@ -101,6 +101,11 @@ export const signOut: SignOut = async (): Promise<void> => {
   await authClient?.logout();
 };
 
+// How long the delegation identity should remain valid?
+// e.g. BigInt(7 * 24 * 60 * 60 * 1000 * 1000 * 1000) = 7 days in nanoseconds
+// For Papyrs: 1 hour
+const delegationIdentityExpiration: bigint = BigInt(60 * 60 * 1000 * 1000 * 1000);
+
 export const signIn = async ({
   onSuccess,
   onError
@@ -113,6 +118,7 @@ export const signIn = async ({
   await authClient.login({
     onSuccess,
     onError,
+    maxTimeToLive: delegationIdentityExpiration,
     ...(EnvStore.getInstance().localIdentity() && {
       identityProvider: `http://${
         EnvStore.getInstance().get().localIdentityCanisterId
