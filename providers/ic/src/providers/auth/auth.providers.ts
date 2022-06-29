@@ -19,6 +19,14 @@ declare global {
 
 let authClient: AuthClient | undefined;
 
+const createAuthClient = (): Promise<AuthClient> =>
+  AuthClient.create({
+    idleOptions: {
+      disableIdle: true,
+      disableDefaultIdleCallback: true
+    }
+  });
+
 export const initAuth: InitAuth = async ({
   config,
   success
@@ -29,7 +37,7 @@ export const initAuth: InitAuth = async ({
 }) => {
   EnvStore.getInstance().set(config as EnvironmentIC);
 
-  authClient = await AuthClient.create();
+  authClient = await createAuthClient();
 
   const isAuthenticated: boolean = (await authClient?.isAuthenticated()) || false;
 
@@ -113,7 +121,7 @@ export const signIn = async ({
   onSuccess: () => void;
   onError: (err?: string) => void;
 }) => {
-  authClient = authClient || (await AuthClient.create());
+  authClient = authClient || (await createAuthClient());
 
   await authClient.login({
     onSuccess,
