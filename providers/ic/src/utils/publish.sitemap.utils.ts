@@ -1,4 +1,4 @@
-import {Meta} from '@deckdeckgo/editor';
+import {PublishMeta} from '../types/publish.metas';
 
 const siteMapTemplate = (urls: string): string => `<?xml version="1.0" encoding="UTF-8" ?>
   <urlset
@@ -17,9 +17,15 @@ const sitemapUrl = (url: string): string => `<url>
   <priority>0.7</priority>
 </url>`;
 
-export const prepareSitemap = ({bucketUrl, metas}: {bucketUrl: string; metas: Meta[]}): string => {
+export const prepareSitemap = ({
+  bucketUrl,
+  metas
+}: {
+  bucketUrl: string;
+  metas: PublishMeta[];
+}): string => {
   const rootUrl: string = sitemapUrl(bucketUrl);
-  const postsUrls: string[] = metas.map(({pathname}: Meta) =>
+  const postsUrls: string[] = metas.map(({meta: {pathname}}: PublishMeta) =>
     sitemapUrl(`${bucketUrl}${pathname}`)
   );
 

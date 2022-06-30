@@ -20,7 +20,6 @@ export const deckPublish: DeckPublish = async ({
   await publishDeckMetas({
     storageUpload,
     publishData,
-    dataId: updatedDeck.id,
     owner_id: deck.data.owner_id
   });
 
@@ -43,7 +42,6 @@ export const docPublish: DocPublish = async ({
   await publishDocMetas({
     storageUpload,
     publishData,
-    dataId: updatedDoc.id,
     owner_id: doc.data.owner_id
   });
 
