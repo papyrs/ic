@@ -1,4 +1,5 @@
-import {Meta, toDate} from '@deckdeckgo/editor';
+import {toDate} from '@deckdeckgo/editor';
+import {PublishMeta} from '../types/publish.metas';
 
 const siteRSS = ({
   items,
@@ -23,9 +24,9 @@ const siteRSS = ({
 </rss>`;
 };
 
-const items = ({metas, bucketUrl}: {metas: Meta[]; bucketUrl: string}): string[] =>
+const items = ({metas, bucketUrl}: {metas: PublishMeta[]; bucketUrl: string}): string[] =>
   metas.map(
-    ({title, description, pathname, published_at}: Meta) => `
+    ({meta: {title, description, pathname, published_at}}: PublishMeta) => `
   <item>
     <title><![CDATA[${title}]]></title>
     <description><![CDATA[${description ?? title}]]></description>
@@ -41,7 +42,7 @@ export const prepareRSS = ({
   author
 }: {
   bucketUrl: string;
-  metas: Meta[];
+  metas: PublishMeta[];
   author: string;
 }): string => {
   const posts: string[] = items({metas, bucketUrl});

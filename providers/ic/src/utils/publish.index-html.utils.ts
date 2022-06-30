@@ -1,17 +1,16 @@
 import {Meta, PublishData, toDate} from '@deckdeckgo/editor';
 import {EnvStore} from '../stores/env.store';
+import {PublishMeta} from '../types/publish.metas';
 import {updateTemplate} from './publish.utils';
 
 export const prepareIndexHtml = async ({
-  dataId,
   bucketUrl,
   publishData,
   metas
 }: {
-  dataId: string;
   bucketUrl: string;
   publishData: PublishData;
-  metas: Meta[];
+  metas: PublishMeta[];
 }): Promise<string> => {
   const template: string = await htmlTemplate();
 
@@ -21,7 +20,6 @@ export const prepareIndexHtml = async ({
   html = updatePhotoUrl({html, photo_url});
 
   html = await updateList({
-    dataId,
     template: html,
     bucketUrl,
     metas
@@ -53,17 +51,17 @@ const updatePhotoUrl = ({
 };
 
 const updateList = async ({
-  dataId,
   template,
   bucketUrl,
   metas
 }: {
-  dataId: string;
   template: string;
   bucketUrl: string;
-  metas: Meta[];
+  metas: PublishMeta[];
 }): Promise<string> => {
-  const links: string[] = metas.map((meta: Meta) => newLink({dataId, meta, bucketUrl}));
+  const links: string[] = metas.map(({dataId, meta}: PublishMeta) =>
+    newLink({dataId, meta, bucketUrl})
+  );
 
   return template.replace(/<!-- DECKDECKGO_DATA -->/, links.join(''));
 };

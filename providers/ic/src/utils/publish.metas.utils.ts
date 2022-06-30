@@ -1,7 +1,8 @@
-import {Deck, Doc, log, Meta, PublishData, toDate} from '@deckdeckgo/editor';
+import {Deck, Doc, log, PublishData, toDate} from '@deckdeckgo/editor';
 import {_SERVICE as StorageBucketActor} from '../canisters/storage/storage.did';
 import {deckEntries} from '../providers/data/deck.providers';
 import {docEntries} from '../providers/data/doc.providers';
+import {PublishMeta} from '../types/publish.metas';
 import {prepareIndexHtml} from './publish.index-html.utils';
 import {prepareRSS} from './publish.rss.utils';
 import {prepareSitemap} from './publish.sitemap.utils';
@@ -10,12 +11,10 @@ import {upload} from './storage.utils';
 
 export const publishDeckMetas = async ({
   owner_id,
-  dataId,
   storageUpload,
   publishData
 }: {
   owner_id: string;
-  dataId: string;
   storageUpload: StorageUpload;
   publishData: PublishData;
 }): Promise<void> => {
@@ -25,17 +24,15 @@ export const publishDeckMetas = async ({
 
   log({msg: '[list][start] end'});
 
-  await publishMetas({storageUpload, publishData, dataId, entries: decks});
+  await publishMetas({storageUpload, publishData, entries: decks});
 };
 
 export const publishDocMetas = async ({
   owner_id,
-  dataId,
   storageUpload,
   publishData
 }: {
   owner_id: string;
-  dataId: string;
   storageUpload: StorageUpload;
   publishData: PublishData;
 }): Promise<void> => {
@@ -45,33 +42,44 @@ export const publishDocMetas = async ({
 
   log({msg: '[list][end] docs'});
 
-  await publishMetas({storageUpload, publishData, dataId, entries: docs});
+  await publishMetas({storageUpload, publishData, entries: docs});
 };
 
-const mapMetas = (entries: (Doc | Deck)[]): Meta[] =>
+const sortEntries = (entries: (Doc | Deck)[]): PublishMeta[] =>
   entries
     .filter(({data}: Doc | Deck) => data.meta?.published === true)
-    .map(({data}: Doc | Deck) => data.meta)
     .sort(
-      ({published_at: published_at_a}: Meta, {published_at: published_at_b}: Meta) =>
-        (toDate(published_at_b)?.getTime() || 0) - (toDate(published_at_a)?.getTime() || 0)
-    );
+      (
+        {
+          data: {
+            meta: {published_at: published_at_a}
+          }
+        }: Doc | Deck,
+        {
+          data: {
+            meta: {published_at: published_at_b}
+          }
+        }: Doc | Deck
+      ) => (toDate(published_at_b)?.getTime() || 0) - (toDate(published_at_a)?.getTime() || 0)
+    )
+    .map(({id, data: {meta}}: Doc | Deck) => ({
+      dataId: id,
+      meta
+    }));
 
 const publishMetas = async ({
-  dataId,
   storageUpload,
   publishData,
   entries
 }: {
-  dataId: string;
   storageUpload: StorageUpload;
   publishData: PublishData;
   entries: (Doc | Deck)[];
 }): Promise<void> => {
-  const metas: Meta[] = mapMetas(entries);
+  const metas: PublishMeta[] = sortEntries(entries);
 
   const promises: Promise<void>[] = [
-    publishIndexHtml({storageUpload, publishData, dataId, metas}),
+    publishIndexHtml({storageUpload, publishData, metas}),
     publishSitemap({storageUpload, metas}),
     publishRSS({storageUpload, metas, publishData})
   ];
@@ -85,7 +93,7 @@ export const publishRSS = async ({
   publishData
 }: {
   storageUpload: StorageUpload;
-  metas: Meta[];
+  metas: PublishMeta[];
   publishData: PublishData;
 }): Promise<void> => {
   const {bucketUrl, actor} = storageUpload;
@@ -102,7 +110,7 @@ export const publishSitemap = async ({
   metas
 }: {
   storageUpload: StorageUpload;
-  metas: Meta[];
+  metas: PublishMeta[];
 }): Promise<void> => {
   const {bucketUrl, actor} = storageUpload;
 
@@ -112,19 +120,17 @@ export const publishSitemap = async ({
 };
 
 const publishIndexHtml = async ({
-  dataId,
   storageUpload,
   publishData,
   metas
 }: {
-  dataId: string;
   storageUpload: StorageUpload;
   publishData: PublishData;
-  metas: Meta[];
+  metas: PublishMeta[];
 }): Promise<void> => {
   const {bucketUrl, actor} = storageUpload;
 
-  const html: string = await prepareIndexHtml({dataId, bucketUrl, publishData, metas});
+  const html: string = await prepareIndexHtml({bucketUrl, publishData, metas});
 
   await uploadIndexHtmlIC({html, actor});
 };
