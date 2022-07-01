@@ -19,10 +19,11 @@ export const prepareIndexHtml = async ({
   let html: string = updateTemplate({template, data});
   html = updatePhotoUrl({html, photo_url});
 
-  html = await updateList({
-    template: html,
+  html = updatePostsList({
+    content: html,
     bucketUrl,
-    metas
+    metas,
+    selector: /<!-- DECKDECKGO_DATA -->/
   });
 
   return html;
@@ -50,20 +51,22 @@ const updatePhotoUrl = ({
   );
 };
 
-const updateList = async ({
-  template,
+const updatePostsList = ({
+  content,
   bucketUrl,
-  metas
+  metas,
+  selector
 }: {
-  template: string;
+  content: string;
   bucketUrl: string;
   metas: PublishMeta[];
-}): Promise<string> => {
+  selector: RegExp | string;
+}): string => {
   const links: string[] = metas.map(({dataId, meta}: PublishMeta) =>
     newLink({dataId, meta, bucketUrl})
   );
 
-  return template.replace(/<!-- DECKDECKGO_DATA -->/, links.join(''));
+  return content.replace(selector, links.join(''));
 };
 
 const newLink = ({
@@ -98,4 +101,42 @@ const newLink = ({
   const editedAt: string = `<p>Edited: ${format(toDate(meta?.updated_at) ?? new Date())}</p>`;
 
   return `<a data-id="${dataId}" href="${fullUrl}" rel="noopener noreferrer"><article><h3>${title}</h3>${detail}${publishedAt}${editedAt}</article></a>`;
+};
+
+export const updateIndexHtmlPosts = async ({
+  metas,
+  bucketUrl
+}: {
+  bucketUrl: string;
+  metas: PublishMeta[];
+}): Promise<string> => {
+  const source: string | undefined = await htmlSource(bucketUrl);
+
+  if (!source) {
+    return;
+  }
+
+  // Remove all existing entries
+  const matches: RegExpMatchArray[] = [
+    ...source.matchAll(/<section id="posts"[\s\S]*?>([\s\S]*?)<\/section>/gm)
+  ];
+
+  // Match all + group that contains all posts
+  if (matches.length < 1 && matches[0].length < 2) {
+    return;
+  }
+
+  const currentPosts: string = matches[0][1];
+
+  return updatePostsList({content: source, metas, bucketUrl, selector: currentPosts});
+};
+
+const htmlSource = async (bucketUrl: string): Promise<string | undefined> => {
+  const response: Response = await fetch(bucketUrl);
+
+  if (response.ok) {
+    return response.text();
+  }
+
+  return undefined;
 };

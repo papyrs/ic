@@ -1,11 +1,14 @@
-import {Deck, DeckPublish, Doc, DocPublish, PublishUrl} from '@deckdeckgo/editor';
+import {Deck, DeckPublish, Doc, DocPublish, PublishUrl, UpdateLanding} from '@deckdeckgo/editor';
+import {Identity} from '@dfinity/agent';
 import {_SERVICE as StorageBucketActor} from '../../canisters/storage/storage.did';
+import {EnvStore} from '../../stores/env.store';
 import {BucketActor} from '../../utils/manager.utils';
 import {emitDeckPublished, publishDeck} from '../../utils/publish.deck.utils';
 import {emitDocPublished, publishDoc} from '../../utils/publish.doc.utils';
-import {publishDeckMetas, publishDocMetas} from '../../utils/publish.metas.utils';
+import {publishDeckMetas, publishDocMetas, updateIndexHtml} from '../../utils/publish.metas.utils';
 import {uploadResources} from '../../utils/publish.resources.utils';
 import {getStorageActor} from '../../utils/storage.utils';
+import {getIdentity} from '../auth/auth.providers';
 
 export const deckPublish: DeckPublish = async ({
   deck
@@ -50,7 +53,26 @@ export const docPublish: DocPublish = async ({
   return updatedDoc;
 };
 
-export const publishUrl: PublishUrl = async () => {
+export const publishUrl: PublishUrl = async (): Promise<string> => {
   const {bucketId}: BucketActor<StorageBucketActor> = await getStorageActor();
+
+  if (EnvStore.getInstance().localIdentity()) {
+    return `http://${bucketId.toText()}.localhost:8000`;
+  }
+
   return `https://${bucketId.toText()}.raw.ic0.app`;
+};
+
+export const updateLanding: UpdateLanding = async (): Promise<void> => {
+  const identity: Identity | undefined = getIdentity();
+
+  if (!identity) {
+    throw new Error(
+      'No internet identity provided to list the entries that should be listed on the landing page'
+    );
+  }
+
+  const bucketUrl: string = await publishUrl();
+
+  await updateIndexHtml({bucketUrl, identity});
 };
