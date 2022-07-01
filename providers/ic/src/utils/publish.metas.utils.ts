@@ -1,13 +1,15 @@
 import {Deck, Doc, log, PublishData, toDate} from '@deckdeckgo/editor';
+import {Identity} from '@dfinity/agent';
 import {_SERVICE as StorageBucketActor} from '../canisters/storage/storage.did';
 import {deckEntries} from '../providers/data/deck.providers';
 import {docEntries} from '../providers/data/doc.providers';
 import {PublishMeta} from '../types/publish.metas';
-import {prepareIndexHtml} from './publish.index-html.utils';
+import {BucketActor} from './manager.utils';
+import {prepareIndexHtml, updateIndexHtmlPosts} from './publish.index-html.utils';
 import {prepareRSS} from './publish.rss.utils';
 import {prepareSitemap} from './publish.sitemap.utils';
 import {getAuthor, StorageUpload} from './publish.utils';
-import {upload} from './storage.utils';
+import {getStorageActor, upload} from './storage.utils';
 
 export const publishDeckMetas = async ({
   owner_id,
@@ -45,7 +47,7 @@ export const publishDocMetas = async ({
   await publishMetas({storageUpload, publishData, entries: docs});
 };
 
-const sortEntries = (entries: (Doc | Deck)[]): PublishMeta[] =>
+export const sortPublishMetaEntries = (entries: (Doc | Deck)[]): PublishMeta[] =>
   entries
     .filter(({data}: Doc | Deck) => data.meta?.published === true)
     .sort(
@@ -76,7 +78,7 @@ const publishMetas = async ({
   publishData: PublishData;
   entries: (Doc | Deck)[];
 }): Promise<void> => {
-  const metas: PublishMeta[] = sortEntries(entries);
+  const metas: PublishMeta[] = sortPublishMetaEntries(entries);
 
   const promises: Promise<void>[] = [
     publishIndexHtml({storageUpload, publishData, metas}),
@@ -200,4 +202,23 @@ const uploadResourceIC = async ({
     fullPath,
     log
   });
+};
+
+export const updateIndexHtml = async ({
+  bucketUrl,
+  identity
+}: {
+  bucketUrl: string;
+  identity: Identity;
+}): Promise<void> => {
+  // userId actually not used to fetch the docs, we just pass it to not change the function definition
+  const docs: Doc[] = await docEntries(identity.getPrincipal().toText());
+
+  const metas: PublishMeta[] = sortPublishMetaEntries(docs);
+
+  const html: string = await updateIndexHtmlPosts({bucketUrl, metas});
+
+  const {actor}: BucketActor<StorageBucketActor> = await getStorageActor();
+
+  await uploadIndexHtmlIC({html, actor});
 };
