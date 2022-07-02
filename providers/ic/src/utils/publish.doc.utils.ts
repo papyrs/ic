@@ -70,10 +70,13 @@ const initDocIndexHTML = async ({
   doc: Doc;
   config: Record<string, string>;
 }): Promise<{html: string; publishData: DocPublishData}> => {
+  const {theme, socialImgPath} = config;
+
   const publishData: DocPublishData = await docPublishData({
     doc,
     fallbackAuthor: EnvStore.getInstance().get().author,
-    theme: config.theme
+    theme,
+    socialImgPath
   });
 
   const {paragraphs} = publishData;
