@@ -13,6 +13,10 @@ export namespace Components {
         "signInSuccess": () => void;
     }
 }
+export interface IcSigninCustomEvent<T> extends CustomEvent<T> {
+    detail: T;
+    target: HTMLIcSigninElement;
+}
 declare global {
     interface HTMLIcSigninElement extends Components.IcSignin, HTMLStencilElement {
     }
@@ -28,9 +32,9 @@ declare namespace LocalJSX {
     interface IcSignin {
         "config"?: Record<string, string>;
         "i18n"?: Record<string, Record<string, string>>;
-        "onDdgSignInError"?: (event: CustomEvent<string | undefined>) => void;
-        "onDdgSignInSuccess"?: (event: CustomEvent<void>) => void;
-        "onInProgress"?: (event: CustomEvent<boolean>) => void;
+        "onDdgSignInError"?: (event: IcSigninCustomEvent<string | undefined>) => void;
+        "onDdgSignInSuccess"?: (event: IcSigninCustomEvent<void>) => void;
+        "onInProgress"?: (event: IcSigninCustomEvent<boolean>) => void;
         "signInError"?: (err?: string) => void;
         "signInSuccess"?: () => void;
     }
