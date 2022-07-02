@@ -216,7 +216,12 @@ export const updateIndexHtml = async ({
 
   const metas: PublishMeta[] = sortPublishMetaEntries(docs);
 
-  const html: string = await updateIndexHtmlPosts({bucketUrl, metas});
+  const html: string | undefined = await updateIndexHtmlPosts({bucketUrl, metas});
+
+  // If we are not able to update the html we ignore the error, data were
+  if (!html) {
+    return;
+  }
 
   const {actor}: BucketActor<StorageBucketActor> = await getStorageActor();
 

@@ -109,11 +109,12 @@ export const updateIndexHtmlPosts = async ({
 }: {
   bucketUrl: string;
   metas: PublishMeta[];
-}): Promise<string> => {
+}): Promise<string | undefined> => {
+  // Note: local environment does not support cors currently therefore this will fail locally
   const source: string | undefined = await htmlSource(bucketUrl);
 
   if (!source) {
-    return;
+    return undefined;
   }
 
   // Remove all existing entries
@@ -123,7 +124,7 @@ export const updateIndexHtmlPosts = async ({
 
   // Match all + group that contains all posts
   if (matches.length < 1 && matches[0].length < 2) {
-    return;
+    return undefined;
   }
 
   const currentPosts: string = matches[0][1];

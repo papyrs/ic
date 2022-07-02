@@ -1,3 +1,7 @@
+# 0.0.14-1 (2022-07-02)
+
+- handle no blog to update on delete
+
 # 0.0.14 (2022-07-02)
 
 ### Features
