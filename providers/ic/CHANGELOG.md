@@ -1,3 +1,19 @@
+# 0.0.14 (2022-07-02)
+
+### Features
+
+- use first or second paragraphs image (if exists) as social image for the card - do not upload and publish auto-generated image in such case
+- publish social links (twitter etc.) on landing page
+- disable auth client `idle` detection
+
+### Fix
+
+- data ids on landing page
+
+### Build
+
+- bump dependencies including `agent-js` v0.12.0
+
 # 0.0.13 (2022-06-17)
 
 ### Features
