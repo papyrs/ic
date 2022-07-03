@@ -51,7 +51,7 @@ const loadWasm = (type) => {
 
     if (listOnly) {
       console.log(
-        'List buckets:',
+        `List ${filterList.length} buckets:`,
         filterList.map(({bucketId}) => bucketId[0].toText())
       );
       return;
