@@ -111,8 +111,8 @@ export const signOut: SignOut = async (): Promise<void> => {
 
 // How long the delegation identity should remain valid?
 // e.g. BigInt(7 * 24 * 60 * 60 * 1000 * 1000 * 1000) = 7 days in nanoseconds
-// For Papyrs: 1 hour
-const delegationIdentityExpiration: bigint = BigInt(60 * 60 * 1000 * 1000 * 1000);
+// For Papyrs: 4 hours
+const delegationIdentityExpiration: bigint = BigInt(4 * 60 * 60 * 1000 * 1000 * 1000);
 
 export const signIn = async ({
   onSuccess,

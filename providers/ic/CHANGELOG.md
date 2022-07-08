@@ -1,4 +1,12 @@
+# 0.0.15 (2022-07-08)
+
+### Features
+
+- bump session duration (`delegationIdentityExpiration`) to 4 hours
+
 # 0.0.14-1 (2022-07-02)
+
+### Fix
 
 - handle no blog to update on delete
 
