@@ -100,7 +100,7 @@ const newLink = ({
   )}</p>`;
   const editedAt: string = `<p>Edited: ${format(toDate(meta?.updated_at) ?? new Date())}</p>`;
 
-  return `<a data-id="${dataId}" href="${fullUrl}" rel="noopener noreferrer"><article><h3>${title}</h3>${detail}${publishedAt}${editedAt}</article></a>`;
+  return `<a data-id="${dataId}" href="${fullUrl}" rel="noopener noreferrer"><article><div><h3>${title}</h3>${detail}</div><div>${publishedAt}${editedAt}</div></article></a>`;
 };
 
 export const updateIndexHtmlPosts = async ({

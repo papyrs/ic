@@ -1,3 +1,9 @@
+# 0.0.15-1 (2022-07-08)
+
+### Features
+
+- add sub `div` to `article` in the landing page
+
 # 0.0.15 (2022-07-08)
 
 ### Features
