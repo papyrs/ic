@@ -1,6 +1,6 @@
 import pkgAgent from '@dfinity/agent';
 import fetch from 'node-fetch';
-import {idlFactory as nnsIdlFactory} from '../../ic/cycles/cycles.utils.did.mjs';
+import {idlFactory as cmcIdlFactory} from '../../ic/cmc/cmc.utils.did.mjs';
 import {E8S_PER_ICP, icpToE8s} from '../utils/icp.utils.mjs';
 
 const {HttpAgent, Actor} = pkgAgent;
@@ -8,7 +8,7 @@ const {HttpAgent, Actor} = pkgAgent;
 const icpXdrConversionRate = async () => {
   const agent = new HttpAgent({fetch, host: 'https://ic0.app'});
 
-  const actor = Actor.createActor(nnsIdlFactory, {
+  const actor = Actor.createActor(cmcIdlFactory, {
     agent,
     canisterId: 'rkp4c-7iaaa-aaaaa-aaaca-cai'
   });
