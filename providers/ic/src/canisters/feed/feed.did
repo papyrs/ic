@@ -1,0 +1,35 @@
+type Time = int;
+type FeedFilter = record {status: opt BlogPostStatus__1;};
+type Feed = 
+ service {
+   accept: (principal, text) -> ();
+   decline: (principal, text) -> ();
+   list: (opt FeedFilter) -> (vec record {
+                                    text;
+                                    BlogPost;
+                                  }) query;
+   submit: (text, BlogPost) -> ();
+ };
+type BlogPostStatus__1 = 
+ variant {
+   accepted;
+   declined;
+   open;
+ };
+type BlogPostStatus = 
+ variant {
+   accepted;
+   declined;
+   open;
+ };
+type BlogPost = 
+ record {
+   created_at: Time;
+   fullPath: text;
+   id: text;
+   meta: blob;
+   status: BlogPostStatus;
+   storageId: principal;
+   updated_at: Time;
+ };
+service : (text) -> Feed

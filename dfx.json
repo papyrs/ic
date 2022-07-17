@@ -3,6 +3,10 @@
     "manager": {
       "main": "canisters/src/manager/manager.mo",
       "type": "motoko"
+    },
+    "feed": {
+      "main": "canisters/src/feed/feed.mo",
+      "type": "motoko"
     }
   },
   "defaults": {
