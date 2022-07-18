@@ -1,5 +1,5 @@
 type Time = int;
-type FeedFilter = record {status: opt BlogPostStatus__1;};
+type FeedFilter = record {status: opt BlogPostStatus__2;};
 type Feed = 
  service {
    accept: (principal, text) -> ();
@@ -9,6 +9,13 @@ type Feed =
                                     BlogPost;
                                   }) query;
    submit: (text, BlogPost) -> ();
+   updateStatus: (principal, principal, text, BlogPostStatus) -> () oneway;
+ };
+type BlogPostStatus__2 = 
+ variant {
+   accepted;
+   declined;
+   open;
  };
 type BlogPostStatus__1 = 
  variant {
@@ -28,7 +35,7 @@ type BlogPost =
    fullPath: text;
    id: text;
    meta: blob;
-   status: BlogPostStatus;
+   status: BlogPostStatus__1;
    storageId: principal;
    updated_at: Time;
  };
