@@ -2,6 +2,7 @@ import Text "mo:base/Text";
 import HashMap "mo:base/HashMap";
 import Iter "mo:base/Iter";
 import Array "mo:base/Array";
+import Principal "mo:base/Principal";
 
 import Store "../stores/store";
 
@@ -12,19 +13,40 @@ module {
     type FeedFilter = Filter.FeedFilter;
 
     type BlogPost = FeedTypes.BlogPost;
+    type BlogPostStatus = FeedTypes.BlogPostStatus;
 
     public class FeedStore() {
         private let store: Store.Store<BlogPost> = Store.Store<BlogPost>();
 
-        public func put(key: Text, value: BlogPost) {
+        public func submit(blogPost: BlogPost) {
+            // Clone to prevent submitted entries with another status that #open
+            let post: BlogPost = cloneToStatus(blogPost, #open);
+
+            store.put(toKey(post.storageId, post.id), post);
+        };
+
+        public func updateStatus(storageId: Principal, id: Text, status: BlogPostStatus) {
+            let key: Text = toKey(storageId, id);
+            let post: ?BlogPost = get(toKey(storageId, id));
+
+            switch (post) {
+                case (?post) {
+                    let acceptedPost: BlogPost = cloneToStatus(post, status);
+                    put(key, acceptedPost);
+                };
+                case (null) {};
+            };
+        };
+
+        private func put(key: Text, value: BlogPost) {
             store.put(key, value);
         };
 
-        public func get(key: Text): ?BlogPost {
+        private func get(key: Text): ?BlogPost {
             return store.get(key);
         };
 
-        public func del(key: Text): ?BlogPost {
+        private func del(key: Text): ?BlogPost {
             return store.del(key);
         };
 
@@ -51,6 +73,22 @@ module {
 
                     return values;
                 };
+            };
+        };
+
+        private func toKey(storageId: Principal, id: Text): Text {
+            Principal.toText(storageId) # "-" # id
+        };
+
+        private func cloneToStatus(blogPost: BlogPost, status: BlogPostStatus): BlogPost {
+            {
+                id = blogPost.id;
+                fullPath = blogPost.fullPath;
+                meta = blogPost.meta;
+                storageId = blogPost.storageId;
+                status;
+                created_at = blogPost.created_at;
+                updated_at = blogPost.updated_at;
             };
         };
 

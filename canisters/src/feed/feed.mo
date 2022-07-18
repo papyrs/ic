@@ -29,30 +29,11 @@ actor class Feed(secret: Text) {
             throw Error.reject("Caller does not have the permission to submit a blog post.");
         };
 
-        // Clone to prevent submitted entries with another status that #open
-        let post: BlogPost = cloneToStatus(blogPost, #open);
-
-        feedStore.put(toKey(post.storageId, post.id), post);
+        feedStore.submit(blogPost);
     };
 
     private func validSecret(requestSecret: Text): Bool {
         requestSecret == secret;
-    };
-
-    private func toKey(storageId: Principal, id: Text): Text {
-        Principal.toText(storageId) # "-" # id
-    };
-
-    private func cloneToStatus(blogPost: BlogPost, status: BlogPostStatus): BlogPost {
-        {
-            id = blogPost.id;
-            fullPath = blogPost.fullPath;
-            meta = blogPost.meta;
-            storageId = blogPost.storageId;
-            status;
-            created_at = blogPost.created_at;
-            updated_at = blogPost.updated_at;
-        };
     };
 
     /**
@@ -68,28 +49,19 @@ actor class Feed(secret: Text) {
     };
 
     public shared({ caller }) func accept(storageId: Principal, id: Text) : async () {
-        await updateStatus(caller, storageId, id, #accepted);
+        updateStatus(caller, storageId, id, #accepted);
     };
 
     public shared({ caller }) func decline(storageId: Principal, id: Text) : async () {
-        await updateStatus(caller, storageId, id, #declined);
+        updateStatus(caller, storageId, id, #declined);
     };
 
-    private func updateStatus(caller: Principal, storageId: Principal, id: Text, status: BlogPostStatus) : async () {
+    private func updateStatus(caller: Principal, storageId: Principal, id: Text, status: BlogPostStatus) {
         if (not Utils.isAdmin(caller)) {
             throw Error.reject("Unauthorized access. Caller is not an admin." # Principal.toText(caller));
         };
 
-        let key: Text = toKey(storageId, id);
-        let post: ?BlogPost = feedStore.get(toKey(storageId, id));
-
-        switch (post) {
-            case (?post) {
-                let acceptedPost: BlogPost = cloneToStatus(post, status);
-                feedStore.put(key, acceptedPost);
-            };
-            case (null) {};
-        };
+        feedStore.updateStatus(storageId, id, status);
     };
 
     system func preupgrade() {
