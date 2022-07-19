@@ -49,14 +49,14 @@ actor class Feed(secret: Text) {
     };
 
     public shared({ caller }) func accept(storageId: Principal, id: Text) : async () {
-        updateStatus(caller, storageId, id, #accepted);
+        await updateStatus(caller, storageId, id, #accepted);
     };
 
     public shared({ caller }) func decline(storageId: Principal, id: Text) : async () {
-        updateStatus(caller, storageId, id, #declined);
+        await updateStatus(caller, storageId, id, #declined);
     };
 
-    private func updateStatus(caller: Principal, storageId: Principal, id: Text, status: BlogPostStatus) {
+    private func updateStatus(caller: Principal, storageId: Principal, id: Text, status: BlogPostStatus): async () {
         if (not Utils.isAdmin(caller)) {
             throw Error.reject("Unauthorized access. Caller is not an admin." # Principal.toText(caller));
         };
