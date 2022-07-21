@@ -3,6 +3,7 @@ import HashMap "mo:base/HashMap";
 import Iter "mo:base/Iter";
 import Array "mo:base/Array";
 import Principal "mo:base/Principal";
+import Time "mo:base/Time";
 
 import Store "../stores/store";
 
@@ -14,13 +15,13 @@ module {
 
     type BlogPost = FeedTypes.BlogPost;
     type BlogPostStatus = FeedTypes.BlogPostStatus;
+    type BlogPostSubmission = FeedTypes.BlogPostSubmission;
 
     public class FeedStore() {
         private let store: Store.Store<BlogPost> = Store.Store<BlogPost>();
 
-        public func submit(blogPost: BlogPost) {
-            // Clone to prevent submitted entries with another status that #open
-            let post: BlogPost = cloneToStatus(blogPost, #open);
+        public func submit(blogPost: BlogPostSubmission) {
+            let post: BlogPost = initBlogPost(blogPost);
 
             store.put(toKey(post.storageId, post.id), post);
         };
@@ -80,15 +81,27 @@ module {
             Principal.toText(storageId) # "-" # id
         };
 
+        private func initBlogPost(blogPost: BlogPostSubmission): BlogPost {
+            let now: Time.Time = Time.now();
+
+            return {
+                id = blogPost.id;
+                storageId = blogPost.storageId;
+                meta = blogPost.meta;
+                status = #open;
+                created_at = now;
+                updated_at = now;
+            };
+        };
+
         private func cloneToStatus(blogPost: BlogPost, status: BlogPostStatus): BlogPost {
             {
                 id = blogPost.id;
-                fullPath = blogPost.fullPath;
-                meta = blogPost.meta;
                 storageId = blogPost.storageId;
+                meta = blogPost.meta;
                 status;
                 created_at = blogPost.created_at;
-                updated_at = blogPost.updated_at;
+                updated_at = Time.now();
             };
         };
 

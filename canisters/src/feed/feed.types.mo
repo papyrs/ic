@@ -16,16 +16,19 @@ module {
 
     public type BlogPost = {
         id: Text;
-
         storageId: Principal;
-        fullPath: Text;
+        meta: Blob;
 
         status: BlogPostStatus;
 
-        meta: Blob;
-
         created_at: Time.Time;
         updated_at: Time.Time;
+    };
+
+    public type BlogPostSubmission = {
+        id: Text;
+        storageId: Principal;
+        meta: Blob;
     };
 
 }

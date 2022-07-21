@@ -15,6 +15,7 @@ actor class Feed(secret: Text) {
 
     type BlogPostStatus = FeedTypes.BlogPostStatus;
     type BlogPost = FeedTypes.BlogPost;
+    type BlogPostSubmission = FeedTypes.BlogPostSubmission;
 
     let feedStore: FeedStore.FeedStore = FeedStore.FeedStore();
 
@@ -24,7 +25,7 @@ actor class Feed(secret: Text) {
     /**
      * The caller should know the pseudo secret (to try to limit spam submission) to submit a blog post.
     */
-    public shared({ caller }) func submit(secret: Text, blogPost: BlogPost) : async () {
+    public shared({ caller }) func submit(secret: Text, blogPost: BlogPostSubmission) : async () {
         if (not validSecret(secret)) {
             throw Error.reject("Caller does not have the permission to submit a blog post.");
         };
