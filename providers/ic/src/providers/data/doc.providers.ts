@@ -15,16 +15,22 @@ export const snapshotDoc: SnapshotDoc = async ({
   onNext: (snapshot: Doc) => Promise<void>;
   onError?: (error: string) => void;
 }): Promise<() => void | undefined> => {
-  document.addEventListener(
-    'docPublished',
-    async ({detail}: CustomEvent<Doc>) => await onNext(detail),
-    {passive: true}
+  const events = ['docPublished', 'docFeedSubmitted'];
+
+  events.forEach((eventName: string) =>
+    document.addEventListener(
+      eventName,
+      async ({detail}: CustomEvent<Doc>) => await onNext(detail),
+      {passive: true}
+    )
   );
 
   return () =>
-    document.removeEventListener(
-      'docPublished',
-      ({detail}: CustomEvent<Doc>) => onNext(detail),
-      false
+    events.forEach((eventName: string) =>
+      document.removeEventListener(
+        eventName,
+        async ({detail}: CustomEvent<Doc>) => await onNext(detail),
+        false
+      )
     );
 };
