@@ -8,7 +8,7 @@ import {createFeedActor} from '../../utils/feed.utils';
 import {BucketActor, getStorageBucket} from '../../utils/manager.utils';
 import {getIdentity} from '../auth/auth.providers';
 
-export const submitFeed = async ({meta, docId}: {meta: Meta; docId: string}) => {
+export const submitFeed = async ({meta, id}: {meta: Meta; id: string}) => {
   const identity: Identity | undefined = getIdentity();
 
   if (!identity) {
@@ -31,7 +31,7 @@ export const submitFeed = async ({meta, docId}: {meta: Meta; docId: string}) => 
   const feedSecret: string = EnvStore.getInstance().get().feedSecret;
 
   await feedActor.submit(feedSecret, {
-    id: docId,
+    id: id,
     storageId: storageBucketId,
     meta: await toArray(meta)
   });
