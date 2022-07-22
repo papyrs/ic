@@ -36,11 +36,14 @@ const listProposals = async ({type, actor}) => {
       ([
         key,
         {
-          proposal: {pathname}
+          proposal: {meta: {title, description, tags}, pathname}
         }
       ]) => ({
         key,
-        url: `${publishUrl({key, local: true})}${pathname}`
+        url: `${publishUrl({key, local: true})}${pathname}`,
+        title,
+        description: description?.[0],
+        tags: tags?.[0]
       })
     )
   );
