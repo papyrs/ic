@@ -5,7 +5,7 @@
 
 # Internet Computer
 
-Backend canisters and providers of [Papyrs].
+Backend canister smart contracts and frontend providers of [Papyrs].
 
 ## License
 

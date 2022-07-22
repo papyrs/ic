@@ -2,7 +2,7 @@
   "name": "ic",
   "version": "0.0.15-1",
   "author": "David Dal Busco",
-  "description": "Backend canisters and providers of Papyrs",
+  "description": "Backend canister smart contracts and frontend providers Papyrs",
   "private": true,
   "scripts": {
     "ic:admin": "node ./scripts/ic.admin.mjs",
