@@ -1,4 +1,4 @@
-import {feedActorLocal} from './actors/feed.actors.mjs';
+import { feedActorIC } from "./actors/feed.actors.mjs";
 import pkgPrincipal from '@dfinity/principal';
 
 const {Principal} = pkgPrincipal;
@@ -91,7 +91,7 @@ const updateStatus = async ({actor, action}) => {
   }
 
   try {
-    const actor = await feedActorLocal();
+    const actor = await feedActorIC();
 
     const list = process.argv.find((arg) => arg.indexOf('--list-proposals') > -1) !== undefined;
 
