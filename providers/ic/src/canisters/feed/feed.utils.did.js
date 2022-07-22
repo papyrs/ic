@@ -60,7 +60,7 @@ export const idlFactory = ({IDL}) => {
   const Feed = IDL.Service({
     accept: IDL.Func([IDL.Principal, IDL.Text], [], []),
     decline: IDL.Func([IDL.Principal, IDL.Text], [], []),
-    list: IDL.Func([IDL.Opt(PostFilter)], [IDL.Vec(IDL.Tuple(IDL.Text, Post))], []),
+    list: IDL.Func([IDL.Opt(PostFilter)], [IDL.Vec(IDL.Tuple(IDL.Text, Post))], ['query']),
     listProposals: IDL.Func(
       [IDL.Opt(ProposalFilter)],
       [IDL.Vec(IDL.Tuple(IDL.Text, ProposalEntry))],

@@ -72,7 +72,7 @@ type Feed =
    list: (opt PostFilter) -> (vec record {
                                     text;
                                     Post;
-                                  });
+                                  }) query;
    listProposals: (opt ProposalFilter) ->
     (vec record {
            text;
