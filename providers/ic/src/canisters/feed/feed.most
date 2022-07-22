@@ -1,0 +1,26 @@
+// Version: 1.0.0
+type Post =
+  {
+    created_at : Time;
+    id : Text;
+    meta : Blob;
+    storageId : canister_id;
+    updated_at : Time
+  };
+type Post__3 = Post;
+type Proposal = {id : Text; meta : Blob; storageId : canister_id};
+type ProposalEntry =
+  {
+    created_at : Time;
+    proposal : Proposal;
+    status : ProposalStatus;
+    updated_at : Time
+  };
+type ProposalEntry__3 = ProposalEntry;
+type ProposalStatus = {#accepted; #declined; #open};
+type Time = Int;
+type canister_id = Principal;
+actor {
+  stable var postEntries : [(Text, Post__3)];
+  stable var proposalEntries : [(Text, ProposalEntry__3)]
+};
