@@ -27,7 +27,8 @@ export const updateTemplateSocialImage = ({
 };
 
 // User used an image in the first or second paragraph and we gonna use it for the social card assuming assuming crawlers can use it too
-const hasSocialImageLink = ({social_image_link}: PublishData): boolean => social_image_link !== undefined
+const hasSocialImageLink = ({social_image_link}: PublishData): boolean =>
+  social_image_link !== undefined;
 
 export const uploadSocialImage = async ({
   storageUpload,
