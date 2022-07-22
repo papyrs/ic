@@ -1,4 +1,4 @@
-import { feedActorLocal } from "./actors/feed.actors.mjs";
+import {feedActorLocal} from './actors/feed.actors.mjs';
 
 const publishUrl = ({key, local}) => {
   const [storageId, _id] = key.split('___');
@@ -26,9 +26,19 @@ const listProposals = async ({type, actor}) => {
 
   console.log(
     `List ${proposals.length} proposals:`,
-    proposals.map(([key, {proposal: {pathname}}]) => `${publishUrl({key, local: true})}${pathname}`)
+    proposals.map(
+      ([
+        key,
+        {
+          proposal: {pathname}
+        }
+      ]) => ({
+        key,
+        url: `${publishUrl({key, local: true})}${pathname}`
+      })
+    )
   );
-}
+};
 
 (async () => {
   const help = process.argv.find((arg) => arg.indexOf('--help') > -1);
@@ -44,8 +54,7 @@ const listProposals = async ({type, actor}) => {
   try {
     const actor = await feedActorLocal();
 
-    const list =
-      process.argv.find((arg) => arg.indexOf('--list-proposals') > -1) !== undefined;
+    const list = process.argv.find((arg) => arg.indexOf('--list-proposals') > -1) !== undefined;
 
     if (list) {
       const type =
