@@ -1,6 +1,6 @@
 {
   "name": "ic",
-  "version": "0.0.15-1",
+  "version": "0.0.16",
   "author": "David Dal Busco",
   "description": "Backend canister smart contracts and frontend providers Papyrs",
   "private": true,

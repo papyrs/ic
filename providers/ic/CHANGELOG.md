@@ -1,3 +1,9 @@
+# 0.0.16 (2022-07-22)
+
+### Features
+
+- optionally submit blog posts to new "Feed" canister smart contract
+
 # 0.0.15-1 (2022-07-08)
 
 ### Features
