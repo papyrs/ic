@@ -4,6 +4,8 @@ The project [IC](https://github.com/papyrs/ic) of Papyrs is released under the G
 
 The infrastructure of Papyrs - i.e. the canister `kulzz-yaaaa-aaaal-aai3a-cai` and CDN must not be used unless special agreements have been concluded with Papyrs.
 
+Except its public endpoints, the canister `undmj-fiaaa-aaaan-qaocq-cai` must not be used either.
+
 Third-party services (Unsplash, Tenor) shall not be used with the keys of Papyrs.
 
 Papyrs is developed by [David Dal Busco](mailto:david.dalbusco@outlook.com) and [Nicolas Mattia](mailto:nicolas@nmattia.com).
