@@ -1,4 +1,6 @@
+import type {ActorMethod} from '@dfinity/agent';
 import type {Principal} from '@dfinity/principal';
+
 export interface Bucket {
   owner: UserId;
   bucketId: [] | [BucketId];
@@ -6,14 +8,14 @@ export interface Bucket {
 export type BucketId = Principal;
 export type UserId = Principal;
 export interface _SERVICE {
-  cyclesBalance: () => Promise<bigint>;
-  delData: () => Promise<boolean>;
-  delStorage: () => Promise<boolean>;
-  getData: () => Promise<[] | [Bucket]>;
-  getStorage: () => Promise<[] | [Bucket]>;
-  initData: () => Promise<Bucket>;
-  initStorage: () => Promise<Bucket>;
-  installCode: (arg_0: Principal, arg_1: Array<number>, arg_2: Array<number>) => Promise<undefined>;
-  list: (arg_0: string) => Promise<Array<Bucket>>;
-  transferCycles: (arg_0: Principal, arg_1: bigint) => Promise<undefined>;
+  cyclesBalance: ActorMethod<[], bigint>;
+  delData: ActorMethod<[], boolean>;
+  delStorage: ActorMethod<[], boolean>;
+  getData: ActorMethod<[], [] | [Bucket]>;
+  getStorage: ActorMethod<[], [] | [Bucket]>;
+  initData: ActorMethod<[], Bucket>;
+  initStorage: ActorMethod<[], Bucket>;
+  installCode: ActorMethod<[Principal, Array<number>, Array<number>], undefined>;
+  list: ActorMethod<[string], Array<Bucket>>;
+  transferCycles: ActorMethod<[Principal, bigint], undefined>;
 }

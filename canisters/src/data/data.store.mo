@@ -3,48 +3,44 @@ import HashMap "mo:base/HashMap";
 import Iter "mo:base/Iter";
 import Array "mo:base/Array";
 
+import Store "../stores/store";
+
 import Filter "./data.filter";
+import DataTypes "./data.types";
 
 module {
     type DataFilter = Filter.DataFilter;
 
-    public class DataStore<T>() {
-        private var data: HashMap.HashMap<Text, T> = HashMap.HashMap<Text, T>(10, Text.equal, Text.hash);
+    type Data = DataTypes.Data;
 
-        public func put(key: Text, value: T) {
-            data.put(key, value);
+    public class DataStore() {
+        private let store: Store.Store<Data> = Store.Store<Data>();
+
+        public func put(key: Text, value: Data) {
+            store.put(key, value);
         };
 
-        public func get(key: Text): ?T {
-            return data.get(key);
+        public func get(key: Text): ?Data {
+            return store.get(key);
         };
 
-        public func del(key: Text): ?T {
-            let entry: ?T = get(key);
-
-            switch (entry) {
-                case (?entry) {
-                    data.delete(key);
-                };
-                case (null) {};
-            };
-
-            return entry;
+        public func del(key: Text): ?Data {
+            return store.del(key);
         };
 
-        public func entries(filter: ?DataFilter): [(Text, T)] {
-            let entries: Iter.Iter<(Text, T)> = data.entries();
+        public func entries(filter: ?DataFilter): [(Text, Data)] {
+            let entries: Iter.Iter<(Text, Data)> = store.entries();
 
             switch (filter) {
                 case null {
                     return Iter.toArray(entries);
                 };
                 case (?filter) {
-                    let keyValues: [(Text, T)] = Iter.toArray(entries);
+                    let keyValues: [(Text, Data)] = Iter.toArray(entries);
 
                     let {startsWith; notContains} = filter;
 
-                    let values: [(Text, T)] = Array.mapFilter<(Text, T), (Text, T)>(keyValues, func ((key: Text, value: T)) : ?(Text, T) {
+                    let values: [(Text, Data)] = Array.mapFilter<(Text, Data), (Text, Data)>(keyValues, func ((key: Text, value: Data)) : ?(Text, Data) {
                         if (Filter.startsWith(key, startsWith) and Filter.notContains(key, notContains)) {
                             return ?(key, value);
                         };
@@ -58,12 +54,12 @@ module {
             };
         };
 
-        public func preupgrade(): HashMap.HashMap<Text, T> {
-            return data;
+        public func preupgrade(): HashMap.HashMap<Text, Data> {
+            return store.preupgrade();
         };
 
-        public func postupgrade(stableData: [(Text, T)]) {
-            data := HashMap.fromIter<Text, T>(stableData.vals(), 10, Text.equal, Text.hash);
+        public func postupgrade(stableData: [(Text, Data)]) {
+            store.postupgrade(stableData);
         };
     }
 }

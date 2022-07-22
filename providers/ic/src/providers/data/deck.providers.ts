@@ -15,16 +15,22 @@ export const snapshotDeck: SnapshotDeck = async ({
   onNext: (snapshot: Deck) => Promise<void>;
   onError?: (error: string) => void;
 }): Promise<() => void | undefined> => {
-  document.addEventListener(
-    'deckPublished',
-    async ({detail}: CustomEvent<Deck>) => await onNext(detail),
-    {passive: true}
+  const events = ['deckPublished', 'deckFeedSubmitted'];
+
+  events.forEach((eventName: string) =>
+    document.addEventListener(
+      eventName,
+      async ({detail}: CustomEvent<Deck>) => await onNext(detail),
+      {passive: true}
+    )
   );
 
   return () =>
-    document.removeEventListener(
-      'deckPublished',
-      ({detail}: CustomEvent<Deck>) => onNext(detail),
-      false
+    events.forEach((eventName: string) =>
+      document.removeEventListener(
+        eventName,
+        ({detail}: CustomEvent<Deck>) => onNext(detail),
+        false
+      )
     );
 };

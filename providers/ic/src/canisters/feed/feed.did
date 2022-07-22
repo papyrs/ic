@@ -1,0 +1,83 @@
+type canister_id = principal;
+type Time = int;
+type Proposal__1 = 
+ record {
+   id: text;
+   meta: ProposalMeta;
+   pathname: text;
+   storageId: canister_id;
+ };
+type ProposalStatus__1 = 
+ variant {
+   accepted;
+   declined;
+   open;
+ };
+type ProposalStatus = 
+ variant {
+   accepted;
+   declined;
+   open;
+ };
+type ProposalMeta = 
+ record {
+   author: opt ProposalAuthor;
+   description: opt text;
+   tags: opt vec text;
+   title: text;
+ };
+type ProposalFilter = record {status: opt ProposalStatus;};
+type ProposalEntry = 
+ record {
+   created_at: Time;
+   proposal: Proposal__1;
+   status: ProposalStatus__1;
+   updated_at: Time;
+ };
+type ProposalAuthorSocial = 
+ record {
+   custom: opt text;
+   github: opt text;
+   linkedin: opt text;
+   twitter: opt text;
+ };
+type ProposalAuthor = 
+ record {
+   bio: opt text;
+   name: text;
+   photo_url: opt text;
+   social: opt ProposalAuthorSocial;
+ };
+type Proposal = 
+ record {
+   id: text;
+   meta: ProposalMeta;
+   pathname: text;
+   storageId: canister_id;
+ };
+type PostFilter = record {storageId: opt canister_id;};
+type Post = 
+ record {
+   created_at: Time;
+   id: text;
+   meta: ProposalMeta;
+   pathname: text;
+   storageId: canister_id;
+   updated_at: Time;
+ };
+type Feed = 
+ service {
+   accept: (principal, text) -> ();
+   decline: (principal, text) -> ();
+   list: (opt PostFilter) -> (vec record {
+                                    text;
+                                    Post;
+                                  });
+   listProposals: (opt ProposalFilter) ->
+    (vec record {
+           text;
+           ProposalEntry;
+         }) query;
+   submit: (text, Proposal) -> ();
+ };
+service : (text) -> Feed

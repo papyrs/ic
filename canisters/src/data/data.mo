@@ -26,7 +26,7 @@ actor class DataBucket(owner: Types.UserId) = this {
 
   private let walletUtils: WalletUtils.WalletUtils = WalletUtils.WalletUtils();
 
-  private let store: DataStore.DataStore<Data> = DataStore.DataStore<Data>();
+  private let store: DataStore.DataStore = DataStore.DataStore();
 
   // Preserve the application state on upgrades
   private stable var entries : [(Text, Data)] = [];

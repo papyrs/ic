@@ -64,9 +64,12 @@ const copyFile = async ({srcPath, destPath}) => {
   writeFileSync(destPath.replace('.did.js', '.utils.did.js'), output);
 };
 
-const copyAdminManagerMjs = ({src}) => {
+const copyMjsForScripts = ({src}) => {
   const buffer = readFileSync(`${src}manager/manager.did.js`);
   writeFileSync(`${src}manager/manager.did.mjs`, buffer.toString('utf-8'));
+
+  const feedBuffer = readFileSync(`${src}feed/feed.did.js`);
+  writeFileSync(`${src}feed/feed.did.mjs`, feedBuffer.toString('utf-8'));
 };
 
 (async () => {
@@ -77,7 +80,7 @@ const copyAdminManagerMjs = ({src}) => {
       await copyTypes({src: `.dfx/ic/canisters/`});
     }
 
-    copyAdminManagerMjs({src: '.dfx/local/canisters/'});
+    copyMjsForScripts({src: '.dfx/local/canisters/'});
 
     console.log(`Internet Computer types declarations generated!`);
   } catch (err) {

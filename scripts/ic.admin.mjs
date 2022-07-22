@@ -1,4 +1,4 @@
-import {managerActorIC} from "./utils/actor.utils.mjs";
+import {managerActorIC} from "./actors/manager.actors.mjs";
 import {icpToCycles} from "./services/cycles.services.mjs";
 
 const queryBalance = async ({actor}) => {
