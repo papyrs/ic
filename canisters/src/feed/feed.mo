@@ -37,7 +37,7 @@ actor class Feed(secret: Text) {
         proposalStore.submit(proposal);
     };
 
-    public shared func list(filter: ?PostFilter) : async [(Text, Post)] {
+    public shared query func list(filter: ?PostFilter) : async [(Text, Post)] {
         return postStore.entries(filter);
     };
 
