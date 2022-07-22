@@ -32,6 +32,7 @@ module {
             let post: Post = {
                 id = proposal.id;
                 storageId = proposal.storageId;
+                pathname = proposal.pathname;
                 meta = proposal.meta;
                 
                 created_at = now;

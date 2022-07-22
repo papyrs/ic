@@ -3,12 +3,23 @@ type Post =
   {
     created_at : Time;
     id : Text;
-    meta : Blob;
+    meta : ProposalMeta;
+    pathname : Text;
     storageId : canister_id;
     updated_at : Time
   };
 type Post__3 = Post;
-type Proposal = {id : Text; meta : Blob; storageId : canister_id};
+type Proposal =
+  {id : Text; meta : ProposalMeta; pathname : Text; storageId : canister_id};
+type ProposalAuthor =
+  {
+    bio : ?Text;
+    name : Text;
+    photo_url : ?Text;
+    social : ?ProposalAuthorSocial
+  };
+type ProposalAuthorSocial =
+  {custom : ?Text; github : ?Text; linkedin : ?Text; twitter : ?Text};
 type ProposalEntry =
   {
     created_at : Time;
@@ -17,6 +28,13 @@ type ProposalEntry =
     updated_at : Time
   };
 type ProposalEntry__3 = ProposalEntry;
+type ProposalMeta =
+  {
+    author : ?ProposalAuthor;
+    description : ?Text;
+    tags : ?[Text];
+    title : Text
+  };
 type ProposalStatus = {#accepted; #declined; #open};
 type Time = Int;
 type canister_id = Principal;

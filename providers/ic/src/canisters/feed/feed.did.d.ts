@@ -11,7 +11,8 @@ export interface Feed {
 export interface Post {
   id: string;
   updated_at: Time;
-  meta: Array<number>;
+  meta: ProposalMeta;
+  pathname: string;
   storageId: canister_id;
   created_at: Time;
 }
@@ -20,8 +21,21 @@ export interface PostFilter {
 }
 export interface Proposal {
   id: string;
-  meta: Array<number>;
+  meta: ProposalMeta;
+  pathname: string;
   storageId: canister_id;
+}
+export interface ProposalAuthor {
+  bio: [] | [string];
+  photo_url: [] | [string];
+  social: [] | [ProposalAuthorSocial];
+  name: string;
+}
+export interface ProposalAuthorSocial {
+  linkedin: [] | [string];
+  twitter: [] | [string];
+  custom: [] | [string];
+  github: [] | [string];
 }
 export interface ProposalEntry {
   status: ProposalStatus__1;
@@ -32,11 +46,18 @@ export interface ProposalEntry {
 export interface ProposalFilter {
   status: [] | [ProposalStatus];
 }
+export interface ProposalMeta {
+  title: string;
+  tags: [] | [Array<string>];
+  description: [] | [string];
+  author: [] | [ProposalAuthor];
+}
 export type ProposalStatus = {open: null} | {accepted: null} | {declined: null};
 export type ProposalStatus__1 = {open: null} | {accepted: null} | {declined: null};
 export interface Proposal__1 {
   id: string;
-  meta: Array<number>;
+  meta: ProposalMeta;
+  pathname: string;
   storageId: canister_id;
 }
 export type Time = bigint;

@@ -2,10 +2,29 @@ export const idlFactory = ({IDL}) => {
   const canister_id = IDL.Principal;
   const PostFilter = IDL.Record({storageId: IDL.Opt(canister_id)});
   const Time = IDL.Int;
+  const ProposalAuthorSocial = IDL.Record({
+    linkedin: IDL.Opt(IDL.Text),
+    twitter: IDL.Opt(IDL.Text),
+    custom: IDL.Opt(IDL.Text),
+    github: IDL.Opt(IDL.Text)
+  });
+  const ProposalAuthor = IDL.Record({
+    bio: IDL.Opt(IDL.Text),
+    photo_url: IDL.Opt(IDL.Text),
+    social: IDL.Opt(ProposalAuthorSocial),
+    name: IDL.Text
+  });
+  const ProposalMeta = IDL.Record({
+    title: IDL.Text,
+    tags: IDL.Opt(IDL.Vec(IDL.Text)),
+    description: IDL.Opt(IDL.Text),
+    author: IDL.Opt(ProposalAuthor)
+  });
   const Post = IDL.Record({
     id: IDL.Text,
     updated_at: Time,
-    meta: IDL.Vec(IDL.Nat8),
+    meta: ProposalMeta,
+    pathname: IDL.Text,
     storageId: canister_id,
     created_at: Time
   });
@@ -22,7 +41,8 @@ export const idlFactory = ({IDL}) => {
   });
   const Proposal__1 = IDL.Record({
     id: IDL.Text,
-    meta: IDL.Vec(IDL.Nat8),
+    meta: ProposalMeta,
+    pathname: IDL.Text,
     storageId: canister_id
   });
   const ProposalEntry = IDL.Record({
@@ -33,7 +53,8 @@ export const idlFactory = ({IDL}) => {
   });
   const Proposal = IDL.Record({
     id: IDL.Text,
-    meta: IDL.Vec(IDL.Nat8),
+    meta: ProposalMeta,
+    pathname: IDL.Text,
     storageId: canister_id
   });
   const Feed = IDL.Service({

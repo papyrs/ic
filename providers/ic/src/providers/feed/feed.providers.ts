@@ -13,7 +13,7 @@ import {_SERVICE as FeedActor} from '../../canisters/feed/feed.did';
 import {_SERVICE as StorageBucketActor} from '../../canisters/storage/storage.did';
 import {EnvStore} from '../../stores/env.store';
 import {setData} from '../../utils/data.utils';
-import {toArray} from '../../utils/did.utils';
+import {toNullable} from '../../utils/did.utils';
 import {createFeedActor} from '../../utils/feed.utils';
 import {BucketActor, getStorageBucket} from '../../utils/manager.utils';
 import {getIdentity} from '../auth/auth.providers';
@@ -78,10 +78,40 @@ const submitFeed = async ({meta, id}: {meta: Meta; id: string}) => {
 
   const feedSecret: string = EnvStore.getInstance().get().feedSecret;
 
+  const {pathname, title, description, tags, author} = meta;
+
+  if (!pathname) {
+    throw new Error('No pathname found. Is the document published?');
+  }
+
   await feedActor.submit(feedSecret, {
     id: id,
     storageId: storageBucketId,
-    meta: await toArray(meta)
+    pathname: meta.pathname,
+    meta: {
+      title,
+      description: toNullable(description),
+      tags: toNullable(tags),
+      author: toNullable(
+        author
+          ? {
+              name: author.name,
+              bio: toNullable(author.bio),
+              photo_url: toNullable(author.photo_url),
+              social: toNullable(
+                author.social
+                  ? {
+                      twitter: toNullable(author.social.twitter),
+                      linkedin: toNullable(author.social.linkedin),
+                      github: toNullable(author.social.github),
+                      custom: toNullable(author.social.custom)
+                    }
+                  : undefined
+              )
+            }
+          : undefined
+      )
+    }
   });
 
   const t1 = performance.now();

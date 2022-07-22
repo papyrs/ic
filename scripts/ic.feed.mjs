@@ -26,7 +26,7 @@ const listProposals = async ({type, actor}) => {
 
   console.log(
     `List ${proposals.length} proposals:`,
-    proposals.map(([key, proposal]) => publishUrl({key, local: true}))
+    proposals.map(([key, {proposal: {pathname}}]) => `${publishUrl({key, local: true})}${pathname}`)
   );
 }
 
