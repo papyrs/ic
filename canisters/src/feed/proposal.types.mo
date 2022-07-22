@@ -1,34 +1,38 @@
 import Text "mo:base/Text";
 import Time "mo:base/Time";
 import Blob "mo:base/Blob";
-import Principal "mo:base/Principal";
+
+import IC "../types/ic.types";
 
 module {
 
     /**
      * Blog post status is meant to prevent SPAM and submission that does not comply with the terms of use
      */
-    public type BlogPostStatus = {
+    public type ProposalStatus = {
         #open;
         #declined;
         #accepted;
     };
 
-    public type BlogPost = {
+    /**
+     * The blog post proposal submitted by the user
+     */
+    public type Proposal = {
         id: Text;
-        storageId: Principal;
+        storageId: IC.canister_id;
         meta: Blob;
+    };
 
-        status: BlogPostStatus;
+    /**
+     * The type saved in memory for the proposal
+     */
+    public type ProposalEntry = {
+        proposal: Proposal;
+
+        status: ProposalStatus;
 
         created_at: Time.Time;
         updated_at: Time.Time;
     };
-
-    public type BlogPostSubmission = {
-        id: Text;
-        storageId: Principal;
-        meta: Blob;
-    };
-
 }

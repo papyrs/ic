@@ -3,34 +3,42 @@ import Error "mo:base/Error";
 import Principal "mo:base/Principal";
 import Iter "mo:base/Iter";
 
-import Filter "./feed.filter";
-import FeedStore "./feed.store";
-import FeedTypes "./feed.types";
+import PostFilter "./post.filter";
+import PostStore "./post.store";
+import PostTypes "./post.types";
+
+import ProposalFilter "./proposal.filter";
+import ProposalStore "./proposal.store";
+import ProposalTypes "./proposal.types";
 
 import Utils "../utils/utils";
 
 actor class Feed(secret: Text) {
 
-    type FeedFilter = Filter.FeedFilter;
+    type Post = PostTypes.Post;
+    type PostFilter = PostFilter.PostFilter;
 
-    type BlogPostStatus = FeedTypes.BlogPostStatus;
-    type BlogPost = FeedTypes.BlogPost;
-    type BlogPostSubmission = FeedTypes.BlogPostSubmission;
+    type Proposal = ProposalTypes.Proposal;
+    type ProposalEntry = ProposalTypes.ProposalEntry;
+    type ProposalFilter = ProposalFilter.ProposalFilter;
+    type ProposalStatus = ProposalTypes.ProposalStatus;
 
-    let feedStore: FeedStore.FeedStore = FeedStore.FeedStore();
-
-    // Preserve the application state on upgrades
-    private stable var entries : [(Text, BlogPost)] = [];
+    let postStore: PostStore.PostStore = PostStore.PostStore();
+    let proposalStore: ProposalStore.ProposalStore = ProposalStore.ProposalStore();
 
     /**
-     * The caller should know the pseudo secret (to try to limit spam submission) to submit a blog post.
+     * The caller should know the pseudo secret (to try to limit spam proposal) to submit a blog post.
     */
-    public shared({ caller }) func submit(secret: Text, blogPost: BlogPostSubmission) : async () {
+    public shared({ caller }) func submit(secret: Text, proposal: Proposal) : async () {
         if (not validSecret(secret)) {
             throw Error.reject("Caller does not have the permission to submit a blog post.");
         };
 
-        feedStore.submit(blogPost);
+        proposalStore.submit(proposal);
+    };
+
+    public shared func list(filter: ?PostFilter) : async [(Text, Post)] {
+        return postStore.entries(filter);
     };
 
     private func validSecret(requestSecret: Text): Bool {
@@ -41,36 +49,57 @@ actor class Feed(secret: Text) {
      * Admin: restricted for admin
      */
 
-    public shared query({ caller }) func list(filter: ?FeedFilter) : async [(Text, BlogPost)] {
+    public shared query({ caller }) func listProposals(filter: ?ProposalFilter) : async [(Text, ProposalEntry)] {
         if (not Utils.isAdmin(caller)) {
             throw Error.reject("Unauthorized access. Caller is not an admin." # Principal.toText(caller));
         };
 
-        return feedStore.entries(filter);
+        return proposalStore.entries(filter);
     };
 
     public shared({ caller }) func accept(storageId: Principal, id: Text) : async () {
         await updateStatus(caller, storageId, id, #accepted);
+
+        let entry: ?ProposalEntry = proposalStore.get(storageId, id);
+
+        switch (entry) {
+            case (?entry) {
+                postStore.add(entry.proposal);
+            };
+            case (null) {
+                throw Error.reject("The proposal was accepted but the post was not added to the list.");
+            };
+        };
     };
 
     public shared({ caller }) func decline(storageId: Principal, id: Text) : async () {
         await updateStatus(caller, storageId, id, #declined);
     };
 
-    private func updateStatus(caller: Principal, storageId: Principal, id: Text, status: BlogPostStatus): async () {
+    private func updateStatus(caller: Principal, storageId: Principal, id: Text, status: ProposalStatus): async () {
         if (not Utils.isAdmin(caller)) {
             throw Error.reject("Unauthorized access. Caller is not an admin." # Principal.toText(caller));
         };
 
-        feedStore.updateStatus(storageId, id, status);
+        proposalStore.updateStatus(storageId, id, status);
     };
 
+    /**
+     * Preserve the application state on upgrades
+     */
+    private stable var postEntries : [(Text, Post)] = [];
+    private stable var proposalEntries : [(Text, ProposalEntry)] = [];
+
     system func preupgrade() {
-        entries := Iter.toArray(feedStore.preupgrade().entries());
+        postEntries := Iter.toArray(postStore.preupgrade().entries());
+        proposalEntries := Iter.toArray(proposalStore.preupgrade().entries());
     };
 
     system func postupgrade() {
-        feedStore.postupgrade(entries);
-        entries := [];
+        postStore.postupgrade(postEntries);
+        postEntries := [];
+
+        proposalStore.postupgrade(proposalEntries);
+        proposalEntries := [];
     };
 }

@@ -1,38 +1,55 @@
 export const idlFactory = ({ IDL }) => {
-  const BlogPostStatus = IDL.Variant({
-    'open' : IDL.Null,
-    'accepted' : IDL.Null,
-    'declined' : IDL.Null,
-  });
-  const FeedFilter = IDL.Record({ 'status' : IDL.Opt(BlogPostStatus) });
-  const BlogPostStatus__1 = IDL.Variant({
-    'open' : IDL.Null,
-    'accepted' : IDL.Null,
-    'declined' : IDL.Null,
-  });
+  const canister_id = IDL.Principal;
+  const PostFilter = IDL.Record({ 'storageId' : IDL.Opt(canister_id) });
   const Time = IDL.Int;
-  const BlogPost = IDL.Record({
+  const Post = IDL.Record({
     'id' : IDL.Text,
-    'status' : BlogPostStatus__1,
     'updated_at' : Time,
     'meta' : IDL.Vec(IDL.Nat8),
-    'storageId' : IDL.Principal,
+    'storageId' : canister_id,
     'created_at' : Time,
   });
-  const BlogPostSubmission = IDL.Record({
+  const ProposalStatus = IDL.Variant({
+    'open' : IDL.Null,
+    'accepted' : IDL.Null,
+    'declined' : IDL.Null,
+  });
+  const ProposalFilter = IDL.Record({ 'status' : IDL.Opt(ProposalStatus) });
+  const ProposalStatus__1 = IDL.Variant({
+    'open' : IDL.Null,
+    'accepted' : IDL.Null,
+    'declined' : IDL.Null,
+  });
+  const Proposal__1 = IDL.Record({
     'id' : IDL.Text,
     'meta' : IDL.Vec(IDL.Nat8),
-    'storageId' : IDL.Principal,
+    'storageId' : canister_id,
+  });
+  const ProposalEntry = IDL.Record({
+    'status' : ProposalStatus__1,
+    'updated_at' : Time,
+    'created_at' : Time,
+    'proposal' : Proposal__1,
+  });
+  const Proposal = IDL.Record({
+    'id' : IDL.Text,
+    'meta' : IDL.Vec(IDL.Nat8),
+    'storageId' : canister_id,
   });
   const Feed = IDL.Service({
     'accept' : IDL.Func([IDL.Principal, IDL.Text], [], []),
     'decline' : IDL.Func([IDL.Principal, IDL.Text], [], []),
     'list' : IDL.Func(
-        [IDL.Opt(FeedFilter)],
-        [IDL.Vec(IDL.Tuple(IDL.Text, BlogPost))],
+        [IDL.Opt(PostFilter)],
+        [IDL.Vec(IDL.Tuple(IDL.Text, Post))],
+        [],
+      ),
+    'listProposals' : IDL.Func(
+        [IDL.Opt(ProposalFilter)],
+        [IDL.Vec(IDL.Tuple(IDL.Text, ProposalEntry))],
         ['query'],
       ),
-    'submit' : IDL.Func([IDL.Text, BlogPostSubmission], [], []),
+    'submit' : IDL.Func([IDL.Text, Proposal], [], []),
   });
   return Feed;
 };

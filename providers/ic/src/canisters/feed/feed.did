@@ -1,40 +1,59 @@
+type canister_id = principal;
 type Time = int;
-type FeedFilter = record {status: opt BlogPostStatus;};
-type Feed = 
- service {
-   accept: (principal, text) -> ();
-   decline: (principal, text) -> ();
-   list: (opt FeedFilter) -> (vec record {
-                                    text;
-                                    BlogPost;
-                                  }) query;
-   submit: (text, BlogPostSubmission) -> ();
- };
-type BlogPostSubmission = 
+type Proposal__1 = 
  record {
    id: text;
    meta: blob;
-   storageId: principal;
+   storageId: canister_id;
  };
-type BlogPostStatus__1 = 
+type ProposalStatus__1 = 
  variant {
    accepted;
    declined;
    open;
  };
-type BlogPostStatus = 
+type ProposalStatus = 
  variant {
    accepted;
    declined;
    open;
  };
-type BlogPost = 
+type ProposalFilter = record {status: opt ProposalStatus;};
+type ProposalEntry = 
+ record {
+   created_at: Time;
+   proposal: Proposal__1;
+   status: ProposalStatus__1;
+   updated_at: Time;
+ };
+type Proposal = 
+ record {
+   id: text;
+   meta: blob;
+   storageId: canister_id;
+ };
+type PostFilter = record {storageId: opt canister_id;};
+type Post = 
  record {
    created_at: Time;
    id: text;
    meta: blob;
-   status: BlogPostStatus__1;
-   storageId: principal;
+   storageId: canister_id;
    updated_at: Time;
+ };
+type Feed = 
+ service {
+   accept: (principal, text) -> ();
+   decline: (principal, text) -> ();
+   list: (opt PostFilter) -> (vec record {
+                                    text;
+                                    Post;
+                                  });
+   listProposals: (opt ProposalFilter) ->
+    (vec record {
+           text;
+           ProposalEntry;
+         }) query;
+   submit: (text, Proposal) -> ();
  };
 service : (text) -> Feed
