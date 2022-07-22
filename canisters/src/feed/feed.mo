@@ -51,7 +51,7 @@ actor class Feed(secret: Text) {
 
     public shared query({ caller }) func listProposals(filter: ?ProposalFilter) : async [(Text, ProposalEntry)] {
         if (not Utils.isAdmin(caller)) {
-            throw Error.reject("Unauthorized access. Caller is not an admin." # Principal.toText(caller));
+            throw Error.reject("Unauthorized access. Caller is not an admin. " # Principal.toText(caller));
         };
 
         return proposalStore.entries(filter);
@@ -78,7 +78,7 @@ actor class Feed(secret: Text) {
 
     private func updateStatus(caller: Principal, storageId: Principal, id: Text, status: ProposalStatus): async () {
         if (not Utils.isAdmin(caller)) {
-            throw Error.reject("Unauthorized access. Caller is not an admin." # Principal.toText(caller));
+            throw Error.reject("Unauthorized access. Caller is not an admin. " # Principal.toText(caller));
         };
 
         proposalStore.updateStatus(storageId, id, status);

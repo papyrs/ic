@@ -167,7 +167,7 @@ actor Manager {
 
     public shared query({ caller }) func list(store: Text) : async [Bucket] {
         if (not Utils.isAdmin(caller)) {
-            throw Error.reject("Unauthorized access. Caller is not an admin." # Principal.toText(caller));
+            throw Error.reject("Unauthorized access. Caller is not an admin. " # Principal.toText(caller));
         };
 
         if (Text.equal(store, "data")) {
@@ -183,7 +183,7 @@ actor Manager {
 
     public shared({ caller }) func installCode(canisterId: Principal, owner: Blob, wasmModule: Blob): async() {
         if (not Utils.isAdmin(caller)) {
-            throw Error.reject("Unauthorized access. Caller is not an admin.");
+            throw Error.reject("Unauthorized access. Caller is not an admin. " # Principal.toText(caller));
         };
 
         await canisterUtils.installCode(canisterId, owner, wasmModule);
@@ -191,7 +191,7 @@ actor Manager {
 
     public shared({ caller }) func transferCycles(canisterId: Principal, amount: Nat): async() {
         if (not Utils.isAdmin(caller)) {
-            throw Error.reject("Unauthorized access. Caller is not an admin.");
+            throw Error.reject("Unauthorized access. Caller is not an admin. " # Principal.toText(caller));
         };
 
         await walletUtils.transferCycles(canisterId, amount);
@@ -199,7 +199,7 @@ actor Manager {
 
     public shared query({ caller }) func cyclesBalance(): async (Nat) {
         if (not Utils.isAdmin(caller)) {
-            throw Error.reject("Unauthorized access. Caller is not an admin.");
+            throw Error.reject("Unauthorized access. Caller is not an admin. " # Principal.toText(caller));
         };
 
         return walletUtils.cyclesBalance();
