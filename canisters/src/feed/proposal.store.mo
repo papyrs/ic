@@ -79,7 +79,7 @@ module {
         };
 
         private func toKey(storageId: CanisterId, id: Text): Text {
-            Principal.toText(storageId) # "-" # id
+            Principal.toText(storageId) # "___" # id
         };
 
         private func initEntry(proposal: Proposal): ProposalEntry {

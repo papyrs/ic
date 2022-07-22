@@ -2,7 +2,7 @@
 
 import {IDL} from '@dfinity/candid';
 import {readFileSync} from 'fs';
-import {managerActorIC} from './utils/actor.utils.mjs';
+import {managerActorIC} from './actors/manager.actors.mjs';
 import {fromNullable} from './utils/utils.mjs';
 
 const upgradeBucketData = async ({actor, owner, bucketId, wasmModule}) => {

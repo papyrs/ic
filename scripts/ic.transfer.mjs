@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import {managerActorIC} from './utils/actor.utils.mjs';
+import {managerActorIC} from './actors/manager.actors.mjs';
 import {fromNullable} from './utils/utils.mjs';
 
 const transferCycles = async ({actor, amount, bucketId}) => {

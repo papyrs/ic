@@ -3,7 +3,7 @@ import pkgPrincipal from '@dfinity/principal';
 import {readFileSync} from 'fs';
 import fetch from 'node-fetch';
 import {idlFactory} from '../../.dfx/local/canisters/manager/manager.did.mjs';
-import {initIdentity} from './identity.utils.mjs';
+import {initIdentity} from '../utils/identity.utils.mjs';
 
 const {HttpAgent, Actor} = pkgAgent;
 const {Principal} = pkgPrincipal;
