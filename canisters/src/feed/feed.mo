@@ -2,6 +2,7 @@ import Text "mo:base/Text";
 import Error "mo:base/Error";
 import Principal "mo:base/Principal";
 import Iter "mo:base/Iter";
+import Result "mo:base/Result";
 
 import PostFilter "./post.filter";
 import PostStore "./post.store";
@@ -81,7 +82,14 @@ actor class Feed(secret: Text) {
             throw Error.reject("Unauthorized access. Caller is not an admin. " # Principal.toText(caller));
         };
 
-        proposalStore.updateStatus(storageId, id, status);
+        let result: Result.Result<Text, Text> = proposalStore.updateStatus(storageId, id, status);
+
+        switch (result) {
+            case (#err error) {
+                throw Error.reject(error);
+            };
+            case (#ok bucket) {};
+        };
     };
 
     /**

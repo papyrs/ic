@@ -4,6 +4,7 @@ import Iter "mo:base/Iter";
 import Array "mo:base/Array";
 import Principal "mo:base/Principal";
 import Time "mo:base/Time";
+import Result "mo:base/Result";
 
 import IC "../types/ic.types";
 
@@ -27,18 +28,33 @@ module {
         public func submit(proposal: Proposal) {
             let post: ProposalEntry = initEntry(proposal);
 
-            put(post.proposal, post);
+            let {storageId; id} = proposal;
+
+            let entry: ?ProposalEntry = get(storageId, id);
+
+            switch (entry) {
+                case (?entry) {
+                    // We only put proposal if it was never submitted otherwise we silenty ignore the entry because it has already been submitted. We do not want to crash the frontend it it happens.
+                };
+                case (null) {
+                    put(post.proposal, post);
+                };
+            };
         };
 
-        public func updateStatus(storageId: CanisterId, id: Text, status: ProposalStatus) {
+        public func updateStatus(storageId: CanisterId, id: Text, status: ProposalStatus): Result.Result<Text, Text> {
             let entry: ?ProposalEntry = get(storageId, id);
 
             switch (entry) {
                 case (?entry) {
                     let updatedEntry: ProposalEntry = cloneToStatus(entry, status);
                     put(entry.proposal, updatedEntry);
+
+                    return #ok "Proposal status updated";
                 };
-                case (null) {};
+                case (null) {
+                    #err "Status cannot be updated, proposal does not exist"
+                };
             };
         };
 
