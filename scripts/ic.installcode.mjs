@@ -50,10 +50,8 @@ const loadWasm = (type) => {
     const listOnly = process.argv.find((arg) => arg.indexOf('--list-only') > -1) !== undefined;
 
     if (listOnly) {
-      console.log(
-        `List ${filterList.length} buckets:`,
-        filterList.map(({bucketId}) => bucketId[0].toText())
-      );
+      console.log(filterList.map(({bucketId}) => bucketId[0].toText()));
+      console.log(`${filterList.length} buckets listed.`)
       return;
     }
 
