@@ -93,6 +93,18 @@ actor class Feed(secret: Text) {
     };
 
     /**
+     * e.g. delete to correct a declined proposal that has been wrongly added to the list of posts.
+     * Can happens if the wrong command line is executed 🤦.
+    */
+    public shared({ caller }) func del(storageId: Principal, id: Text) : async () {
+        if (not Utils.isAdmin(caller)) {
+            throw Error.reject("Unauthorized access. Caller is not an admin. " # Principal.toText(caller));
+        };
+
+        let entry: ?Post = postStore.del(storageId, id);
+    };
+
+    /**
      * Preserve the application state on upgrades
      */
     private stable var postEntries : [(Text, Post)] = [];

@@ -4,6 +4,7 @@ import type {Principal} from '@dfinity/principal';
 export interface Feed {
   accept: ActorMethod<[Principal, string], undefined>;
   decline: ActorMethod<[Principal, string], undefined>;
+  del: ActorMethod<[Principal, string], undefined>;
   list: ActorMethod<[[] | [PostFilter]], Array<[string, Post]>>;
   listProposals: ActorMethod<[[] | [ProposalFilter]], Array<[string, ProposalEntry]>>;
   submit: ActorMethod<[string, Proposal], undefined>;
