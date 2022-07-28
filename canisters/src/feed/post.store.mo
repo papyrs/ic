@@ -68,6 +68,10 @@ module {
             };
         };
 
+        public func del(storageId: Principal, id: Text): ?Post {
+            return store.del(toKey(storageId, id));
+        };
+
         private func toKey(storageId: Principal, id: Text): Text {
             Principal.toText(storageId) # "___" # id
         };

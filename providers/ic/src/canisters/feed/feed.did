@@ -69,6 +69,7 @@ type Feed =
  service {
    accept: (principal, text) -> ();
    decline: (principal, text) -> ();
+   del: (principal, text) -> ();
    list: (opt PostFilter) -> (vec record {
                                     text;
                                     Post;
