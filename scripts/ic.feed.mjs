@@ -1,5 +1,5 @@
-import { feedActorIC } from "./actors/feed.actors.mjs";
 import pkgPrincipal from '@dfinity/principal';
+import {feedActorIC} from './actors/feed.actors.mjs';
 
 const {Principal} = pkgPrincipal;
 
@@ -36,7 +36,10 @@ const listProposals = async ({type, actor}) => {
       ([
         key,
         {
-          proposal: {meta: {title, description, tags}, pathname}
+          proposal: {
+            meta: {title, description, tags},
+            pathname
+          }
         }
       ]) => ({
         key,
@@ -56,10 +59,9 @@ const updateStatus = async ({actor, action}) => {
     return;
   }
 
-  const key =
-    process.argv
-      .find((arg) => arg.indexOf(`--${action}`) > -1)
-      ?.replace(`--${action}=`, '');
+  const key = process.argv
+    .find((arg) => arg.indexOf(`--${action}`) > -1)
+    ?.replace(`--${action}=`, '');
 
   if (!key || key === '') {
     throw new Error('Key is mandatory');
@@ -77,7 +79,19 @@ const updateStatus = async ({actor, action}) => {
     default:
       throw new Error('Action not supported.');
   }
-}
+};
+
+const deletePost = async ({actor}) => {
+  const key = process.argv.find((arg) => arg.indexOf(`--del`) > -1)?.replace(`--del=`, '');
+
+  if (!key || key === '') {
+    throw new Error('Key is mandatory');
+  }
+
+  const [storage, id] = key.split(KEY_SEPARATOR);
+
+  await actor.del(Principal.fromText(storage), id);
+};
 
 (async () => {
   const help = process.argv.find((arg) => arg.indexOf('--help') > -1);
@@ -87,6 +101,7 @@ const updateStatus = async ({actor, action}) => {
     console.log('--list-proposals=open|accepted|declined');
     console.log('--accept=key');
     console.log('--decline=key');
+    console.log('--del=key');
     return;
   }
 
@@ -104,6 +119,12 @@ const updateStatus = async ({actor, action}) => {
       await listProposals({type, actor});
 
       return;
+    }
+
+    const del = process.argv.find((arg) => arg.indexOf('--del') > -1) !== undefined;
+
+    if (del) {
+      await deletePost({actor});
     }
 
     await updateStatus({actor, action: 'accept'});
