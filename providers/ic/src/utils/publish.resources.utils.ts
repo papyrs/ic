@@ -34,9 +34,11 @@ export const uploadResources = async ({meta}: {meta: Meta | undefined}) => {
   const kit: Kit[] = await getKit();
 
   // 4. We only upload resources that have not been yet uploaded. In other words: we upload the resources the first time or if hashes are modified.
-  // TODO: remove temporary rollout of last CSS update
+  // TODO: 23.06.2022 - temporary update CSS on publish to roll out last changes
+  // TODO: 29.07.2022 - temporary update index.js on publish to roll out last changes for <web-social-share />
   const kitNewFiles: Kit[] = kit.filter(
-    ({filename, mimeType}: Kit) => !keys.includes(filename) || mimeType === 'text/css'
+    ({filename, mimeType}: Kit) =>
+      !keys.includes(filename) || ['text/css', 'text/javascript'].includes(mimeType)
   );
 
   if (!kitNewFiles || kitNewFiles.length <= 0) {

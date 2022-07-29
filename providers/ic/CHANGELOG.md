@@ -1,3 +1,9 @@
+# 0.0.16-1 (2022-07-29)
+
+### Features
+
+- temporary update index.js on publish to roll out last changes for <web-social-share />
+
 # 0.0.16 (2022-07-22)
 
 ### Features
