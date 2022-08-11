@@ -20,8 +20,10 @@ node ./scripts/ic.feed.mjs --accept=storageid___id
 dfx canister --network ic call "undmj-fiaaa-aaaan-qaocq-cai" list --query
 ```
 
-## Deploy feed canister on mainnet
+## Deploy feed canister
 
 ```bash
-dfx deploy --argument 'pseudosecret' feed --network ic --no-wallet
+dfx deploy --argument 'secret' feed
 ```
+
+For `mainnet` add `--network ic --no-wallet` to the command line.
