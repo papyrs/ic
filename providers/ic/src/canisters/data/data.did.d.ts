@@ -12,6 +12,10 @@ export interface DataBucket {
   del: ActorMethod<[string], undefined>;
   get: ActorMethod<[string], [] | [Data]>;
   list: ActorMethod<[[] | [DataFilter]], Array<[string, Data]>>;
+  put: ActorMethod<[string, Data], Data>;
+  /**
+   * @deprecated
+   */
   set: ActorMethod<[string, Data], undefined>;
   transferFreezingThresholdCycles: ActorMethod<[], undefined>;
 }

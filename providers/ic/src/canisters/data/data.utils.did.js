@@ -16,6 +16,7 @@ export const idlFactory = ({IDL}) => {
     del: IDL.Func([IDL.Text], [], []),
     get: IDL.Func([IDL.Text], [IDL.Opt(Data)], ['query']),
     list: IDL.Func([IDL.Opt(DataFilter)], [IDL.Vec(IDL.Tuple(IDL.Text, Data))], ['query']),
+    put: IDL.Func([IDL.Text, Data], [Data], []),
     set: IDL.Func([IDL.Text, Data], [], []),
     transferFreezingThresholdCycles: IDL.Func([], [], [])
   });
