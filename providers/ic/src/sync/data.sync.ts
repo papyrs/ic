@@ -8,9 +8,9 @@ import {
   Slide,
   SlideData
 } from '@deckdeckgo/editor';
+import {setData} from '../api/data.api';
 import {_SERVICE as DataBucketActor} from '../canisters/data/data.did';
 import {LogWindow} from '../types/sync.window';
-import {setData} from '../api/data.api';
 
 export const uploadDeckData = async ({
   deck,

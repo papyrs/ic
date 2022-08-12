@@ -1,6 +1,6 @@
 import {log, PublishData} from '@deckdeckgo/editor';
-import {StorageUpload} from './common.publish';
 import {upload} from '../api/storage.api';
+import {StorageUpload} from './common.publish';
 
 const socialImageFolder: string = 'meta';
 const socialImageExtension: string = 'png';

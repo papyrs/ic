@@ -1,15 +1,15 @@
 import {Deck, Doc, log, PublishData, toDate} from '@deckdeckgo/editor';
 import {Identity} from '@dfinity/agent';
+import {getStorageActor, upload} from '../api/storage.api';
 import {_SERVICE as StorageBucketActor} from '../canisters/storage/storage.did';
 import {deckEntries} from '../providers/data/deck.providers';
 import {docEntries} from '../providers/data/doc.providers';
 import {PublishMeta} from '../types/publish.metas';
 import {BucketActor} from '../utils/manager.utils';
+import {getAuthor, StorageUpload} from './common.publish';
 import {prepareIndexHtml, updateIndexHtmlPosts} from './index-html.publish';
 import {prepareRSS} from './rss.publish';
 import {prepareSitemap} from './sitemap.publish';
-import {getAuthor, StorageUpload} from './common.publish';
-import {getStorageActor, upload} from '../api/storage.api';
 
 export const publishDeckMetas = async ({
   owner_id,

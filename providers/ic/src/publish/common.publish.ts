@@ -1,9 +1,9 @@
 import {log, Meta, PublishData} from '@deckdeckgo/editor';
+import {encodeFilename, getStorageActor, upload} from '../api/storage.api';
 import {_SERVICE as StorageBucketActor} from '../canisters/storage/storage.did';
 import {EnvStore} from '../stores/env.store';
 import {BucketActor} from '../utils/manager.utils';
 import {updateTemplateSocialImage} from './social.publish';
-import {encodeFilename, getStorageActor, upload} from '../api/storage.api';
 
 export interface StorageUpload {
   actor: StorageBucketActor;

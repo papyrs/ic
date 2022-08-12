@@ -3,15 +3,15 @@ import {Identity} from '@dfinity/agent';
 import {isDelegationValid} from '@dfinity/authentication';
 import {DelegationChain} from '@dfinity/identity';
 import {EnvStore} from '../../stores/env.store';
-import {InternetIdentityAuth} from '../../types/identity';
-import {SyncWindow, SyncWindowEvent} from '../../types/sync.window';
-import {internetIdentityAuth} from '../../utils/identity.utils';
 import {
   syncDeckBackground,
   syncParagraphImage,
   syncSlideChart,
   syncSlideImage
 } from '../../sync/window.sync';
+import {InternetIdentityAuth} from '../../types/identity';
+import {SyncWindow, SyncWindowEvent} from '../../types/sync.window';
+import {internetIdentityAuth} from '../../utils/identity.utils';
 import {uploadWorker} from '../../workers/sync.ic.worker';
 import {getIdentity} from '../auth/auth.providers';
 

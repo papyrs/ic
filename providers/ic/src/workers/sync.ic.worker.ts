@@ -10,16 +10,10 @@ import {
   SyncDataSlide
 } from '@deckdeckgo/editor';
 import {Identity} from '@dfinity/agent';
+import {deleteData} from '../api/data.api';
 import {_SERVICE as DataBucketActor} from '../canisters/data/data.did';
 import {_SERVICE as StorageBucketActor} from '../canisters/storage/storage.did';
 import {EnvStore} from '../stores/env.store';
-import {EnvironmentIC} from '../types/env.types';
-import {InternetIdentityAuth} from '../types/identity';
-import {SyncStorage, SyncStorageSlide} from '../types/sync.storage';
-import {LogWindow, SyncWindow} from '../types/sync.window';
-import {deleteData} from '../api/data.api';
-import {initIdentity} from '../utils/identity.utils';
-import {BucketActor, getDataBucket, getStorageBucket} from '../utils/manager.utils';
 import {
   updateDeckBackground,
   updateParagraphAssets,
@@ -37,6 +31,12 @@ import {
   uploadParagraphAssets,
   uploadSlideAssets
 } from '../sync/storage.sync';
+import {EnvironmentIC} from '../types/env.types';
+import {InternetIdentityAuth} from '../types/identity';
+import {SyncStorage, SyncStorageSlide} from '../types/sync.storage';
+import {LogWindow, SyncWindow} from '../types/sync.window';
+import {initIdentity} from '../utils/identity.utils';
+import {BucketActor, getDataBucket, getStorageBucket} from '../utils/manager.utils';
 
 export const uploadWorker = async (
   {

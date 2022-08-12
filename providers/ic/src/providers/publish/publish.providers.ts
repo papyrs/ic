@@ -1,13 +1,13 @@
 import {Deck, DeckPublish, Doc, DocPublish, PublishUrl, UpdateLanding} from '@deckdeckgo/editor';
 import {Identity} from '@dfinity/agent';
+import {getStorageActor} from '../../api/storage.api';
 import {_SERVICE as StorageBucketActor} from '../../canisters/storage/storage.did';
-import {EnvStore} from '../../stores/env.store';
-import {BucketActor} from '../../utils/manager.utils';
 import {emitDeckPublished, publishDeck} from '../../publish/deck.publish';
 import {emitDocPublished, publishDoc} from '../../publish/doc.publish';
 import {publishDeckMetas, publishDocMetas, updateIndexHtml} from '../../publish/metas.publish';
 import {uploadResources} from '../../publish/resources.publish';
-import {getStorageActor} from '../../api/storage.api';
+import {EnvStore} from '../../stores/env.store';
+import {BucketActor} from '../../utils/manager.utils';
 import {getIdentity} from '../auth/auth.providers';
 
 export const deckPublish: DeckPublish = async ({
