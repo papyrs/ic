@@ -1,4 +1,4 @@
-import {Time} from '../canisters/data/data.did';
+import type {Time} from '../canisters/data/data.did';
 
 export interface Entity<D> {
   id: string;
