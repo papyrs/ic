@@ -10,33 +10,33 @@ import {
   SyncDataSlide
 } from '@deckdeckgo/editor';
 import {Identity} from '@dfinity/agent';
+import {deleteData} from '../api/data.api';
 import {_SERVICE as DataBucketActor} from '../canisters/data/data.did';
 import {_SERVICE as StorageBucketActor} from '../canisters/storage/storage.did';
 import {EnvStore} from '../stores/env.store';
-import {EnvironmentIC} from '../types/env.types';
-import {InternetIdentityAuth} from '../types/identity';
-import {SyncStorage, SyncStorageSlide} from '../types/sync.storage';
-import {LogWindow, SyncWindow} from '../types/sync.window';
-import {deleteData} from '../utils/data.utils';
-import {initIdentity} from '../utils/identity.utils';
-import {BucketActor, getDataBucket, getStorageBucket} from '../utils/manager.utils';
 import {
   updateDeckBackground,
   updateParagraphAssets,
   updateSlideChart,
   updateSlideImages
-} from '../utils/sync.attributes.utils';
+} from '../sync/attributes.sync';
 import {
   uploadDeckData,
   uploadDocData,
   uploadParagraphData,
   uploadSlideData
-} from '../utils/sync.data.utils';
+} from '../sync/data.sync';
 import {
   uploadDeckBackgroundAssets,
   uploadParagraphAssets,
   uploadSlideAssets
-} from '../utils/sync.storage.utils';
+} from '../sync/storage.sync';
+import {EnvironmentIC} from '../types/env.types';
+import {InternetIdentityAuth} from '../types/identity';
+import {SyncStorage, SyncStorageSlide} from '../types/sync.storage';
+import {LogWindow, SyncWindow} from '../types/sync.window';
+import {initIdentity} from '../utils/identity.utils';
+import {BucketActor, getDataBucket, getStorageBucket} from '../utils/manager.utils';
 
 export const uploadWorker = async (
   {

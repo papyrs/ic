@@ -6,7 +6,7 @@ import {
   UpdateTemplate
 } from '@deckdeckgo/editor';
 import {nanoid} from 'nanoid';
-import {entries, setData} from '../../utils/data.utils';
+import {entries, setData} from '../../api/data.api';
 
 export const getUserTemplates: GetUserTemplates = (_userId: string): Promise<Template[]> =>
   entries<Template, TemplateData>({startsWith: '/templates/'});

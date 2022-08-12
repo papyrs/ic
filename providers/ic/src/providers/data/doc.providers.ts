@@ -1,5 +1,5 @@
 import {DeleteDoc, Doc, DocData, DocEntries, SnapshotDoc} from '@deckdeckgo/editor';
-import {deleteData, entries} from '../../utils/data.utils';
+import {deleteData, entries} from '../../api/data.api';
 
 export const docEntries: DocEntries = async (_userId: string): Promise<Doc[]> =>
   entries<Doc, DocData>({startsWith: '/docs/', notContains: '/paragraphs/'});

@@ -8,11 +8,11 @@ import {
 } from '@deckdeckgo/editor';
 import {Identity} from '@dfinity/agent';
 import {nanoid} from 'nanoid';
+import {encodeFilename, getStorageActor, upload} from '../../api/storage.api';
 import {AssetKey, _SERVICE as StorageBucketActor} from '../../canisters/storage/storage.did';
 import {LogWindow} from '../../types/sync.window';
 import {toNullable} from '../../utils/did.utils';
 import {BucketActor, getStorageBucket} from '../../utils/manager.utils';
-import {encodeFilename, getStorageActor, upload} from '../../utils/storage.utils';
 import {getIdentity} from '../auth/auth.providers';
 
 export const uploadFile: UploadFile = async ({

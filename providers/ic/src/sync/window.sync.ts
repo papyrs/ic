@@ -6,7 +6,7 @@ import {
   updateParagraphAssets,
   updateSlideChart,
   updateSlideImages
-} from './sync.attributes.utils';
+} from './attributes.sync';
 
 export const syncDeckBackground = async (data: SyncWindowData): Promise<void> => {
   // 1. We update the deck in the DOM
