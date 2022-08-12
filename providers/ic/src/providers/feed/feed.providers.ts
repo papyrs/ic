@@ -9,10 +9,10 @@ import {
   Meta
 } from '@deckdeckgo/editor';
 import {Identity} from '@dfinity/agent';
+import {setData} from '../../api/data.api';
 import {_SERVICE as FeedActor} from '../../canisters/feed/feed.did';
 import {_SERVICE as StorageBucketActor} from '../../canisters/storage/storage.did';
 import {EnvStore} from '../../stores/env.store';
-import {setData} from '../../utils/data.utils';
 import {toNullable} from '../../utils/did.utils';
 import {createFeedActor} from '../../utils/feed.utils';
 import {BucketActor, getStorageBucket} from '../../utils/manager.utils';
