@@ -21,10 +21,9 @@ export const uploadDeckData = async ({
   actor: DataBucketActor;
   log: LogWindow;
 }) =>
-  setData<Deck, DeckData>({
+  setData<DeckData>({
     key: `/decks/${deck.id}`,
-    id: deck.id,
-    data: deck.data,
+    entity: deck,
     actor,
     log
   });
@@ -40,10 +39,9 @@ export const uploadSlideData = async ({
   actor: DataBucketActor;
   log: LogWindow;
 }) =>
-  setData<Slide, SlideData>({
+  setData<SlideData>({
     key: `/decks/${deckId}/slides/${slide.id}`,
-    id: slide.id,
-    data: slide.data,
+    entity: slide,
     actor,
     log
   });
@@ -57,10 +55,9 @@ export const uploadDocData = async ({
   actor: DataBucketActor;
   log: LogWindow;
 }) =>
-  setData<Doc, DocData>({
+  setData<DocData>({
     key: `/docs/${doc.id}`,
-    id: doc.id,
-    data: doc.data,
+    entity: doc,
     actor,
     log
   });
@@ -76,10 +73,9 @@ export const uploadParagraphData = async ({
   actor: DataBucketActor;
   log: LogWindow;
 }) =>
-  setData<Paragraph, ParagraphData>({
+  setData<ParagraphData>({
     key: `/docs/${docId}/paragraphs/${paragraph.id}`,
-    id: paragraph.id,
-    data: paragraph.data,
+    entity: paragraph,
     actor,
     log
   });

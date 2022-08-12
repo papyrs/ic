@@ -73,7 +73,7 @@ const initUserData = async ({
   log({msg: `[get][start] user`});
   const t0 = performance.now();
 
-  const user: User | undefined = await getData<User, UserData>({
+  const user: User | undefined = await getData<UserData>({
     key: `/user`,
     actor
   });
@@ -105,12 +105,13 @@ const createUser = async ({
     updated_at: now
   };
 
-  const user: User = await setData<User, UserData>({
+  return setData<UserData>({
     key: `/user`,
-    id,
-    data,
+    entity: {
+      id,
+      data
+    },
     actor,
     log
   });
-  return user;
 };

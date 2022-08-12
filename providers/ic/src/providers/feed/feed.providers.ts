@@ -13,6 +13,7 @@ import {_SERVICE as FeedActor} from '../../canisters/feed/feed.did';
 import {_SERVICE as StorageBucketActor} from '../../canisters/storage/storage.did';
 import {setData} from '../../services/data.services';
 import {EnvStore} from '../../stores/env.store';
+import {Entity} from '../../types/data';
 import {toNullable} from '../../utils/did.utils';
 import {createFeedActor} from '../../utils/feed.utils';
 import {BucketActor, getStorageBucket} from '../../utils/manager.utils';
@@ -30,7 +31,7 @@ export const docSubmitFeed: DocSubmitFeed = async ({doc}: {doc: Doc}): Promise<D
 
   await submitFeed({meta, id});
 
-  const updatedDoc: Doc = await updateMetaFeed({key: 'docs', data: doc});
+  const updatedDoc: Doc = await updateMetaFeed({key: 'docs', entity: doc});
 
   emitSubmitted({data: updatedDoc, type: 'docFeedSubmitted'});
 
@@ -49,7 +50,7 @@ export const deckSubmitFeed: DeckSubmitFeed = async ({deck}: {deck: Deck}): Prom
 
   await submitFeed({meta, id});
 
-  const updatedDeck: Deck = await updateMetaFeed({key: 'decks', data: deck});
+  const updatedDeck: Deck = await updateMetaFeed({key: 'decks', entity: deck});
 
   emitSubmitted({data: updatedDeck, type: 'deckFeedSubmitted'});
 
@@ -118,20 +119,19 @@ const submitFeed = async ({meta, id}: {meta: Meta; id: string}) => {
   log({msg: '[submit][done] feed', duration: t1 - t0});
 };
 
-const updateMetaFeed = async <T extends Deck | Doc, D extends DeckData | DocData>({
+const updateMetaFeed = async <D extends DeckData | DocData>({
   key,
-  data
+  entity
 }: {
   key: 'decks' | 'docs';
-  data: T;
-}): Promise<T> => {
+  entity: Entity<D>;
+}): Promise<Entity<D>> => {
   log({msg: `[update][start] ${key}`});
   const t0 = performance.now();
 
-  const {data: existingData, id} = data;
+  const {data: existingData, id, created_at, updated_at} = entity;
 
-  const updatedData: T = await setData<T, D>({
-    key: `/docs/${id}`,
+  const entityToUpdate: Entity<D> = {
     id,
     data: {
       ...existingData,
@@ -140,7 +140,14 @@ const updateMetaFeed = async <T extends Deck | Doc, D extends DeckData | DocData
         feed: true
       },
       updated_at: new Date()
-    } as D
+    } as D,
+    created_at,
+    updated_at
+  };
+
+  const updatedData: Entity<D> = await setData<D>({
+    key: `/docs/${id}`,
+    entity: entityToUpdate
   });
 
   const t1 = performance.now();

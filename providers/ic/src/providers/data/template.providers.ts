@@ -10,16 +10,27 @@ import {entries} from '../../api/data.api';
 import {setData} from '../../services/data.services';
 
 export const getUserTemplates: GetUserTemplates = (_userId: string): Promise<Template[]> =>
-  entries<Template, TemplateData>({startsWith: '/templates/'});
+  entries<TemplateData>({startsWith: '/templates/'});
 
 export const createTemplate: CreateTemplate = (data: TemplateData): Promise<Template> => {
   const id: string = nanoid();
 
-  return setData<Template, TemplateData>({key: `/templates/${id}`, id, data});
+  const now: Date = new Date();
+
+  const template: Template = {
+    id,
+    data: {
+      ...data,
+      updated_at: now,
+      created_at: now
+    }
+  };
+
+  return setData<TemplateData>({key: `/templates/${id}`, entity: template});
 };
 
 export const updateTemplate: UpdateTemplate = (template: Template): Promise<Template> => {
-  const {data, id} = template;
+  const {id} = template;
 
-  return setData<Template, TemplateData>({key: `/templates/${id}`, id, data});
+  return setData<TemplateData>({key: `/templates/${id}`, entity: template});
 };

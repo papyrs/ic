@@ -2,7 +2,7 @@ import {DeleteDoc, Doc, DocData, DocEntries, SnapshotDoc} from '@deckdeckgo/edit
 import {deleteData, entries} from '../../api/data.api';
 
 export const docEntries: DocEntries = async (_userId: string): Promise<Doc[]> =>
-  entries<Doc, DocData>({startsWith: '/docs/', notContains: '/paragraphs/'});
+  entries<DocData>({startsWith: '/docs/', notContains: '/paragraphs/'});
 
 export const deleteDoc: DeleteDoc = async (docId: string): Promise<void> =>
   deleteData({key: `/docs/${docId}`});

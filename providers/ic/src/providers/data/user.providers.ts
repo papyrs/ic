@@ -5,12 +5,9 @@ export const updateUser: UpdateUser = async (user: User): Promise<User> => {
   log({msg: '[update][start] user'});
   const t0 = performance.now();
 
-  const {data, id} = user;
-
-  const updatedUser: User = await setData<User, UserData>({
+  const updatedUser: User = await setData<UserData>({
     key: `/user`,
-    id,
-    data
+    entity: user
   });
 
   const t1 = performance.now();
