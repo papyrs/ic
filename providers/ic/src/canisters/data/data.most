@@ -1,5 +1,8 @@
-type Data/1 = Data;
+// Version: 1.0.0
+type Data = {created_at : Time; data : Blob; id : Text; updated_at : Time};
+type Data__2 = Data;
+type Time = Int;
 actor {
-  stable var entries : [(Text, Data/1)];
+  stable var entries : [(Text, Data__2)];
   stable user : Principal
 };

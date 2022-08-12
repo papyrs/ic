@@ -1,4 +1,6 @@
+import type {ActorMethod} from '@dfinity/agent';
 import type {Principal} from '@dfinity/principal';
+
 export interface Data {
   id: string;
   updated_at: Time;
@@ -6,12 +8,12 @@ export interface Data {
   created_at: Time;
 }
 export interface DataBucket {
-  cyclesBalance: () => Promise<bigint>;
-  del: (arg_0: string) => Promise<undefined>;
-  get: (arg_0: string) => Promise<[] | [Data]>;
-  list: (arg_0: [] | [DataFilter]) => Promise<Array<[string, Data]>>;
-  set: (arg_0: string, arg_1: Data) => Promise<undefined>;
-  transferFreezingThresholdCycles: () => Promise<undefined>;
+  cyclesBalance: ActorMethod<[], bigint>;
+  del: ActorMethod<[string], undefined>;
+  get: ActorMethod<[string], [] | [Data]>;
+  list: ActorMethod<[[] | [DataFilter]], Array<[string, Data]>>;
+  set: ActorMethod<[string, Data], undefined>;
+  transferFreezingThresholdCycles: ActorMethod<[], undefined>;
 }
 export interface DataFilter {
   notContains: [] | [string];
