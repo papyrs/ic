@@ -25,18 +25,18 @@ import {
   updateParagraphAssets,
   updateSlideChart,
   updateSlideImages
-} from '../utils/sync.attributes.utils';
+} from '../sync/attributes.sync';
 import {
   uploadDeckData,
   uploadDocData,
   uploadParagraphData,
   uploadSlideData
-} from '../utils/sync.data.utils';
+} from '../sync/data.sync';
 import {
   uploadDeckBackgroundAssets,
   uploadParagraphAssets,
   uploadSlideAssets
-} from '../utils/sync.storage.utils';
+} from '../sync/storage.sync';
 
 export const uploadWorker = async (
   {

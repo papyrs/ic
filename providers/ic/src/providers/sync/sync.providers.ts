@@ -11,7 +11,7 @@ import {
   syncParagraphImage,
   syncSlideChart,
   syncSlideImage
-} from '../../utils/sync.window.utils';
+} from '../../sync/window.sync';
 import {uploadWorker} from '../../workers/sync.ic.worker';
 import {getIdentity} from '../auth/auth.providers';
 
