@@ -1,8 +1,9 @@
 import {User, UserData} from '@deckdeckgo/editor';
 import {Identity} from '@dfinity/agent';
 import {nanoid} from 'nanoid';
-import {getData, setData} from '../api/data.api';
+import {getData} from '../api/data.api';
 import {_SERVICE as DataBucketActor} from '../canisters/data/data.did';
+import {setData} from '../services/data.services';
 import {EnvStore} from '../stores/env.store';
 import {EnvironmentIC} from '../types/env.types';
 import {InternetIdentityAuth} from '../types/identity';

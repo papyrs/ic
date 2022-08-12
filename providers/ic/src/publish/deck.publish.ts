@@ -1,5 +1,5 @@
 import {Deck, DeckData, DeckPublishData, deckPublishData, PublishData} from '@deckdeckgo/editor';
-import {setData} from '../api/data.api';
+import {setData} from '../services/data.services';
 import {EnvStore} from '../stores/env.store';
 import {
   initIndexHTML,

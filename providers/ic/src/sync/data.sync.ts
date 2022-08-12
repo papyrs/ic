@@ -8,8 +8,8 @@ import {
   Slide,
   SlideData
 } from '@deckdeckgo/editor';
-import {setData} from '../api/data.api';
 import {_SERVICE as DataBucketActor} from '../canisters/data/data.did';
+import {setData} from '../services/data.services';
 import {LogWindow} from '../types/sync.window';
 
 export const uploadDeckData = async ({

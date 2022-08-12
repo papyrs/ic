@@ -1,5 +1,5 @@
 import {log, UpdateUser, User, UserData} from '@deckdeckgo/editor';
-import {setData} from '../../api/data.api';
+import {setData} from '../../services/data.services';
 
 export const updateUser: UpdateUser = async (user: User): Promise<User> => {
   log({msg: '[update][start] user'});
