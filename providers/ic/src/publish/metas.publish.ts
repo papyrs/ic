@@ -9,7 +9,7 @@ import {prepareIndexHtml, updateIndexHtmlPosts} from './index-html.publish';
 import {prepareRSS} from './rss.publish';
 import {prepareSitemap} from './sitemap.publish';
 import {getAuthor, StorageUpload} from './common.publish';
-import {getStorageActor, upload} from '../utils/storage.utils';
+import {getStorageActor, upload} from '../api/storage.api';
 
 export const publishDeckMetas = async ({
   owner_id,

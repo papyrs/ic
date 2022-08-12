@@ -8,7 +8,7 @@ import {EnvStore} from '../stores/env.store';
 import {toNullable} from '../utils/did.utils';
 import {BucketActor} from '../utils/manager.utils';
 import {getAuthor} from './common.publish';
-import {getStorageActor, upload} from '../utils/storage.utils';
+import {getStorageActor, upload} from '../api/storage.api';
 
 type KitMimeType = 'text/javascript' | 'text/plain' | 'application/manifest+json' | 'text/css';
 

@@ -3,7 +3,7 @@ import {_SERVICE as StorageBucketActor} from '../canisters/storage/storage.did';
 import {EnvStore} from '../stores/env.store';
 import {BucketActor} from '../utils/manager.utils';
 import {updateTemplateSocialImage} from './social.publish';
-import {encodeFilename, getStorageActor, upload} from '../utils/storage.utils';
+import {encodeFilename, getStorageActor, upload} from '../api/storage.api';
 
 export interface StorageUpload {
   actor: StorageBucketActor;

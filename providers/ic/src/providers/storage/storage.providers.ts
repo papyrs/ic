@@ -12,7 +12,7 @@ import {AssetKey, _SERVICE as StorageBucketActor} from '../../canisters/storage/
 import {LogWindow} from '../../types/sync.window';
 import {toNullable} from '../../utils/did.utils';
 import {BucketActor, getStorageBucket} from '../../utils/manager.utils';
-import {encodeFilename, getStorageActor, upload} from '../../utils/storage.utils';
+import {encodeFilename, getStorageActor, upload} from '../../api/storage.api';
 import {getIdentity} from '../auth/auth.providers';
 
 export const uploadFile: UploadFile = async ({
