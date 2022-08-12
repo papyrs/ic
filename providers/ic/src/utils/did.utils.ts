@@ -10,8 +10,13 @@ export const fromNullable = <T>(value: [] | [T]): T | undefined => {
   return value?.[0];
 };
 
+// Timestamps on the IC are in nanoseconds
+// https://internetcomputer.org/docs/current/references/motoko-ref/Time
+
+const NANO_SECONDS = 1000 * 1000;
+
 export const toTimestamp = (value: Date): Time => {
-  return BigInt(toDate(value).getTime());
+  return BigInt(toDate(value).getTime() * NANO_SECONDS);
 };
 
 export const toNullableTimestamp = (value?: Date): [] | [Time] => {
@@ -21,11 +26,11 @@ export const toNullableTimestamp = (value?: Date): [] | [Time] => {
 };
 
 export const fromTimestamp = (value: Time): Date => {
-  return new Date(Number(value));
+  return new Date(Number(value) / NANO_SECONDS);
 };
 
 export const fromNullableTimestamp = (value?: [] | [Time]): Date | undefined => {
-  return !isNaN(parseInt(`${value?.[0]}`)) ? new Date(`${value[0]}`) : undefined;
+  return !isNaN(parseInt(`${value?.[0]}`)) ? fromTimestamp(value[0]) : undefined;
 };
 
 // Try to parse to number or boolean from string. If it fails, as for a string, use the value as it.
