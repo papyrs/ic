@@ -3,10 +3,10 @@ import {Identity} from '@dfinity/agent';
 import {_SERVICE as StorageBucketActor} from '../../canisters/storage/storage.did';
 import {EnvStore} from '../../stores/env.store';
 import {BucketActor} from '../../utils/manager.utils';
-import {emitDeckPublished, publishDeck} from '../../utils/publish.deck.utils';
-import {emitDocPublished, publishDoc} from '../../utils/publish.doc.utils';
-import {publishDeckMetas, publishDocMetas, updateIndexHtml} from '../../utils/publish.metas.utils';
-import {uploadResources} from '../../utils/publish.resources.utils';
+import {emitDeckPublished, publishDeck} from '../../publish/deck.publish';
+import {emitDocPublished, publishDoc} from '../../publish/doc.publish';
+import {publishDeckMetas, publishDocMetas, updateIndexHtml} from '../../publish/metas.publish';
+import {uploadResources} from '../../publish/resources.publish';
 import {getStorageActor} from '../../utils/storage.utils';
 import {getIdentity} from '../auth/auth.providers';
 

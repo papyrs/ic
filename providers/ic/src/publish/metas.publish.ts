@@ -4,12 +4,12 @@ import {_SERVICE as StorageBucketActor} from '../canisters/storage/storage.did';
 import {deckEntries} from '../providers/data/deck.providers';
 import {docEntries} from '../providers/data/doc.providers';
 import {PublishMeta} from '../types/publish.metas';
-import {BucketActor} from './manager.utils';
-import {prepareIndexHtml, updateIndexHtmlPosts} from './publish.index-html.utils';
-import {prepareRSS} from './publish.rss.utils';
-import {prepareSitemap} from './publish.sitemap.utils';
-import {getAuthor, StorageUpload} from './publish.utils';
-import {getStorageActor, upload} from './storage.utils';
+import {BucketActor} from '../utils/manager.utils';
+import {prepareIndexHtml, updateIndexHtmlPosts} from './index-html.publish';
+import {prepareRSS} from './rss.publish';
+import {prepareSitemap} from './sitemap.publish';
+import {getAuthor, StorageUpload} from './common.publish';
+import {getStorageActor, upload} from '../utils/storage.utils';
 
 export const publishDeckMetas = async ({
   owner_id,

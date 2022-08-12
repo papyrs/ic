@@ -1,7 +1,7 @@
 import {Meta, PublishData, toDate} from '@deckdeckgo/editor';
 import {EnvStore} from '../stores/env.store';
 import {PublishMeta} from '../types/publish.metas';
-import {updateTemplate} from './publish.utils';
+import {updateTemplate} from './common.publish';
 
 export const prepareIndexHtml = async ({
   bucketUrl,
