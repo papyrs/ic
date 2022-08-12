@@ -142,11 +142,13 @@ export const setData = <T, D>({
 
       const now: Date = new Date();
 
+      // We update the data with the current updated_at time
+      // The canister will check if the updated_at date is equals to the entity timestamp otherwise will reject the update to prevent overwrite of data if user uses multiple devices
       await dataActor.set(key, {
         id,
         data: await toArray<D>(data),
-        created_at: toTimestamp((data as unknown as {created_at: Date}).created_at || new Date()),
-        updated_at: toTimestamp(now)
+        created_at: toTimestamp((data as unknown as {created_at: Date}).created_at ?? now),
+        updated_at: toTimestamp((data as unknown as {updated_at: Date}).updated_at ?? now)
       });
 
       const t1 = performance.now();

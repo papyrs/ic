@@ -1,7 +1,7 @@
 import HashMap "mo:base/HashMap";
 import Text "mo:base/Text";
 import Iter "mo:base/Iter";
-
+import Result "mo:base/Result";
 import Error "mo:base/Error";
 
 import Types "../types/types";
@@ -45,7 +45,7 @@ actor class DataBucket(owner: Types.UserId) = this {
   };
 
   public shared query({ caller }) func list(filter: ?DataFilter) : async [(Text, Data)] {
-      if (Utils.isPrincipalNotEqual(caller, user)) {
+    if (Utils.isPrincipalNotEqual(caller, user)) {
         throw Error.reject("User does not have the permission to list the data.");
     };
 
@@ -58,7 +58,14 @@ actor class DataBucket(owner: Types.UserId) = this {
         throw Error.reject("User does not have the permission to set data.");
     };
 
-    store.put(key, data);
+    let result: Result.Result<Text, Text> = store.put(key, data);
+
+    switch (result) {
+        case (#err error) {
+            throw Error.reject(error);
+        };
+        case (#ok msg) {};
+    };
   };
 
   public shared({ caller }) func del(key: Text) : async () {

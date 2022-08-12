@@ -2,6 +2,8 @@ import Text "mo:base/Text";
 import HashMap "mo:base/HashMap";
 import Iter "mo:base/Iter";
 import Array "mo:base/Array";
+import Result "mo:base/Result";
+import Result "mo:base/Time";
 
 import Store "../stores/store";
 
@@ -16,8 +18,41 @@ module {
     public class DataStore() {
         private let store: Store.Store<Data> = Store.Store<Data>();
 
-        public func put(key: Text, value: Data) {
-            store.put(key, value);
+        public func put(key: Text, data: Data) {
+            let entry: ?Data = get(key);
+
+            let now: Time.Time = Time.now();
+            
+            switch (entry) {
+                case null {
+                    store.put(key, {
+                        id;
+                        data;
+                        created_at = now;
+                        updated_at = now;
+                    });
+                    return #ok "Data created.";
+                };
+                case (?entry) {
+                    if (entry.updated_at != data.updated_at) {
+                        return #err "Data timestamp is outdated or in the future - does not match current data.";
+                    };
+
+                    // Should never happens since keys are in sync with ids
+                    if (entry.id != id) {
+                        return #err "Data id does not match.";
+                    };
+
+                    store.put(key, {
+                        id;
+                        data;
+                        created_at = entry.created_at;
+                        updated_at = now;
+                    });
+
+                    return #ok "Data updated.";
+                };
+            };
         };
 
         public func get(key: Text): ?Data {
