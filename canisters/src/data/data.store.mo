@@ -3,7 +3,7 @@ import HashMap "mo:base/HashMap";
 import Iter "mo:base/Iter";
 import Array "mo:base/Array";
 import Result "mo:base/Result";
-import Result "mo:base/Time";
+import Time "mo:base/Time";
 
 import Store "../stores/store";
 
@@ -18,24 +18,32 @@ module {
     public class DataStore() {
         private let store: Store.Store<Data> = Store.Store<Data>();
 
-        public func put(key: Text, data: Data) {
+        /// @deprecated The new put function checks the timestamp to avoid data to be overwritten
+        public func putNoChecks(key: Text, value: Data) {
+            store.put(key, value);
+        };
+
+        public func put(key: Text, {id; data; updated_at;}: Data): Result.Result<Data, Text> {
             let entry: ?Data = get(key);
 
             let now: Time.Time = Time.now();
-            
+
             switch (entry) {
                 case null {
-                    store.put(key, {
+                    let newData: Data = {
                         id;
                         data;
                         created_at = now;
                         updated_at = now;
-                    });
-                    return #ok "Data created.";
+                    };
+
+                    store.put(key, newData);
+
+                    return #ok newData;
                 };
                 case (?entry) {
-                    if (entry.updated_at != data.updated_at) {
-                        return #err "Data timestamp is outdated or in the future - does not match current data.";
+                    if (entry.updated_at != updated_at) {
+                        return #err "Data timestamp is outdated or in the future - updated_at does not match current data.";
                     };
 
                     // Should never happens since keys are in sync with ids
@@ -43,14 +51,16 @@ module {
                         return #err "Data id does not match.";
                     };
 
-                    store.put(key, {
+                    let updateData: Data = {
                         id;
                         data;
                         created_at = entry.created_at;
                         updated_at = now;
-                    });
+                    };
 
-                    return #ok "Data updated.";
+                    store.put(key, updateData);
+
+                    return #ok updateData;
                 };
             };
         };

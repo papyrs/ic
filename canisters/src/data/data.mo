@@ -53,18 +53,29 @@ actor class DataBucket(owner: Types.UserId) = this {
     return results;
   };
 
+  /// @deprecated Backwards compatibility - function will be removed few weeks after the dapp has been updated to avoid issue with caches 
   public shared({ caller }) func set(key: Text, data: Data) : async () {
     if (Utils.isPrincipalNotEqual(caller, user)) {
         throw Error.reject("User does not have the permission to set data.");
     };
 
-    let result: Result.Result<Text, Text> = store.put(key, data);
+    store.putNoChecks(key, data);
+  };
+
+  public shared({ caller }) func put(key: Text, data: Data) : async (Data) {
+    if (Utils.isPrincipalNotEqual(caller, user)) {
+        throw Error.reject("User does not have the permission to set data.");
+    };
+
+    let result: Result.Result<Data, Text> = store.put(key, data);
 
     switch (result) {
         case (#err error) {
             throw Error.reject(error);
         };
-        case (#ok msg) {};
+        case (#ok resultData) {
+          return resultData;
+        };
     };
   };
 
