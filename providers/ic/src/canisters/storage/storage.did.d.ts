@@ -1,4 +1,6 @@
+import type {ActorMethod} from '@dfinity/agent';
 import type {Principal} from '@dfinity/principal';
+
 export interface AssetKey {
   token: [] | [string];
   name: string;
@@ -24,21 +26,27 @@ export interface HttpResponse {
   status_code: number;
 }
 export interface StorageBucket {
-  commitUpload: (arg_0: {
-    headers: Array<HeaderField__1>,
-    chunkIds: Array<bigint>,
-    batchId: bigint
-  }) => Promise<undefined>;
-  cyclesBalance: () => Promise<bigint>;
-  del: (arg_0: {token: [] | [string], fullPath: string}) => Promise<undefined>;
-  http_request: (arg_0: HttpRequest) => Promise<HttpResponse>;
-  http_request_streaming_callback: (
-    arg_0: StreamingCallbackToken
-  ) => Promise<StreamingCallbackHttpResponse>;
-  initUpload: (arg_0: AssetKey) => Promise<{batchId: bigint}>;
-  list: (arg_0: [] | [string]) => Promise<Array<AssetKey>>;
-  transferFreezingThresholdCycles: () => Promise<undefined>;
-  uploadChunk: (arg_0: Chunk) => Promise<{chunkId: bigint}>;
+  commitUpload: ActorMethod<
+    [
+      {
+        headers: Array<HeaderField__1>,
+        chunkIds: Array<bigint>,
+        batchId: bigint
+      }
+    ],
+    undefined
+  >;
+  cyclesBalance: ActorMethod<[], bigint>;
+  del: ActorMethod<[{token: [] | [string], fullPath: string}], undefined>;
+  http_request: ActorMethod<[HttpRequest], HttpResponse>;
+  http_request_streaming_callback: ActorMethod<
+    [StreamingCallbackToken],
+    StreamingCallbackHttpResponse
+  >;
+  initUpload: ActorMethod<[AssetKey], {batchId: bigint}>;
+  list: ActorMethod<[[] | [string]], Array<AssetKey>>;
+  transferFreezingThresholdCycles: ActorMethod<[], undefined>;
+  uploadChunk: ActorMethod<[Chunk], {chunkId: bigint}>;
 }
 export interface StreamingCallbackHttpResponse {
   token: [] | [StreamingCallbackToken__1];
