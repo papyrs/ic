@@ -6,7 +6,7 @@ import {EnvStore} from '../stores/env.store';
 import {EnvironmentIC} from '../types/env.types';
 import {InternetIdentityAuth} from '../types/identity';
 import {LogWindow} from '../types/sync.window';
-import {getData, setData} from '../utils/data.utils';
+import {getData, setData} from '../api/data.api';
 import {initIdentity} from '../utils/identity.utils';
 import {BucketActor, getDataBucket} from '../utils/manager.utils';
 

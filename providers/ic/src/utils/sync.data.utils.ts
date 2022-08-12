@@ -10,7 +10,7 @@ import {
 } from '@deckdeckgo/editor';
 import {_SERVICE as DataBucketActor} from '../canisters/data/data.did';
 import {LogWindow} from '../types/sync.window';
-import {setData} from './data.utils';
+import {setData} from '../api/data.api';
 
 export const uploadDeckData = async ({
   deck,

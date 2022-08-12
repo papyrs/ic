@@ -9,8 +9,8 @@ import {
   toArray,
   toNullable,
   toTimestamp
-} from './did.utils';
-import {BucketActor, getDataBucket} from './manager.utils';
+} from '../utils/did.utils';
+import {BucketActor, getDataBucket} from '../utils/manager.utils';
 
 export const entries = async <T, D>({
   startsWith,

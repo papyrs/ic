@@ -17,7 +17,7 @@ import {EnvironmentIC} from '../types/env.types';
 import {InternetIdentityAuth} from '../types/identity';
 import {SyncStorage, SyncStorageSlide} from '../types/sync.storage';
 import {LogWindow, SyncWindow} from '../types/sync.window';
-import {deleteData} from '../utils/data.utils';
+import {deleteData} from '../api/data.api';
 import {initIdentity} from '../utils/identity.utils';
 import {BucketActor, getDataBucket, getStorageBucket} from '../utils/manager.utils';
 import {

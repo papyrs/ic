@@ -1,6 +1,6 @@
 import {Doc, DocData, docPublishData, DocPublishData, PublishData} from '@deckdeckgo/editor';
 import {EnvStore} from '../stores/env.store';
-import {setData} from './data.utils';
+import {setData} from '../api/data.api';
 import {uploadSocialImage} from './publish.social.utils';
 import {
   initIndexHTML,
