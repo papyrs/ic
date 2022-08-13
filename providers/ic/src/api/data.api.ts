@@ -1,7 +1,7 @@
 import {Identity} from '@dfinity/agent';
 import {Data, DataFilter, _SERVICE as DataBucketActor} from '../canisters/data/data.did';
 import {getIdentity} from '../providers/auth/auth.providers';
-import {Entity} from '../types/data';
+import {IdbData} from '../types/data';
 import {LogWindow} from '../types/sync.window';
 import {fromArray, fromNullable, toArray, toNullable} from '../utils/did.utils';
 import {BucketActor, getDataBucket} from '../utils/manager.utils';
@@ -12,7 +12,7 @@ export const entries = async <D>({
 }: {
   startsWith?: string;
   notContains?: string;
-}): Promise<Entity<D>[]> => {
+}): Promise<IdbData<D>[]> => {
   const identity: Identity | undefined = getIdentity();
 
   if (!identity) {
@@ -34,7 +34,7 @@ export const entries = async <D>({
     })
   );
 
-  const promises: Promise<Entity<D>>[] = data.map(([, data]: [string, Data]) =>
+  const promises: Promise<IdbData<D>>[] = data.map(([, data]: [string, Data]) =>
     fromData<D>({data, identity})
   );
 
@@ -47,7 +47,7 @@ const fromData = async <D>({
 }: {
   data: Data;
   identity: Identity;
-}): Promise<Entity<D>> => {
+}): Promise<IdbData<D>> => {
   const dataData: D = await fromArray<D>(data.data);
 
   return {
@@ -91,7 +91,7 @@ export const getData = async <D>({
 }: {
   key: string;
   actor?: DataBucketActor;
-}): Promise<Entity<D> | undefined> => {
+}): Promise<IdbData<D> | undefined> => {
   const dataActor: DataBucketActor = actor || (await getDataActor());
 
   const entry: Data | undefined = fromNullable<Data>(await dataActor.get(key));
@@ -112,16 +112,16 @@ export const getData = async <D>({
 
 export const setData = async <D>({
   key,
-  entity,
+  idbData,
   actor = undefined
 }: {
   key: string;
-  entity: Entity<D>;
+  idbData: IdbData<D>;
   actor?: DataBucketActor;
-}): Promise<Entity<D>> => {
+}): Promise<IdbData<D>> => {
   const dataActor: DataBucketActor = actor || (await getDataActor());
 
-  const {id, data, created_at, updated_at} = entity;
+  const {id, data, created_at, updated_at} = idbData;
 
   const updatedData: Data = await dataActor.put(key, {
     id,

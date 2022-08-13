@@ -107,7 +107,7 @@ const createUser = async ({
 
   return setData<UserData>({
     key: `/user`,
-    entity: {
+    idbData: {
       id,
       data
     },

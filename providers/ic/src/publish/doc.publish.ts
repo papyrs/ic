@@ -46,7 +46,7 @@ export const publishDoc = async ({
   // 3. Update doc meta information
   const doc: Doc = await setData<DocData>({
     key: `/docs/${id}`,
-    entity: {
+    idbData: {
       ...docSource,
       data: docData
     }

@@ -43,7 +43,7 @@ export const publishDeck = async ({
   // 3. Update deck meta information
   const deck: Deck = await setData<DeckData>({
     key: `/decks/${id}`,
-    entity: {
+    idbData: {
       ...deckSource,
       data: deckData
     }

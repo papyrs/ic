@@ -13,7 +13,7 @@ import {_SERVICE as FeedActor} from '../../canisters/feed/feed.did';
 import {_SERVICE as StorageBucketActor} from '../../canisters/storage/storage.did';
 import {setData} from '../../services/data.services';
 import {EnvStore} from '../../stores/env.store';
-import {Entity} from '../../types/data';
+import {IdbData} from '../../types/data';
 import {toNullable} from '../../utils/did.utils';
 import {createFeedActor} from '../../utils/feed.utils';
 import {BucketActor, getStorageBucket} from '../../utils/manager.utils';
@@ -31,7 +31,7 @@ export const docSubmitFeed: DocSubmitFeed = async ({doc}: {doc: Doc}): Promise<D
 
   await submitFeed({meta, id});
 
-  const updatedDoc: Doc = await updateMetaFeed({key: 'docs', entity: doc});
+  const updatedDoc: Doc = await updateMetaFeed({key: 'docs', idbData: doc});
 
   emitSubmitted({data: updatedDoc, type: 'docFeedSubmitted'});
 
@@ -50,7 +50,7 @@ export const deckSubmitFeed: DeckSubmitFeed = async ({deck}: {deck: Deck}): Prom
 
   await submitFeed({meta, id});
 
-  const updatedDeck: Deck = await updateMetaFeed({key: 'decks', entity: deck});
+  const updatedDeck: Deck = await updateMetaFeed({key: 'decks', idbData: deck});
 
   emitSubmitted({data: updatedDeck, type: 'deckFeedSubmitted'});
 
@@ -121,17 +121,17 @@ const submitFeed = async ({meta, id}: {meta: Meta; id: string}) => {
 
 const updateMetaFeed = async <D extends DeckData | DocData>({
   key,
-  entity
+  idbData
 }: {
   key: 'decks' | 'docs';
-  entity: Entity<D>;
-}): Promise<Entity<D>> => {
+  idbData: IdbData<D>;
+}): Promise<IdbData<D>> => {
   log({msg: `[update][start] ${key}`});
   const t0 = performance.now();
 
-  const {data: existingData, id, created_at, updated_at} = entity;
+  const {data: existingData, id, created_at, updated_at} = idbData;
 
-  const entityToUpdate: Entity<D> = {
+  const entityToUpdate: IdbData<D> = {
     id,
     data: {
       ...existingData,
@@ -145,9 +145,9 @@ const updateMetaFeed = async <D extends DeckData | DocData>({
     updated_at
   };
 
-  const updatedData: Entity<D> = await setData<D>({
+  const updatedData: IdbData<D> = await setData<D>({
     key: `/docs/${id}`,
-    entity: entityToUpdate
+    idbData: entityToUpdate
   });
 
   const t1 = performance.now();

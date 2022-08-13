@@ -7,7 +7,7 @@ export const updateUser: UpdateUser = async (user: User): Promise<User> => {
 
   const updatedUser: User = await setData<UserData>({
     key: `/user`,
-    entity: user
+    idbData: user
   });
 
   const t1 = performance.now();

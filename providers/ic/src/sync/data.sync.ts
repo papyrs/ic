@@ -23,7 +23,7 @@ export const uploadDeckData = async ({
 }) =>
   setData<DeckData>({
     key: `/decks/${deck.id}`,
-    entity: deck,
+    idbData: deck,
     actor,
     log
   });
@@ -41,7 +41,7 @@ export const uploadSlideData = async ({
 }) =>
   setData<SlideData>({
     key: `/decks/${deckId}/slides/${slide.id}`,
-    entity: slide,
+    idbData: slide,
     actor,
     log
   });
@@ -57,7 +57,7 @@ export const uploadDocData = async ({
 }) =>
   setData<DocData>({
     key: `/docs/${doc.id}`,
-    entity: doc,
+    idbData: doc,
     actor,
     log
   });
@@ -75,7 +75,7 @@ export const uploadParagraphData = async ({
 }) =>
   setData<ParagraphData>({
     key: `/docs/${docId}/paragraphs/${paragraph.id}`,
-    entity: paragraph,
+    idbData: paragraph,
     actor,
     log
   });
