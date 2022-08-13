@@ -15,6 +15,7 @@ module {
     type DataFilter = Filter.DataFilter;
 
     type Data = DataTypes.Data;
+    type PutData = DataTypes.PutData;
 
     public class DataStore() {
         private let store: Store.Store<Data> = Store.Store<Data>();
@@ -24,33 +25,42 @@ module {
             store.put(key, value);
         };
 
-        public func put(key: Text, {id; data; updated_at;}: Data): Result.Result<Data, Text> {
+        public func put(key: Text, putData: PutData): Result.Result<Data, Text> {
             let entry: ?Data = get(key);
-
-            let now: Time.Time = Time.now();
 
             switch (entry) {
                 case null {
-                    let newData: Data = {
-                        id;
-                        data;
-                        created_at = now;
-                        updated_at = now;
-                    };
-
-                    store.put(key, newData);
-
+                    let newData: Data = create(key, putData);
                     return #ok newData;
                 };
                 case (?entry) {
+                    return update(key, entry, putData);
+                };
+            };
+        };
+
+        private func update(key: Text, entry: Data, putData: PutData): Result.Result<Data, Text> {
+            let {id; data; updated_at;} = putData;
+
+            switch (updated_at) {
+                case null {
+                    // A data is provided but without current updated_at timestamp. This should throw an error.
+                    // But, at the moment, as temporary backwards compatibility until all users have created a new post or loaded at least once one from their canister, it performs a set of the store anyway.
+                    // TODO: to be removed at the same time as the deprecated functions.
+                    let newData: Data = create(key, putData);
+                    return #ok newData;
+                };
+                case (?updated_at) {
                     if (entry.updated_at != updated_at) {
                         return #err ("Data timestamp is outdated or in the future - updated_at does not match current data. " # Int.toText(entry.updated_at) # " " # Int.toText(updated_at));
                     };
 
                     // Should never happens since keys are in sync with ids
                     if (entry.id != id) {
-                        return #err "Data id does not match.";
+                        return #err ("Data ids do not match. " # entry.id # " " # id);
                     };
+
+                    let now: Time.Time = Time.now();
 
                     let updateData: Data = {
                         id;
@@ -64,6 +74,21 @@ module {
                     return #ok updateData;
                 };
             };
+        };
+
+        private func create(key: Text, {id; data;}: PutData): Data {
+            let now: Time.Time = Time.now();
+
+            let newData: Data = {
+                id;
+                data;
+                created_at = now;
+                updated_at = now;
+            };
+
+            store.put(key, newData);
+
+            return newData;
         };
 
         public func get(key: Text): ?Data {

@@ -12,16 +12,19 @@ export interface DataBucket {
   del: ActorMethod<[string], undefined>;
   get: ActorMethod<[string], [] | [Data]>;
   list: ActorMethod<[[] | [DataFilter]], Array<[string, Data]>>;
-  put: ActorMethod<[string, Data], Data>;
-  /**
-   * @deprecated
-   */
+  put: ActorMethod<[string, PutData], Data>;
   set: ActorMethod<[string, Data], undefined>;
   transferFreezingThresholdCycles: ActorMethod<[], undefined>;
 }
 export interface DataFilter {
   notContains: [] | [string];
   startsWith: [] | [string];
+}
+export interface PutData {
+  id: string;
+  updated_at: [] | [Time];
+  data: Array<number>;
+  created_at: [] | [Time];
 }
 export type Time = bigint;
 export type UserId = Principal;

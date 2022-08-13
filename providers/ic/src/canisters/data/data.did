@@ -1,5 +1,12 @@
 type UserId = principal;
 type Time = int;
+type PutData = 
+ record {
+   created_at: opt Time;
+   data: blob;
+   id: text;
+   updated_at: opt Time;
+ };
 type DataFilter = 
  record {
    notContains: opt text;
@@ -14,7 +21,7 @@ type DataBucket =
                                     text;
                                     Data;
                                   }) query;
-   put: (text, Data) -> (Data);
+   put: (text, PutData) -> (Data);
    set: (text, Data) -> ();
    transferFreezingThresholdCycles: () -> ();
  };

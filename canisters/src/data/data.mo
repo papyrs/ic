@@ -20,6 +20,7 @@ actor class DataBucket(owner: Types.UserId) = this {
   type UserId = Types.UserId;
 
   type Data = DataTypes.Data;
+  type PutData = DataTypes.PutData;
   type DataFilter = Filter.DataFilter;
 
   private stable let user: Types.UserId = owner;
@@ -62,7 +63,7 @@ actor class DataBucket(owner: Types.UserId) = this {
     store.putNoChecks(key, data);
   };
 
-  public shared({ caller }) func put(key: Text, data: Data) : async (Data) {
+  public shared({ caller }) func put(key: Text, data: PutData) : async (Data) {
     if (Utils.isPrincipalNotEqual(caller, user)) {
         throw Error.reject("User does not have the permission to set data.");
     };

@@ -3,7 +3,7 @@ import {Data, DataFilter, _SERVICE as DataBucketActor} from '../canisters/data/d
 import {getIdentity} from '../providers/auth/auth.providers';
 import {Entity} from '../types/data';
 import {LogWindow} from '../types/sync.window';
-import {fromArray, fromNullable, toArray, toNullable, toTimestamp} from '../utils/did.utils';
+import {fromArray, fromNullable, toArray, toNullable} from '../utils/did.utils';
 import {BucketActor, getDataBucket} from '../utils/manager.utils';
 
 export const entries = async <D>({
@@ -121,27 +121,18 @@ export const setData = async <D>({
 }): Promise<Entity<D>> => {
   const dataActor: DataBucketActor = actor || (await getDataActor());
 
-  // Used to prevent edge case
-  const now: Date = new Date();
-
   const {id, data, created_at, updated_at} = entity;
 
-  // Notably for backwards compatibility, created_at and updated_at used to be saved only in data and used to be not compared in backend
-  // But also for simplicity reason - e.g. create new user
-  const createdAt: bigint =
-    created_at ?? toTimestamp((data as unknown as {created_at: Date}).created_at ?? now);
-  const updatedAt: bigint =
-    updated_at ?? toTimestamp((data as unknown as {updated_at: Date}).updated_at ?? now);
-
-  // We update the data with the current updated_at time.
-  // The canister will check if the updated_at date is equals to the entity timestamp otherwise will reject the update to prevent overwrite of data if user uses multiple devices.
   const updatedData: Data = await dataActor.put(key, {
     id,
     data: await toArray<D>(data),
-    created_at: createdAt,
-    updated_at: updatedAt
+    created_at: toNullable(created_at),
+    updated_at: toNullable(updated_at)
   });
 
+  // We update the data with the updated_at timestamp generated in the backend.
+  // The canister checks if the updated_at date is equals to the entity timestamp otherwise it rejects the update to prevent overwrite of data if user uses multiple devices.
+  // In other words: to update a data, the current updated_at information need to be provided.
   return {
     id,
     data,

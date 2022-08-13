@@ -22,7 +22,7 @@ export const toTimestamp = (value: Date): Time => {
 export const toNullableTimestamp = (value?: Date): [] | [Time] => {
   const time: number | undefined = toDate(value)?.getTime();
 
-  return value && !isNaN(time) ? [toTimestamp(value)] : [];
+  return value !== undefined && value !== null && !isNaN(time) ? [toTimestamp(value)] : [];
 };
 
 export const fromTimestamp = (value: Time): Date => {
