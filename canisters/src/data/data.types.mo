@@ -4,11 +4,12 @@ import Blob "mo:base/Blob";
 
 module {
 
-    public type Data = {
+    public type DataRecord = {
         id: Text;
-
         data: Blob;
+    };
 
+    public type Data = DataRecord and {
         created_at: Time.Time;
         updated_at: Time.Time;
     };
@@ -17,13 +18,9 @@ module {
      * Same as data but with timestamp optional
      * When data are submitted it can be the first time, therefore have no timestamps yet
      */
-    public type PutData = {
-        id: Text;
-
-        data: Blob;
-
+    public type PutData = DataRecord and {
         created_at: ?Time.Time;
         updated_at: ?Time.Time;
     };
 
-}
+};
