@@ -4,6 +4,7 @@ import Iter "mo:base/Iter";
 import Array "mo:base/Array";
 import Result "mo:base/Result";
 import Time "mo:base/Time";
+import Int "mo:base/Int";
 
 import Store "../stores/store";
 
@@ -43,7 +44,7 @@ module {
                 };
                 case (?entry) {
                     if (entry.updated_at != updated_at) {
-                        return #err "Data timestamp is outdated or in the future - updated_at does not match current data.";
+                        return #err ("Data timestamp is outdated or in the future - updated_at does not match current data. " # Int.toText(entry.updated_at) # " " # Int.toText(updated_at));
                     };
 
                     // Should never happens since keys are in sync with ids
