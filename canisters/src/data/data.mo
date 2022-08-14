@@ -21,6 +21,8 @@ actor class DataBucket(owner: Types.UserId) = this {
 
   type Data = DataTypes.Data;
   type PutData = DataTypes.PutData;
+  type DelData = DataTypes.DelData;
+
   type DataFilter = Filter.DataFilter;
 
   private stable let user: Types.UserId = owner;
@@ -80,12 +82,29 @@ actor class DataBucket(owner: Types.UserId) = this {
     };
   };
 
+  /// @deprecated Backwards compatibility - function will be removed few weeks after the dapp has been updated to avoid issue with caches 
   public shared({ caller }) func del(key: Text) : async () {
     if (Utils.isPrincipalNotEqual(caller, user)) {
         throw Error.reject("User does not have the permission to delete the data.");
     };
 
-    let entry: ?Data = store.del(key);
+    let entry: ?Data = store.delNoChecks(key);
+  };
+
+  public shared({ caller }) func delete(key: Text, data: DelData) : async () {
+    if (Utils.isPrincipalNotEqual(caller, user)) {
+        throw Error.reject("User does not have the permission to delete the data.");
+    };
+
+    let result: Result.Result<?Data, Text> = store.del(key, data);
+
+    switch (result) {
+        case (#err error) {
+            throw Error.reject(error);
+        };
+        case (#ok resultData) {
+        };
+    };
   };
 
   /**

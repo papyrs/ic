@@ -7,6 +7,11 @@ type PutData =
    id: text;
    updated_at: opt Time;
  };
+type DelData = 
+ record {
+   id: text;
+   updated_at: Time;
+ };
 type DataFilter = 
  record {
    notContains: opt text;
@@ -16,6 +21,7 @@ type DataBucket =
  service {
    cyclesBalance: () -> (nat) query;
    del: (text) -> ();
+   delete: (text, DelData) -> ();
    get: (text) -> (opt Data) query;
    list: (opt DataFilter) -> (vec record {
                                     text;

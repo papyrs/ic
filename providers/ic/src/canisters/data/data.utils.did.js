@@ -1,6 +1,7 @@
 export const idlFactory = ({IDL}) => {
   const UserId = IDL.Principal;
   const Time = IDL.Int;
+  const DelData = IDL.Record({id: IDL.Text, updated_at: Time});
   const Data = IDL.Record({
     id: IDL.Text,
     updated_at: Time,
@@ -20,6 +21,7 @@ export const idlFactory = ({IDL}) => {
   const DataBucket = IDL.Service({
     cyclesBalance: IDL.Func([], [IDL.Nat], ['query']),
     del: IDL.Func([IDL.Text], [], []),
+    delete: IDL.Func([IDL.Text, DelData], [], []),
     get: IDL.Func([IDL.Text], [IDL.Opt(Data)], ['query']),
     list: IDL.Func([IDL.Opt(DataFilter)], [IDL.Vec(IDL.Tuple(IDL.Text, Data))], ['query']),
     put: IDL.Func([IDL.Text, PutData], [Data], []),

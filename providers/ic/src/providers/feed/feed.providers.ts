@@ -1,4 +1,5 @@
 import {
+  DataRecord,
   Deck,
   DeckData,
   DeckSubmitFeed,
@@ -13,7 +14,6 @@ import {_SERVICE as FeedActor} from '../../canisters/feed/feed.did';
 import {_SERVICE as StorageBucketActor} from '../../canisters/storage/storage.did';
 import {setData} from '../../services/data.services';
 import {EnvStore} from '../../stores/env.store';
-import {IdbData} from '../../types/data';
 import {toNullable} from '../../utils/did.utils';
 import {createFeedActor} from '../../utils/feed.utils';
 import {BucketActor, getStorageBucket} from '../../utils/manager.utils';
@@ -124,14 +124,14 @@ const updateMetaFeed = async <D extends DeckData | DocData>({
   idbData
 }: {
   key: 'decks' | 'docs';
-  idbData: IdbData<D>;
-}): Promise<IdbData<D>> => {
+  idbData: DataRecord<D>;
+}): Promise<DataRecord<D>> => {
   log({msg: `[update][start] ${key}`});
   const t0 = performance.now();
 
   const {data: existingData, id, created_at, updated_at} = idbData;
 
-  const entityToUpdate: IdbData<D> = {
+  const entityToUpdate: DataRecord<D> = {
     id,
     data: {
       ...existingData,
@@ -145,7 +145,7 @@ const updateMetaFeed = async <D extends DeckData | DocData>({
     updated_at
   };
 
-  const updatedData: IdbData<D> = await setData<D>({
+  const updatedData: DataRecord<D> = await setData<D>({
     key: `/docs/${id}`,
     idbData: entityToUpdate
   });

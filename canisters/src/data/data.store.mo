@@ -16,6 +16,7 @@ module {
 
     type Data = DataTypes.Data;
     type PutData = DataTypes.PutData;
+    type DelData = DataTypes.DelData;
 
     public class DataStore() {
         private let store: Store.Store<Data> = Store.Store<Data>();
@@ -26,20 +27,20 @@ module {
         };
 
         public func put(key: Text, putData: PutData): Result.Result<Data, Text> {
-            let entry: ?Data = get(key);
+            let record: ?Data = get(key);
 
-            switch (entry) {
+            switch (record) {
                 case null {
                     let newData: Data = create(key, putData);
                     return #ok newData;
                 };
-                case (?entry) {
-                    return update(key, entry, putData);
+                case (?record) {
+                    return update(key, record, putData);
                 };
             };
         };
 
-        private func update(key: Text, entry: Data, putData: PutData): Result.Result<Data, Text> {
+        private func update(key: Text, record: Data, putData: PutData): Result.Result<Data, Text> {
             let {id; data; updated_at;} = putData;
 
             switch (updated_at) {
@@ -51,27 +52,27 @@ module {
                     return #ok newData;
                 };
                 case (?updated_at) {
-                    if (entry.updated_at != updated_at) {
-                        return #err ("Data timestamp is outdated or in the future - updated_at does not match current data. " # Int.toText(entry.updated_at) # " " # Int.toText(updated_at));
+                    let timestamp: Result.Result<Text, Text> = checkTimestamp(record, id, updated_at);
+
+                    switch (timestamp) {
+                        case (#err error) {
+                            return #err error;
+                        };
+                        case (#ok text) {
+                            let now: Time.Time = Time.now();
+
+                            let updateData: Data = {
+                                id;
+                                data;
+                                created_at = record.created_at;
+                                updated_at = now;
+                            };
+
+                            store.put(key, updateData);
+
+                            return #ok updateData;
+                        };
                     };
-
-                    // Should never happens since keys are in sync with ids
-                    if (entry.id != id) {
-                        return #err ("Data ids do not match. " # entry.id # " " # id);
-                    };
-
-                    let now: Time.Time = Time.now();
-
-                    let updateData: Data = {
-                        id;
-                        data;
-                        created_at = entry.created_at;
-                        updated_at = now;
-                    };
-
-                    store.put(key, updateData);
-
-                    return #ok updateData;
                 };
             };
         };
@@ -95,8 +96,46 @@ module {
             return store.get(key);
         };
 
-        public func del(key: Text): ?Data {
+        /// @deprecated The new put function checks the timestamp to avoid data to be overwritten
+        public func delNoChecks(key: Text): ?Data {
             return store.del(key);
+        };
+
+        // The function does not throw an error if data does not exists because a paragraph might have been created offline, never sync but still added to the list of deleted paragraphs to sync
+        public func del(key: Text, {id; updated_at;}: DelData): Result.Result<?Data, Text> {
+            let record: ?Data = get(key);
+
+            switch (record) {
+                case null {
+                    return #ok null;
+                };
+                case (?record) {
+                    let timestamp: Result.Result<Text, Text> = checkTimestamp(record, id, updated_at);
+
+                    switch (timestamp) {
+                        case (#err error) {
+                            return #err error;
+                        };
+                        case (#ok text) {
+                            let result: ?Data = store.del(key);
+                            return #ok result;
+                        };
+                    };
+                };
+            };
+        };
+
+        private func checkTimestamp(record: Data, id: Text, updated_at: Time.Time): Result.Result<Text, Text> {
+            if (record.updated_at != updated_at) {
+                return #err ("Data timestamp is outdated or in the future - updated_at does not match current data. " # Int.toText(record.updated_at) # " " # Int.toText(updated_at));
+            };
+
+            // Should never happens since keys are in sync with ids
+            if (record.id != id) {
+                return #err ("Data ids do not match. " # record.id # " " # id);
+            };
+
+            return #ok "Timestamp matches.";
         };
 
         public func entries(filter: ?DataFilter): [(Text, Data)] {

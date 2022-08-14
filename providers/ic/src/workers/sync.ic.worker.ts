@@ -239,8 +239,16 @@ const deleteSlides = async ({
 
   const promises: Promise<void>[] = deleteSlides
     .filter(({slideId}: SyncDataSlide) => slideId !== undefined)
-    .map(({deckId, slideId}: SyncDataSlide) =>
-      deleteData({key: `/decks/${deckId}/slides/${slideId}`, actor, log})
+    .map(({deckId, slideId, slide}: SyncDataSlide) =>
+      deleteData({
+        key: `/decks/${deckId}/slides/${slideId}`,
+        actor,
+        log,
+        ...(slide !== undefined &&
+          slide.updated_at !== undefined && {
+            data: {id: slideId, updated_at: slide.updated_at as bigint}
+          })
+      })
     );
 
   await Promise.all(promises);
@@ -403,13 +411,19 @@ const deleteParagraphs = async ({
     return;
   }
 
+  console.log(deleteParagraphs);
+
   const promises: Promise<void>[] = deleteParagraphs
     .filter(({paragraphId}: SyncDataParagraph) => paragraphId !== undefined)
-    .map(({docId, paragraphId}: SyncDataParagraph) =>
+    .map(({docId, paragraphId, paragraph}: SyncDataParagraph) =>
       deleteData({
         key: `/docs/${docId}/paragraphs/${paragraphId}`,
         actor,
-        log
+        log,
+        ...(paragraph !== undefined &&
+          paragraph.updated_at !== undefined && {
+            data: {id: paragraphId, updated_at: paragraph.updated_at as bigint}
+          })
       })
     );
 

@@ -1,7 +1,7 @@
+import type {DataRecord} from '@deckdeckgo/editor';
 import {Identity} from '@dfinity/agent';
-import {Data, DataFilter, _SERVICE as DataBucketActor} from '../canisters/data/data.did';
+import {Data, DataFilter, DelData, _SERVICE as DataBucketActor} from '../canisters/data/data.did';
 import {getIdentity} from '../providers/auth/auth.providers';
-import {IdbData} from '../types/data';
 import {LogWindow} from '../types/sync.window';
 import {fromArray, fromNullable, toArray, toNullable} from '../utils/did.utils';
 import {BucketActor, getDataBucket} from '../utils/manager.utils';
@@ -12,7 +12,7 @@ export const entries = async <D>({
 }: {
   startsWith?: string;
   notContains?: string;
-}): Promise<IdbData<D>[]> => {
+}): Promise<DataRecord<D>[]> => {
   const identity: Identity | undefined = getIdentity();
 
   if (!identity) {
@@ -34,7 +34,7 @@ export const entries = async <D>({
     })
   );
 
-  const promises: Promise<IdbData<D>>[] = data.map(([, data]: [string, Data]) =>
+  const promises: Promise<DataRecord<D>>[] = data.map(([, data]: [string, Data]) =>
     fromData<D>({data, identity})
   );
 
@@ -47,7 +47,7 @@ const fromData = async <D>({
 }: {
   data: Data;
   identity: Identity;
-}): Promise<IdbData<D>> => {
+}): Promise<DataRecord<D>> => {
   const dataData: D = await fromArray<D>(data.data);
 
   return {
@@ -64,11 +64,13 @@ const fromData = async <D>({
 export const deleteData = async ({
   key,
   actor,
-  log
+  log,
+  data
 }: {
   key: string;
   actor?: DataBucketActor;
   log?: LogWindow;
+  data?: DelData;
 }): Promise<void> => {
   if (!key) {
     return;
@@ -79,7 +81,14 @@ export const deleteData = async ({
 
   const dataActor: DataBucketActor = actor || (await getDataActor());
 
-  await dataActor.del(key);
+  console.log(data);
+
+  // TODO: deprecated - backwards compatibility - to be removed
+  if (!data) {
+    await dataActor.del(key);
+  } else {
+    await dataActor.delete(key, data);
+  }
 
   const t1 = performance.now();
   log?.({msg: `[delete][done] ${key}`, duration: t1 - t0});
@@ -91,7 +100,7 @@ export const getData = async <D>({
 }: {
   key: string;
   actor?: DataBucketActor;
-}): Promise<IdbData<D> | undefined> => {
+}): Promise<DataRecord<D> | undefined> => {
   const dataActor: DataBucketActor = actor || (await getDataActor());
 
   const entry: Data | undefined = fromNullable<Data>(await dataActor.get(key));
@@ -116,9 +125,9 @@ export const setData = async <D>({
   actor = undefined
 }: {
   key: string;
-  idbData: IdbData<D>;
+  idbData: DataRecord<D>;
   actor?: DataBucketActor;
-}): Promise<IdbData<D>> => {
+}): Promise<DataRecord<D>> => {
   const dataActor: DataBucketActor = actor || (await getDataActor());
 
   const {id, data, created_at, updated_at} = idbData;
@@ -126,8 +135,8 @@ export const setData = async <D>({
   const updatedData: Data = await dataActor.put(key, {
     id,
     data: await toArray<D>(data),
-    created_at: toNullable(created_at),
-    updated_at: toNullable(updated_at)
+    created_at: toNullable(created_at as bigint),
+    updated_at: toNullable(updated_at as bigint)
   });
 
   // We update the data with the updated_at timestamp generated in the backend.

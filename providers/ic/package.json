@@ -47,7 +47,7 @@
     "internet-computer"
   ],
   "dependencies": {
-    "@deckdeckgo/editor": "^7.14.0",
+    "@deckdeckgo/editor": "^8.0.0",
     "@dfinity/agent": "^0.12.0",
     "@dfinity/auth-client": "^0.12.0",
     "@dfinity/authentication": "^0.12.0",

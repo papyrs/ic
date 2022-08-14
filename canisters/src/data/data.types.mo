@@ -23,4 +23,12 @@ module {
         updated_at: ?Time.Time;
     };
 
+    /**
+     * To delete data we need the id but also timestamp to be sure user explicitely delete most actual version
+     */
+    public type DelData = {
+        id: Text;
+        updated_at: Time.Time;
+    };
+
 };
