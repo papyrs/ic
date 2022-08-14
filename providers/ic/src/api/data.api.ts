@@ -2,7 +2,6 @@ import type {DataRecord} from '@deckdeckgo/editor';
 import {Identity} from '@dfinity/agent';
 import {Data, DataFilter, DelData, _SERVICE as DataBucketActor} from '../canisters/data/data.did';
 import {getIdentity} from '../providers/auth/auth.providers';
-import {LogWindow} from '../types/sync.window';
 import {fromArray, fromNullable, toArray, toNullable} from '../utils/did.utils';
 import {BucketActor, getDataBucket} from '../utils/manager.utils';
 
@@ -64,24 +63,13 @@ const fromData = async <D>({
 export const deleteData = async ({
   key,
   actor,
-  log,
   data
 }: {
   key: string;
   actor?: DataBucketActor;
-  log?: LogWindow;
   data?: DelData;
 }): Promise<void> => {
-  if (!key) {
-    return;
-  }
-
-  log?.({msg: `[delete][start] ${key}`});
-  const t0 = performance.now();
-
   const dataActor: DataBucketActor = actor || (await getDataActor());
-
-  console.log(data);
 
   // TODO: deprecated - backwards compatibility - to be removed
   if (!data) {
@@ -89,9 +77,6 @@ export const deleteData = async ({
   } else {
     await dataActor.delete(key, data);
   }
-
-  const t1 = performance.now();
-  log?.({msg: `[delete][done] ${key}`, duration: t1 - t0});
 };
 
 export const getData = async <D>({

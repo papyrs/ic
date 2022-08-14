@@ -10,9 +10,9 @@ import {
   SyncDataSlide
 } from '@deckdeckgo/editor';
 import {Identity} from '@dfinity/agent';
-import {deleteData} from '../api/data.api';
 import {_SERVICE as DataBucketActor} from '../canisters/data/data.did';
 import {_SERVICE as StorageBucketActor} from '../canisters/storage/storage.did';
+import {deleteData} from '../services/data.services';
 import {EnvStore} from '../stores/env.store';
 import {
   updateDeckBackground,
@@ -410,8 +410,6 @@ const deleteParagraphs = async ({
   if (!deleteParagraphs || deleteParagraphs.length <= 0) {
     return;
   }
-
-  console.log(deleteParagraphs);
 
   const promises: Promise<void>[] = deleteParagraphs
     .filter(({paragraphId}: SyncDataParagraph) => paragraphId !== undefined)

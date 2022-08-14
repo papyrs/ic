@@ -1,5 +1,6 @@
 import {Deck, DeckData, DeckEntries, DeleteDeck, SnapshotDeck} from '@deckdeckgo/editor';
-import {deleteData, entries} from '../../api/data.api';
+import {entries} from '../../api/data.api';
+import {deleteData} from '../../services/data.services';
 
 export const deckEntries: DeckEntries = async (_userId: string): Promise<Deck[]> =>
   entries<DeckData>({startsWith: '/decks/', notContains: '/slides/'});
