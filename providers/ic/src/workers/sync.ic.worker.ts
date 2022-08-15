@@ -8,7 +8,7 @@ import {
   SyncDataDoc,
   SyncDataParagraph,
   SyncDataSlide
-} from "@deckdeckgo/editor";
+} from '@deckdeckgo/editor';
 import {Identity} from '@dfinity/agent';
 import {_SERVICE as DataBucketActor} from '../canisters/data/data.did';
 import {_SERVICE as StorageBucketActor} from '../canisters/storage/storage.did';
@@ -97,7 +97,6 @@ export const uploadWorker = async (
   }
 
   try {
-
     await uploadDecks({
       updateDecks,
       identity,
@@ -116,9 +115,9 @@ export const uploadWorker = async (
       log
     });
 
-    await deleteSlides({ deleteSlides: slidesToDelete, actor, log });
+    await deleteSlides({deleteSlides: slidesToDelete, actor, log});
 
-    await uploadDocs({ updateDocs, actor, log });
+    await uploadDocs({updateDocs, actor, log});
 
     await uploadParagraphs({
       updateParagraphs,
@@ -129,8 +128,7 @@ export const uploadWorker = async (
       log
     });
 
-    await deleteParagraphs({ deleteParagraphs: paragraphsToDelete, actor, log });
-
+    await deleteParagraphs({deleteParagraphs: paragraphsToDelete, actor, log});
   } catch (err) {
     log({msg: `[sync] ${err.message ?? 'Unexpected error'}`, level: 'error'});
     throw err;

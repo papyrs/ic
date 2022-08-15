@@ -1,5 +1,5 @@
 import type {DataRecord} from '@deckdeckgo/editor';
-import {update, del} from 'idb-keyval';
+import {del, update} from 'idb-keyval';
 import {deleteData as deleteDataApi, setData as setDataApi} from '../api/data.api';
 import {DelData, _SERVICE as DataBucketActor} from '../canisters/data/data.did';
 import {LogWindow} from '../types/sync.window';
