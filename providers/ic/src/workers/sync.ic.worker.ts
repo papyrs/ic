@@ -8,7 +8,7 @@ import {
   SyncDataDoc,
   SyncDataParagraph,
   SyncDataSlide
-} from '@deckdeckgo/editor';
+} from "@deckdeckgo/editor";
 import {Identity} from '@dfinity/agent';
 import {_SERVICE as DataBucketActor} from '../canisters/data/data.did';
 import {_SERVICE as StorageBucketActor} from '../canisters/storage/storage.did';
@@ -96,38 +96,45 @@ export const uploadWorker = async (
     return;
   }
 
-  await uploadDecks({
-    updateDecks,
-    identity,
-    dataActor: actor,
-    storageBucket,
-    syncWindow,
-    log
-  });
+  try {
 
-  await uploadSlides({
-    updateSlides,
-    identity,
-    actor,
-    storageBucket,
-    syncWindow,
-    log
-  });
+    await uploadDecks({
+      updateDecks,
+      identity,
+      dataActor: actor,
+      storageBucket,
+      syncWindow,
+      log
+    });
 
-  await deleteSlides({deleteSlides: slidesToDelete, actor, log});
+    await uploadSlides({
+      updateSlides,
+      identity,
+      actor,
+      storageBucket,
+      syncWindow,
+      log
+    });
 
-  await uploadDocs({updateDocs, actor, log});
+    await deleteSlides({ deleteSlides: slidesToDelete, actor, log });
 
-  await uploadParagraphs({
-    updateParagraphs,
-    identity,
-    actor,
-    storageBucket,
-    syncWindow,
-    log
-  });
+    await uploadDocs({ updateDocs, actor, log });
 
-  await deleteParagraphs({deleteParagraphs: paragraphsToDelete, actor, log});
+    await uploadParagraphs({
+      updateParagraphs,
+      identity,
+      actor,
+      storageBucket,
+      syncWindow,
+      log
+    });
+
+    await deleteParagraphs({ deleteParagraphs: paragraphsToDelete, actor, log });
+
+  } catch (err) {
+    log({msg: `[sync] ${err.message ?? 'Unexpected error'}`, level: 'error'});
+    throw err;
+  }
 };
 
 const uploadDecks = async ({
