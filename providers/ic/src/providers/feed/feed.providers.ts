@@ -72,7 +72,7 @@ const submitFeed = async ({meta, id}: {meta: Meta; id: string}) => {
     throw new Error('No storage found. Is the document published?');
   }
 
-  log({msg: '[submit][start] feed'});
+  log({msg: '[submit][start] feed', level: 'info'});
   const t0 = performance.now();
 
   const feedActor: FeedActor = await createFeedActor({identity});
@@ -116,7 +116,7 @@ const submitFeed = async ({meta, id}: {meta: Meta; id: string}) => {
   });
 
   const t1 = performance.now();
-  log({msg: '[submit][done] feed', duration: t1 - t0});
+  log({msg: '[submit][done] feed', duration: t1 - t0, level: 'info'});
 };
 
 const updateMetaFeed = async <D extends DeckData | DocData>({
@@ -126,7 +126,7 @@ const updateMetaFeed = async <D extends DeckData | DocData>({
   key: 'decks' | 'docs';
   idbData: DataRecord<D>;
 }): Promise<DataRecord<D>> => {
-  log({msg: `[update][start] ${key}`});
+  log({msg: `[update][start] ${key}`, level: 'info'});
   const t0 = performance.now();
 
   const {data: existingData, id, created_at, updated_at} = idbData;
@@ -151,7 +151,7 @@ const updateMetaFeed = async <D extends DeckData | DocData>({
   });
 
   const t1 = performance.now();
-  log({msg: `[update][done] ${key}`, duration: t1 - t0});
+  log({msg: `[update][done] ${key}`, duration: t1 - t0, level: 'info'});
 
   return updatedData;
 };

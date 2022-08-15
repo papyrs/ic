@@ -15,7 +15,7 @@ export const setData = async <D>({
   actor?: DataBucketActor;
   log?: LogWindow;
 }): Promise<DataRecord<D>> => {
-  log?.({msg: `[set][start] ${key}`});
+  log?.({msg: `[set][start] ${key}`, level: 'info'});
   const t0 = performance.now();
 
   const updatedEntity: DataRecord<D> = await setDataApi({key, actor, idbData: idbData});
@@ -29,7 +29,7 @@ export const setData = async <D>({
   }));
 
   const t1 = performance.now();
-  log?.({msg: `[set][done] ${key}`, duration: t1 - t0});
+  log?.({msg: `[set][done] ${key}`, duration: t1 - t0, level: 'info'});
 
   return updatedEntity;
 };
@@ -50,7 +50,7 @@ export const deleteData = async ({
     return;
   }
 
-  log?.({msg: `[delete][start] ${key}`});
+  log?.({msg: `[delete][start] ${key}`, level: 'info'});
   const t0 = performance.now();
 
   await deleteDataApi({key, actor, data});
@@ -62,5 +62,5 @@ export const deleteData = async ({
   }
 
   const t1 = performance.now();
-  log?.({msg: `[delete][done] ${key}`, duration: t1 - t0});
+  log?.({msg: `[delete][done] ${key}`, duration: t1 - t0, level: 'info'});
 };
