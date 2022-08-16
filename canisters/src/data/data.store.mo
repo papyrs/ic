@@ -96,17 +96,17 @@ module {
             return store.get(key);
         };
 
-        /// @deprecated The new put function checks the timestamp to avoid data to be overwritten
+        /// @deprecated The new del function checks the timestamp to avoid data to be overwritten
         public func delNoChecks(key: Text): ?Data {
             return store.del(key);
         };
 
-        // The function does not throw an error if data does not exists because a paragraph might have been created offline, never sync but still added to the list of deleted paragraphs to sync
         public func del(key: Text, {id; updated_at;}: DelData): Result.Result<?Data, Text> {
             let record: ?Data = get(key);
 
             switch (record) {
                 case null {
+                    // The function does not throw an error if data does not exists because a paragraph might have been created offline, never sync but still added to the list of deleted paragraphs to sync
                     return #ok null;
                 };
                 case (?record) {
@@ -127,15 +127,15 @@ module {
 
         private func checkTimestamp(record: Data, id: Text, updated_at: Time.Time): Result.Result<Text, Text> {
             if (record.updated_at != updated_at) {
-                return #err ("Data timestamp is outdated or in the future - updated_at does not match current data. " # Int.toText(record.updated_at) # " " # Int.toText(updated_at));
+                return #err ("Data timestamp is outdated or in the future - updated_at does not match most recent timesteamp. " # Int.toText(record.updated_at) # " - " # Int.toText(updated_at));
             };
 
             // Should never happens since keys are in sync with ids
             if (record.id != id) {
-                return #err ("Data ids do not match. " # record.id # " " # id);
+                return #err ("Data ids do not match. " # record.id # " - " # id);
             };
 
-            return #ok "Timestamp matches.";
+            return #ok "Timestamps are matching.";
         };
 
         public func entries(filter: ?DataFilter): [(Text, Data)] {

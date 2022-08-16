@@ -55,7 +55,7 @@ export const deleteData = async ({
 
   await deleteDataApi({key, actor, data});
 
-  // TODO: remove if once deprecated code will be removed
+  // TODO: remove once deprecated code will be removed too
   if (data !== undefined) {
     // Paragraph has been deleted in the cloud, we can delete the local record
     await del(key);
