@@ -10,9 +10,9 @@ import {
   SyncDataSlide
 } from '@deckdeckgo/editor';
 import {Identity} from '@dfinity/agent';
-import {deleteData} from '../api/data.api';
 import {_SERVICE as DataBucketActor} from '../canisters/data/data.did';
 import {_SERVICE as StorageBucketActor} from '../canisters/storage/storage.did';
+import {deleteData} from '../services/data.services';
 import {EnvStore} from '../stores/env.store';
 import {
   updateDeckBackground,
@@ -96,38 +96,43 @@ export const uploadWorker = async (
     return;
   }
 
-  await uploadDecks({
-    updateDecks,
-    identity,
-    dataActor: actor,
-    storageBucket,
-    syncWindow,
-    log
-  });
+  try {
+    await uploadDecks({
+      updateDecks,
+      identity,
+      dataActor: actor,
+      storageBucket,
+      syncWindow,
+      log
+    });
 
-  await uploadSlides({
-    updateSlides,
-    identity,
-    actor,
-    storageBucket,
-    syncWindow,
-    log
-  });
+    await uploadSlides({
+      updateSlides,
+      identity,
+      actor,
+      storageBucket,
+      syncWindow,
+      log
+    });
 
-  await deleteSlides({deleteSlides: slidesToDelete, actor, log});
+    await deleteSlides({deleteSlides: slidesToDelete, actor, log});
 
-  await uploadDocs({updateDocs, actor, log});
+    await uploadDocs({updateDocs, actor, log});
 
-  await uploadParagraphs({
-    updateParagraphs,
-    identity,
-    actor,
-    storageBucket,
-    syncWindow,
-    log
-  });
+    await uploadParagraphs({
+      updateParagraphs,
+      identity,
+      actor,
+      storageBucket,
+      syncWindow,
+      log
+    });
 
-  await deleteParagraphs({deleteParagraphs: paragraphsToDelete, actor, log});
+    await deleteParagraphs({deleteParagraphs: paragraphsToDelete, actor, log});
+  } catch (err) {
+    log({msg: `[sync] ${err.message ?? 'Unexpected error'}`, level: 'error'});
+    throw err;
+  }
 };
 
 const uploadDecks = async ({
@@ -239,8 +244,16 @@ const deleteSlides = async ({
 
   const promises: Promise<void>[] = deleteSlides
     .filter(({slideId}: SyncDataSlide) => slideId !== undefined)
-    .map(({deckId, slideId}: SyncDataSlide) =>
-      deleteData({key: `/decks/${deckId}/slides/${slideId}`, actor, log})
+    .map(({deckId, slideId, slide}: SyncDataSlide) =>
+      deleteData({
+        key: `/decks/${deckId}/slides/${slideId}`,
+        actor,
+        log,
+        ...(slide !== undefined &&
+          slide.updated_at !== undefined && {
+            data: {id: slideId, updated_at: slide.updated_at as bigint}
+          })
+      })
     );
 
   await Promise.all(promises);
@@ -405,11 +418,15 @@ const deleteParagraphs = async ({
 
   const promises: Promise<void>[] = deleteParagraphs
     .filter(({paragraphId}: SyncDataParagraph) => paragraphId !== undefined)
-    .map(({docId, paragraphId}: SyncDataParagraph) =>
+    .map(({docId, paragraphId, paragraph}: SyncDataParagraph) =>
       deleteData({
         key: `/docs/${docId}/paragraphs/${paragraphId}`,
         actor,
-        log
+        log,
+        ...(paragraph !== undefined &&
+          paragraph.updated_at !== undefined && {
+            data: {id: paragraphId, updated_at: paragraph.updated_at as bigint}
+          })
       })
     );
 

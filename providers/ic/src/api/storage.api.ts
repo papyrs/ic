@@ -24,7 +24,7 @@ export const upload = async ({
   fullPath?: string;
   log: LogWindow;
 }): Promise<{fullPath: string; filename: string; token: string}> => {
-  log({msg: `[upload][start] ${filename}`});
+  log({msg: `[upload][start] ${filename}`, level: 'info'});
   const t0 = performance.now();
 
   const fullPath: string = storagePath || `/${folder}/${filename}`;
@@ -37,7 +37,7 @@ export const upload = async ({
   });
 
   const t1 = performance.now();
-  log({msg: `[upload][create batch] ${filename}`, duration: t1 - t0});
+  log({msg: `[upload][create batch] ${filename}`, duration: t1 - t0, level: 'info'});
 
   const promises = [];
 
@@ -61,7 +61,7 @@ export const upload = async ({
   const chunkIds: {chunkId: bigint}[] = await Promise.all(promises);
 
   const t2 = performance.now();
-  log({msg: `[upload][chunks] ${filename}`, duration: t2 - t1});
+  log({msg: `[upload][chunks] ${filename}`, duration: t2 - t1, level: 'info'});
 
   await storageActor.commitUpload({
     batchId,
@@ -70,8 +70,8 @@ export const upload = async ({
   });
 
   const t3 = performance.now();
-  log({msg: `[upload][commit batch] ${filename}`, duration: t3 - t2});
-  log({msg: `[upload][done] ${filename}`, duration: t3 - t0});
+  log({msg: `[upload][commit batch] ${filename}`, duration: t3 - t2, level: 'info'});
+  log({msg: `[upload][done] ${filename}`, duration: t3 - t0, level: 'info'});
 
   return {
     fullPath,

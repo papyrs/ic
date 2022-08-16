@@ -8,8 +8,8 @@ import {
   Slide,
   SlideData
 } from '@deckdeckgo/editor';
-import {setData} from '../api/data.api';
 import {_SERVICE as DataBucketActor} from '../canisters/data/data.did';
+import {setData} from '../services/data.services';
 import {LogWindow} from '../types/sync.window';
 
 export const uploadDeckData = async ({
@@ -21,10 +21,9 @@ export const uploadDeckData = async ({
   actor: DataBucketActor;
   log: LogWindow;
 }) =>
-  setData<Deck, DeckData>({
+  setData<DeckData>({
     key: `/decks/${deck.id}`,
-    id: deck.id,
-    data: deck.data,
+    idbData: deck,
     actor,
     log
   });
@@ -40,10 +39,9 @@ export const uploadSlideData = async ({
   actor: DataBucketActor;
   log: LogWindow;
 }) =>
-  setData<Slide, SlideData>({
+  setData<SlideData>({
     key: `/decks/${deckId}/slides/${slide.id}`,
-    id: slide.id,
-    data: slide.data,
+    idbData: slide,
     actor,
     log
   });
@@ -57,10 +55,9 @@ export const uploadDocData = async ({
   actor: DataBucketActor;
   log: LogWindow;
 }) =>
-  setData<Doc, DocData>({
+  setData<DocData>({
     key: `/docs/${doc.id}`,
-    id: doc.id,
-    data: doc.data,
+    idbData: doc,
     actor,
     log
   });
@@ -76,10 +73,9 @@ export const uploadParagraphData = async ({
   actor: DataBucketActor;
   log: LogWindow;
 }) =>
-  setData<Paragraph, ParagraphData>({
+  setData<ParagraphData>({
     key: `/docs/${docId}/paragraphs/${paragraph.id}`,
-    id: paragraph.id,
-    data: paragraph.data,
+    idbData: paragraph,
     actor,
     log
   });

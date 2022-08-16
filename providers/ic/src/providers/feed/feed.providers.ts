@@ -1,4 +1,5 @@
 import {
+  DataRecord,
   Deck,
   DeckData,
   DeckSubmitFeed,
@@ -9,9 +10,9 @@ import {
   Meta
 } from '@deckdeckgo/editor';
 import {Identity} from '@dfinity/agent';
-import {setData} from '../../api/data.api';
 import {_SERVICE as FeedActor} from '../../canisters/feed/feed.did';
 import {_SERVICE as StorageBucketActor} from '../../canisters/storage/storage.did';
+import {setData} from '../../services/data.services';
 import {EnvStore} from '../../stores/env.store';
 import {toNullable} from '../../utils/did.utils';
 import {createFeedActor} from '../../utils/feed.utils';
@@ -30,7 +31,7 @@ export const docSubmitFeed: DocSubmitFeed = async ({doc}: {doc: Doc}): Promise<D
 
   await submitFeed({meta, id});
 
-  const updatedDoc: Doc = await updateMetaFeed({key: 'docs', data: doc});
+  const updatedDoc: Doc = await updateMetaFeed({key: 'docs', idbData: doc});
 
   emitSubmitted({data: updatedDoc, type: 'docFeedSubmitted'});
 
@@ -49,7 +50,7 @@ export const deckSubmitFeed: DeckSubmitFeed = async ({deck}: {deck: Deck}): Prom
 
   await submitFeed({meta, id});
 
-  const updatedDeck: Deck = await updateMetaFeed({key: 'decks', data: deck});
+  const updatedDeck: Deck = await updateMetaFeed({key: 'decks', idbData: deck});
 
   emitSubmitted({data: updatedDeck, type: 'deckFeedSubmitted'});
 
@@ -71,7 +72,7 @@ const submitFeed = async ({meta, id}: {meta: Meta; id: string}) => {
     throw new Error('No storage found. Is the document published?');
   }
 
-  log({msg: '[submit][start] feed'});
+  log({msg: '[submit][start] feed', level: 'info'});
   const t0 = performance.now();
 
   const feedActor: FeedActor = await createFeedActor({identity});
@@ -115,23 +116,22 @@ const submitFeed = async ({meta, id}: {meta: Meta; id: string}) => {
   });
 
   const t1 = performance.now();
-  log({msg: '[submit][done] feed', duration: t1 - t0});
+  log({msg: '[submit][done] feed', duration: t1 - t0, level: 'info'});
 };
 
-const updateMetaFeed = async <T extends Deck | Doc, D extends DeckData | DocData>({
+const updateMetaFeed = async <D extends DeckData | DocData>({
   key,
-  data
+  idbData
 }: {
   key: 'decks' | 'docs';
-  data: T;
-}): Promise<T> => {
-  log({msg: `[update][start] ${key}`});
+  idbData: DataRecord<D>;
+}): Promise<DataRecord<D>> => {
+  log({msg: `[update][start] ${key}`, level: 'info'});
   const t0 = performance.now();
 
-  const {data: existingData, id} = data;
+  const {data: existingData, id, created_at, updated_at} = idbData;
 
-  const updatedData: T = await setData<T, D>({
-    key: `/docs/${id}`,
+  const entityToUpdate: DataRecord<D> = {
     id,
     data: {
       ...existingData,
@@ -140,11 +140,18 @@ const updateMetaFeed = async <T extends Deck | Doc, D extends DeckData | DocData
         feed: true
       },
       updated_at: new Date()
-    } as D
+    } as D,
+    created_at,
+    updated_at
+  };
+
+  const updatedData: DataRecord<D> = await setData<D>({
+    key: `/docs/${id}`,
+    idbData: entityToUpdate
   });
 
   const t1 = performance.now();
-  log({msg: `[update][done] ${key}`, duration: t1 - t0});
+  log({msg: `[update][done] ${key}`, duration: t1 - t0, level: 'info'});
 
   return updatedData;
 };

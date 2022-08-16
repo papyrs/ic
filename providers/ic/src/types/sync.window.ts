@@ -1,5 +1,4 @@
-import {StorageFile} from '@deckdeckgo/editor';
-import {Log} from '@deckdeckgo/editor/lib';
+import {Log, StorageFile} from '@deckdeckgo/editor';
 
 export interface SyncWindowData {
   src: string;

@@ -1,7 +1,7 @@
 import HashMap "mo:base/HashMap";
 import Text "mo:base/Text";
 import Iter "mo:base/Iter";
-
+import Result "mo:base/Result";
 import Error "mo:base/Error";
 
 import Types "../types/types";
@@ -20,6 +20,9 @@ actor class DataBucket(owner: Types.UserId) = this {
   type UserId = Types.UserId;
 
   type Data = DataTypes.Data;
+  type PutData = DataTypes.PutData;
+  type DelData = DataTypes.DelData;
+
   type DataFilter = Filter.DataFilter;
 
   private stable let user: Types.UserId = owner;
@@ -45,7 +48,7 @@ actor class DataBucket(owner: Types.UserId) = this {
   };
 
   public shared query({ caller }) func list(filter: ?DataFilter) : async [(Text, Data)] {
-      if (Utils.isPrincipalNotEqual(caller, user)) {
+    if (Utils.isPrincipalNotEqual(caller, user)) {
         throw Error.reject("User does not have the permission to list the data.");
     };
 
@@ -53,20 +56,55 @@ actor class DataBucket(owner: Types.UserId) = this {
     return results;
   };
 
+  /// @deprecated Backwards compatibility - function will be removed few weeks after the dapp has been updated to avoid issue with caches 
   public shared({ caller }) func set(key: Text, data: Data) : async () {
     if (Utils.isPrincipalNotEqual(caller, user)) {
         throw Error.reject("User does not have the permission to set data.");
     };
 
-    store.put(key, data);
+    store.putNoChecks(key, data);
   };
 
+  public shared({ caller }) func put(key: Text, data: PutData) : async (Data) {
+    if (Utils.isPrincipalNotEqual(caller, user)) {
+        throw Error.reject("User does not have the permission to set data.");
+    };
+
+    let result: Result.Result<Data, Text> = store.put(key, data);
+
+    switch (result) {
+        case (#err error) {
+            throw Error.reject(error);
+        };
+        case (#ok resultData) {
+          return resultData;
+        };
+    };
+  };
+
+  /// @deprecated Backwards compatibility - function will be removed few weeks after the dapp has been updated to avoid issue with caches 
   public shared({ caller }) func del(key: Text) : async () {
     if (Utils.isPrincipalNotEqual(caller, user)) {
         throw Error.reject("User does not have the permission to delete the data.");
     };
 
-    let entry: ?Data = store.del(key);
+    let entry: ?Data = store.delNoChecks(key);
+  };
+
+  public shared({ caller }) func delete(key: Text, data: DelData) : async () {
+    if (Utils.isPrincipalNotEqual(caller, user)) {
+        throw Error.reject("User does not have the permission to delete the data.");
+    };
+
+    let result: Result.Result<?Data, Text> = store.del(key, data);
+
+    switch (result) {
+        case (#err error) {
+            throw Error.reject(error);
+        };
+        case (#ok resultData) {
+        };
+    };
   };
 
   /**

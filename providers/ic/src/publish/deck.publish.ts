@@ -1,5 +1,5 @@
 import {Deck, DeckData, DeckPublishData, deckPublishData, PublishData} from '@deckdeckgo/editor';
-import {setData} from '../api/data.api';
+import {setData} from '../services/data.services';
 import {EnvStore} from '../stores/env.store';
 import {
   initIndexHTML,
@@ -41,10 +41,12 @@ export const publishDeck = async ({
   });
 
   // 3. Update deck meta information
-  const deck: Deck = await setData<Deck, DeckData>({
+  const deck: Deck = await setData<DeckData>({
     key: `/decks/${id}`,
-    id,
-    data: deckData
+    idbData: {
+      ...deckSource,
+      data: deckData
+    }
   });
 
   // 4. Upload

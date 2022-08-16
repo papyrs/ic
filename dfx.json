@@ -7,6 +7,14 @@
     "feed": {
       "main": "canisters/src/feed/feed.mo",
       "type": "motoko"
+    },
+    "data": {
+      "main": "canisters/src/data/data.mo",
+      "type": "motoko"
+    },
+    "storage": {
+      "main": "canisters/src/storage/storage.mo",
+      "type": "motoko"
     }
   },
   "defaults": {

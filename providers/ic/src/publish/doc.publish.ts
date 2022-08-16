@@ -1,5 +1,5 @@
 import {Doc, DocData, docPublishData, DocPublishData, PublishData} from '@deckdeckgo/editor';
-import {setData} from '../api/data.api';
+import {setData} from '../services/data.services';
 import {EnvStore} from '../stores/env.store';
 import {
   initIndexHTML,
@@ -44,10 +44,12 @@ export const publishDoc = async ({
   });
 
   // 3. Update doc meta information
-  const doc: Doc = await setData<Doc, DocData>({
+  const doc: Doc = await setData<DocData>({
     key: `/docs/${id}`,
-    id,
-    data: docData
+    idbData: {
+      ...docSource,
+      data: docData
+    }
   });
 
   // 4. Upload

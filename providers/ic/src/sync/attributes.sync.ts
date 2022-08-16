@@ -15,7 +15,7 @@ export const updateDeckBackground = ({
   }
 
   return {
-    id: deck.id,
+    ...deck,
     data: {
       ...deck.data,
       updated_at: new Date(),
@@ -54,7 +54,7 @@ export const updateSlideImages = ({
   });
 
   return {
-    id: slide.id,
+    ...slide,
     data: {
       ...slide.data,
       updated_at: new Date(),
@@ -104,7 +104,7 @@ export const updateParagraphAssets = ({
   });
 
   return {
-    id: paragraph.id,
+    ...paragraph,
     data: {
       ...paragraph.data,
       updated_at: new Date(),
@@ -140,7 +140,7 @@ export const updateSlideChart = ({
   const {downloadUrl} = storageFile;
 
   return {
-    id: slide.id,
+    ...slide,
     data: {
       ...slide.data,
       updated_at: new Date(),

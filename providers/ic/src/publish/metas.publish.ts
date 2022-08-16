@@ -20,11 +20,11 @@ export const publishDeckMetas = async ({
   storageUpload: StorageUpload;
   publishData: PublishData;
 }): Promise<void> => {
-  log({msg: '[list][start] decks'});
+  log({msg: '[list][start] decks', level: 'info'});
 
   const decks: Deck[] = await deckEntries(owner_id);
 
-  log({msg: '[list][start] end'});
+  log({msg: '[list][start] end', level: 'info'});
 
   await publishMetas({storageUpload, publishData, entries: decks});
 };
@@ -38,11 +38,11 @@ export const publishDocMetas = async ({
   storageUpload: StorageUpload;
   publishData: PublishData;
 }): Promise<void> => {
-  log({msg: '[list][start] docs'});
+  log({msg: '[list][start] docs', level: 'info'});
 
   const docs: Doc[] = await docEntries(owner_id);
 
-  log({msg: '[list][end] docs'});
+  log({msg: '[list][end] docs', level: 'info'});
 
   await publishMetas({storageUpload, publishData, entries: docs});
 };

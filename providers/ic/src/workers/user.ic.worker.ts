@@ -1,8 +1,9 @@
 import {User, UserData} from '@deckdeckgo/editor';
 import {Identity} from '@dfinity/agent';
 import {nanoid} from 'nanoid';
-import {getData, setData} from '../api/data.api';
+import {getData} from '../api/data.api';
 import {_SERVICE as DataBucketActor} from '../canisters/data/data.did';
+import {setData} from '../services/data.services';
 import {EnvStore} from '../stores/env.store';
 import {EnvironmentIC} from '../types/env.types';
 import {InternetIdentityAuth} from '../types/identity';
@@ -69,16 +70,16 @@ const initUserData = async ({
   actor: DataBucketActor;
   log: LogWindow;
 }): Promise<User> => {
-  log({msg: `[get][start] user`});
+  log({msg: `[get][start] user`, level: 'info'});
   const t0 = performance.now();
 
-  const user: User | undefined = await getData<User, UserData>({
+  const user: User | undefined = await getData<UserData>({
     key: `/user`,
     actor
   });
 
   const t1 = performance.now();
-  log({msg: `[get][done] user`, duration: t1 - t0});
+  log({msg: `[get][done] user`, duration: t1 - t0, level: 'info'});
 
   if (!user) {
     const newUser: User = await createUser({actor, log});
@@ -104,12 +105,13 @@ const createUser = async ({
     updated_at: now
   };
 
-  const user: User = await setData<User, UserData>({
+  return setData<UserData>({
     key: `/user`,
-    id,
-    data,
+    idbData: {
+      id,
+      data
+    },
     actor,
     log
   });
-  return user;
 };

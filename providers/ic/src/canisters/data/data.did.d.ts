@@ -10,14 +10,26 @@ export interface Data {
 export interface DataBucket {
   cyclesBalance: ActorMethod<[], bigint>;
   del: ActorMethod<[string], undefined>;
+  delete: ActorMethod<[string, DelData], undefined>;
   get: ActorMethod<[string], [] | [Data]>;
   list: ActorMethod<[[] | [DataFilter]], Array<[string, Data]>>;
+  put: ActorMethod<[string, PutData], Data>;
   set: ActorMethod<[string, Data], undefined>;
   transferFreezingThresholdCycles: ActorMethod<[], undefined>;
 }
 export interface DataFilter {
   notContains: [] | [string];
   startsWith: [] | [string];
+}
+export interface DelData {
+  id: string;
+  updated_at: Time;
+}
+export interface PutData {
+  id: string;
+  updated_at: [] | [Time];
+  data: Array<number>;
+  created_at: [] | [Time];
 }
 export type Time = bigint;
 export type UserId = Principal;
