@@ -69,10 +69,17 @@ const loadWasm = (type) => {
 
     const wasmModule = loadWasm(type);
 
-    const promises = filterList.map(({owner, bucketId}) =>
-      upgradeBucketData({actor, wasmModule, bucketId: fromNullable(bucketId), owner})
-    );
-    await Promise.all(promises);
+    // Execute upgrade 10 canisters at a time - just in a preventive case to not charge too much the manager
+    // 377 canisters upgraded in 5 minutes - Aug. 25 2022 08:35-08.40
+    const chunkSize = 10;
+    for (let i = 0; i < filterList.length; i += chunkSize) {
+      const chunk = filterList.slice(i, i + chunkSize);
+
+      const promises = chunk.map(({owner, bucketId}) =>
+        upgradeBucketData({actor, wasmModule, bucketId: fromNullable(bucketId), owner})
+      );
+      await Promise.all(promises);
+    }
   } catch (e) {
     console.error(e);
   }
