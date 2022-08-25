@@ -1,3 +1,9 @@
+# 0.0.17 (2022-08-25)
+
+### Features
+
+- prevent data overwrite and timestamps (proposal [#47](https://github.com/papyrs/papyrs/discussions/47))
+
 # 0.0.16-1 (2022-07-29)
 
 ### Features
