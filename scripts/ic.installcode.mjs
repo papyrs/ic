@@ -27,6 +27,7 @@ const loadWasm = (type) => {
     console.log('Options:');
     console.log('--type=data|storage');
     console.log('--list-only');
+    console.log('--filter=canister_ids (comma separated list)');
     return;
   }
 
@@ -37,10 +38,18 @@ const loadWasm = (type) => {
     const type =
       process.argv.find((arg) => arg.indexOf('--type=') > -1)?.replace('--type=', '') ?? 'data';
 
+    const filter =
+      process.argv
+        .find((arg) => arg.indexOf('--filter=') > -1)
+        ?.replace('--filter=', '')
+        .split(',') ?? [];
+
     const list = await actor.list(type);
 
     // bucketId is optional in our backend
-    const filterList = list.filter(({bucketId}) => fromNullable(bucketId) !== undefined);
+    const filterList = list
+      .filter(({bucketId}) => fromNullable(bucketId) !== undefined)
+      .filter(({bucketId}) => filter.length === 0 || filter.includes(bucketId[0].toText()));
 
     if (filterList.length <= 0) {
       console.log('No buckets found.');
@@ -51,7 +60,7 @@ const loadWasm = (type) => {
 
     if (listOnly) {
       console.log(filterList.map(({bucketId}) => bucketId[0].toText()));
-      console.log(`${filterList.length} buckets listed.`)
+      console.log(`${filterList.length} buckets listed.`);
       return;
     }
 
