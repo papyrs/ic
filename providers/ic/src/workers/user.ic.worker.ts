@@ -6,17 +6,14 @@ import {_SERVICE as DataBucketActor} from '../canisters/data/data.did';
 import {setData} from '../services/data.services';
 import {EnvStore} from '../stores/env.store';
 import {EnvironmentIC} from '../types/env.types';
-import {InternetIdentityAuth} from '../types/identity';
 import {LogWindow} from '../types/sync.window';
-import {initIdentity} from '../utils/identity.utils';
+import { initIdentity, internetIdentityAuth } from "../utils/identity.utils";
 import {BucketActor, getDataBucket} from '../utils/manager.utils';
 
 export const initUserWorker = (
   {
-    internetIdentity,
     env
   }: {
-    internetIdentity: InternetIdentityAuth;
     env: EnvironmentIC;
   },
   onInitUserSuccess: (user: User) => Promise<void>,
@@ -25,19 +22,13 @@ export const initUserWorker = (
   // Web worker do not share window
   EnvStore.getInstance().set(env);
 
-  return initUser({internetIdentity}, onInitUserSuccess, log);
+  return initUser(onInitUserSuccess, log);
 };
 
-const initUser = async (
-  {
-    internetIdentity: {delegationChain, identityKey}
-  }: {
-    internetIdentity: InternetIdentityAuth;
-  },
-  onInitUserSuccess: (user: User) => Promise<void>,
-  log: LogWindow
-) =>
+const initUser = async (onInitUserSuccess: (user: User) => Promise<void>, log: LogWindow) =>
   new Promise<void>(async (resolve, reject) => {
+    const [delegationChain, identityKey] = await internetIdentityAuth();
+
     if (!delegationChain || !identityKey) {
       reject('No delegationChain or identityKey provided.');
       return;
@@ -51,7 +42,7 @@ const initUser = async (
 
     if (!actor) {
       setTimeout(async () => {
-        await initUser({internetIdentity: {delegationChain, identityKey}}, onInitUserSuccess, log);
+        await initUser(onInitUserSuccess, log);
         resolve();
       }, 2000);
       return;

@@ -3,6 +3,7 @@
 ### Features
 
 - prevent data overwrite and timestamps (proposal [#47](https://github.com/papyrs/papyrs/discussions/47))
+- upgrade agent-js `v0.13.2` to save the delegation in IndexedDB instead of localstorage
 
 # 0.0.16-1 (2022-07-29)
 

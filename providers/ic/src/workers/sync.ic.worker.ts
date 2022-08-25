@@ -32,19 +32,16 @@ import {
   uploadSlideAssets
 } from '../sync/storage.sync';
 import {EnvironmentIC} from '../types/env.types';
-import {InternetIdentityAuth} from '../types/identity';
 import {SyncStorage, SyncStorageSlide} from '../types/sync.storage';
 import {LogWindow, SyncWindow} from '../types/sync.window';
-import {initIdentity} from '../utils/identity.utils';
+import {initIdentity, internetIdentityAuth} from '../utils/identity.utils';
 import {BucketActor, getDataBucket, getStorageBucket} from '../utils/manager.utils';
 
 export const uploadWorker = async (
   {
-    internetIdentity: {delegationChain, identityKey},
     syncData,
     env
   }: {
-    internetIdentity: InternetIdentityAuth;
     syncData: SyncData | undefined;
     env: EnvironmentIC;
   },
@@ -54,6 +51,8 @@ export const uploadWorker = async (
   if (!syncData) {
     return;
   }
+
+  const [delegationChain, identityKey] = await internetIdentityAuth();
 
   if (!delegationChain || !identityKey) {
     return;
