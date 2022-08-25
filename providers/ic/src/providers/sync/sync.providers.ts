@@ -47,15 +47,18 @@ export const sync: Sync = async ({
   const [delegationChain, identityIdb] = await internetIdentityAuth();
 
   if (!identity || !identityIdb) {
+    log({msg: '[identity] no internet identity to sync data. Please login again.', level: 'error'});
     throw new Error('No internet identity to sync data. Please login again.');
   }
 
   if ((await isAuthenticated()) !== true) {
+    log({msg: '[identity] internet identity has expired. Please login again.', level: 'error'});
     throw new Error('Internet identity has expired. Please login again.');
   }
 
   if (!isDelegationValid(DelegationChain.fromJSON(delegationChain))) {
-    throw new Error('Internet identity has expired. Please login again.');
+    log({msg: '[identity] delegation has expired. Please login again.', level: 'error'});
+    throw new Error('Delegation has expired. Please login again.');
   }
 
   await uploadWorker(
