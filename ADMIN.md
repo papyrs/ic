@@ -17,7 +17,7 @@ node ./scripts/ic.feed.mjs --accept=storageid___id
 ## List feed
 
 ```bash
-dfx canister --network ic call "undmj-fiaaa-aaaan-qaocq-cai" list --query
+dfx canister --network ic call "undmj-fiaaa-aaaan-qaocq-cai" list --query "(record {})"
 ```
 
 ## Deploy feed canister
