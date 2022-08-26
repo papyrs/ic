@@ -1,4 +1,4 @@
-import {Doc, DocData, docPublishData, DocPublishData, PublishData} from '@deckdeckgo/editor';
+import { DataRecord, Doc, DocData, docPublishData, DocPublishData, PublishData } from "@deckdeckgo/editor";
 import {setData} from '../services/data.services';
 import {EnvStore} from '../stores/env.store';
 import {
@@ -44,7 +44,7 @@ export const publishDoc = async ({
   });
 
   // 3. Update doc meta information
-  const doc: Doc = await setData<DocData>({
+  const doc: DataRecord<DocData> = await setData<DocData>({
     key: `/docs/${id}`,
     record: {
       ...docSource,
