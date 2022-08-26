@@ -1,3 +1,9 @@
+# 0.0.18 (2022-08-26)
+
+### Build
+
+- bump `editor` types to support publish `lang` attribute
+
 # 0.0.17 (2022-08-25)
 
 ### Features
