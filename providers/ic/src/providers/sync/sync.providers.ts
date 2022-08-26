@@ -1,5 +1,7 @@
 import {log, Sync, SyncData} from '@deckdeckgo/editor';
 import {Identity} from '@dfinity/agent';
+import {isDelegationValid} from '@dfinity/authentication';
+import {DelegationChain} from '@dfinity/identity';
 import {EnvStore} from '../../stores/env.store';
 import {
   syncDeckBackground,
@@ -8,11 +10,9 @@ import {
   syncSlideImage
 } from '../../sync/window.sync';
 import {SyncWindow, SyncWindowEvent} from '../../types/sync.window';
+import {internetIdentityAuth} from '../../utils/identity.utils';
 import {uploadWorker} from '../../workers/sync.ic.worker';
 import {getIdentity, isAuthenticated} from '../auth/auth.providers';
-import { internetIdentityAuth } from "../../utils/identity.utils";
-import { DelegationChain } from "@dfinity/identity";
-import { isDelegationValid } from "@dfinity/authentication";
 
 // - we cannot use postmessage because of CORS
 // - we have to path the function separately in the function's call for serialisation reason (not within the object)

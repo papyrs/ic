@@ -1,4 +1,12 @@
-import { DataRecord, Doc, DocData, docPublishData, DocPublishData, PublishData } from "@deckdeckgo/editor";
+import {
+  DataRecord,
+  Doc,
+  DocData,
+  docPublishData,
+  DocPublishData,
+  PublishData
+} from '@deckdeckgo/editor';
+import {get, update} from 'idb-keyval';
 import {setData} from '../services/data.services';
 import {EnvStore} from '../stores/env.store';
 import {
@@ -9,7 +17,6 @@ import {
   uploadPublishFileIC
 } from './common.publish';
 import {uploadSocialImage} from './social.publish';
-import { get, update } from "idb-keyval";
 
 export const publishDoc = async ({
   doc: docSource,

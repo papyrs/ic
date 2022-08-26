@@ -1,6 +1,7 @@
 import {AuthUser, DeleteAuth, InitAuth, log, SignOut, User} from '@deckdeckgo/editor';
 import {Identity} from '@dfinity/agent';
 import {AuthClient} from '@dfinity/auth-client';
+import {del} from 'idb-keyval';
 import {_SERVICE as ManagerActor} from '../../canisters/manager/manager.did';
 import {EnvStore} from '../../stores/env.store';
 import {EnvironmentIC} from '../../types/env.types';
@@ -8,7 +9,6 @@ import {SignOutWindow} from '../../types/sync.window';
 import {createManagerActor} from '../../utils/manager.utils';
 import {startIdleTime, stopIdleTimer} from '../../workers/idle.ic.worker';
 import {initUserWorker} from '../../workers/user.ic.worker';
-import { del } from "idb-keyval";
 
 declare global {
   interface Window {

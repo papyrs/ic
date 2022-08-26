@@ -7,7 +7,7 @@ import {setData} from '../services/data.services';
 import {EnvStore} from '../stores/env.store';
 import {EnvironmentIC} from '../types/env.types';
 import {LogWindow} from '../types/sync.window';
-import { initIdentity, internetIdentityAuth } from "../utils/identity.utils";
+import {initIdentity, internetIdentityAuth} from '../utils/identity.utils';
 import {BucketActor, getDataBucket} from '../utils/manager.utils';
 
 export const initUserWorker = (
