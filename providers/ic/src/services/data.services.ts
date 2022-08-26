@@ -20,7 +20,7 @@ export const setData = async <D>({
   log?.({msg: `[set][start] ${key}`, level: 'info'});
   const t0 = performance.now();
 
-  const updatedEntity: DataRecord<D> = await setDataApi({key, actor, record: record});
+  const updatedEntity: DataRecord<D> = await setDataApi({key, actor, record});
 
   // Update the timestamp(s) in idb - the data has been updated in the backend so, we will need the update timestamp for next update
   // This only for those data that are offline first - the doc and paragraphs - i.e. not the user

@@ -9,6 +9,7 @@ import {
   uploadPublishFileIC
 } from './common.publish';
 import {uploadSocialImage} from './social.publish';
+import { get, update } from "idb-keyval";
 
 export const publishDoc = async ({
   doc: docSource,
@@ -43,11 +44,20 @@ export const publishDoc = async ({
     storageUpload
   });
 
+  // 2.a We save the new meta data in IndexedDB and preserve current timestamps. We do that because setData will update the timestamps without updating the data in idb
+  await update<DataRecord<DocData>>(`/docs/${id}`, (currentData: DataRecord<DocData>) => ({
+    ...currentData,
+    data: docData
+  }));
+
+  // 2.b We read the current record for the timestamps
+  const record: DataRecord<DocData> = await get(`/docs/${id}`);
+
   // 3. Update doc meta information
   const doc: DataRecord<DocData> = await setData<DocData>({
     key: `/docs/${id}`,
     record: {
-      ...docSource,
+      ...record,
       data: docData
     },
     updateTimestamps: true

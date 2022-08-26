@@ -2,9 +2,8 @@
 
 ### Hot fix 🔥
 
-- new sign-in issue: user cannot be created because updating Indexedb fails as there is no current entity to deconstruct
-
-workaround: hit browser "refresh"
+- new sign-in issue: user cannot be created because updating Indexedb fails as there is no current entity to deconstruct (workaround: hit browser "refresh")
+- on publish there might be some timestamps checks issues following proposal #47
 
 # 0.0.18 (2022-08-26)
 
