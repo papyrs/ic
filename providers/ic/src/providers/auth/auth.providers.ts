@@ -8,6 +8,7 @@ import {SignOutWindow} from '../../types/sync.window';
 import {createManagerActor} from '../../utils/manager.utils';
 import {startIdleTime, stopIdleTimer} from '../../workers/idle.ic.worker';
 import {initUserWorker} from '../../workers/user.ic.worker';
+import { del } from "idb-keyval";
 
 declare global {
   interface Window {
@@ -99,6 +100,9 @@ export const signOut: SignOut = async (): Promise<void> => {
   await stopIdleTimer();
 
   await authClient?.logout();
+
+  // Just in case the user has been wrongly saved locally - this can be deleted in a bit
+  await del('/user');
 };
 
 // How long the delegation identity should remain valid?
