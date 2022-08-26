@@ -1,11 +1,4 @@
-import {
-  DataRecord,
-  Deck,
-  DeckData,
-  DeckPublishData,
-  deckPublishData,
-  PublishData
-} from '@deckdeckgo/editor';
+import {Deck, DeckData, DeckPublishData, deckPublishData, PublishData} from '@deckdeckgo/editor';
 import {get, update} from 'idb-keyval';
 import {setData} from '../services/data.services';
 import {EnvStore} from '../stores/env.store';
@@ -49,21 +42,18 @@ export const publishDeck = async ({
   });
 
   // 2.a We save the new meta data in IndexedDB and preserve current timestamps
-  await update<DataRecord<DeckData>>(`/decks/${id}`, (currentData: DataRecord<DeckData>) => ({
+  await update<Deck>(`/decks/${id}`, (currentData: Deck) => ({
     ...currentData,
     data: deckData
   }));
 
   // 2.b We read the current record for the timestamp
-  const record: DataRecord<DeckData> = await get(`/decks/${id}`);
+  const record: Deck = await get(`/decks/${id}`);
 
   // 3. Update deck meta information
-  const deck: DataRecord<DeckData> = await setData<DeckData>({
+  const deck: Deck = await setData<DeckData>({
     key: `/decks/${id}`,
-    record: {
-      ...record,
-      data: deckData
-    },
+    record,
     updateTimestamps: true
   });
 

@@ -132,7 +132,7 @@ const updateMetaFeed = async <T extends Deck | Doc, D extends DeckData | DocData
 
   const {id, data} = entry;
 
-  const currentRecord: DataRecord<D> | undefined = await get(`/${key}/${id}`);
+  const currentRecord: T | undefined = await get(`/${key}/${id}`);
 
   const existingData: DeckData | DocData = currentRecord?.data ?? data;
 

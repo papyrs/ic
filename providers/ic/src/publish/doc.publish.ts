@@ -1,11 +1,4 @@
-import {
-  DataRecord,
-  Doc,
-  DocData,
-  docPublishData,
-  DocPublishData,
-  PublishData
-} from '@deckdeckgo/editor';
+import {Doc, DocData, docPublishData, DocPublishData, PublishData} from '@deckdeckgo/editor';
 import {get, update} from 'idb-keyval';
 import {setData} from '../services/data.services';
 import {EnvStore} from '../stores/env.store';
@@ -52,21 +45,18 @@ export const publishDoc = async ({
   });
 
   // 2.a We save the new meta data in IndexedDB and preserve current timestamps. We do that because setData will update the timestamps without updating the data in idb
-  await update<DataRecord<DocData>>(`/docs/${id}`, (currentData: DataRecord<DocData>) => ({
+  await update<Doc>(`/docs/${id}`, (currentData: Doc) => ({
     ...currentData,
     data: docData
   }));
 
   // 2.b We read the current record for the timestamps
-  const record: DataRecord<DocData> = await get(`/docs/${id}`);
+  const record: Doc = await get(`/docs/${id}`);
 
   // 3. Update doc meta information
-  const doc: DataRecord<DocData> = await setData<DocData>({
+  const doc: Doc = await setData<DocData>({
     key: `/docs/${id}`,
-    record: {
-      ...record,
-      data: docData
-    },
+    record,
     updateTimestamps: true
   });
 
