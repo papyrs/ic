@@ -10,6 +10,7 @@ import {
   Meta
 } from '@deckdeckgo/editor';
 import {Identity} from '@dfinity/agent';
+import {get} from 'idb-keyval';
 import {_SERVICE as FeedActor} from '../../canisters/feed/feed.did';
 import {_SERVICE as StorageBucketActor} from '../../canisters/storage/storage.did';
 import {setData} from '../../services/data.services';
@@ -31,7 +32,7 @@ export const docSubmitFeed: DocSubmitFeed = async ({doc}: {doc: Doc}): Promise<D
 
   await submitFeed({meta, id});
 
-  const updatedDoc: Doc = await updateMetaFeed({key: 'docs', idbData: doc});
+  const updatedDoc: Doc = await updateMetaFeed({key: 'docs', entry: doc});
 
   emitSubmitted({data: updatedDoc, type: 'docFeedSubmitted'});
 
@@ -50,7 +51,7 @@ export const deckSubmitFeed: DeckSubmitFeed = async ({deck}: {deck: Deck}): Prom
 
   await submitFeed({meta, id});
 
-  const updatedDeck: Deck = await updateMetaFeed({key: 'decks', idbData: deck});
+  const updatedDeck: Deck = await updateMetaFeed({key: 'decks', entry: deck});
 
   emitSubmitted({data: updatedDeck, type: 'deckFeedSubmitted'});
 
@@ -119,17 +120,21 @@ const submitFeed = async ({meta, id}: {meta: Meta; id: string}) => {
   log({msg: '[submit][done] feed', duration: t1 - t0, level: 'info'});
 };
 
-const updateMetaFeed = async <D extends DeckData | DocData>({
+const updateMetaFeed = async <T extends Deck | Doc, D extends DeckData | DocData>({
   key,
-  idbData
+  entry
 }: {
   key: 'decks' | 'docs';
-  idbData: DataRecord<D>;
+  entry: T;
 }): Promise<DataRecord<D>> => {
   log({msg: `[update][start] ${key}`, level: 'info'});
   const t0 = performance.now();
 
-  const {data: existingData, id, created_at, updated_at} = idbData;
+  const {id, data} = entry;
+
+  const currentRecord: DataRecord<D> | undefined = await get(`/${key}/${id}`);
+
+  const existingData: DeckData | DocData = currentRecord?.data ?? data;
 
   const entityToUpdate: DataRecord<D> = {
     id,
@@ -141,8 +146,8 @@ const updateMetaFeed = async <D extends DeckData | DocData>({
       },
       updated_at: new Date()
     } as D,
-    created_at,
-    updated_at
+    created_at: currentRecord.created_at,
+    updated_at: currentRecord.updated_at
   };
 
   const updatedData: DataRecord<D> = await setData<D>({
