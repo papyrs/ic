@@ -147,7 +147,8 @@ const updateMetaFeed = async <D extends DeckData | DocData>({
 
   const updatedData: DataRecord<D> = await setData<D>({
     key: `/docs/${id}`,
-    idbData: entityToUpdate
+    record: entityToUpdate,
+    updateTimestamps: true
   });
 
   const t1 = performance.now();

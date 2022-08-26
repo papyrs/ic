@@ -106,16 +106,16 @@ export const getData = async <D>({
 
 export const setData = async <D>({
   key,
-  idbData,
+  record,
   actor = undefined
 }: {
   key: string;
-  idbData: DataRecord<D>;
+  record: DataRecord<D>;
   actor?: DataBucketActor;
 }): Promise<DataRecord<D>> => {
   const dataActor: DataBucketActor = actor || (await getDataActor());
 
-  const {id, data, created_at, updated_at} = idbData;
+  const {id, data, created_at, updated_at} = record;
 
   const updatedData: Data = await dataActor.put(key, {
     id,

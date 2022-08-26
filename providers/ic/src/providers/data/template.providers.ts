@@ -26,11 +26,11 @@ export const createTemplate: CreateTemplate = (data: TemplateData): Promise<Temp
     }
   };
 
-  return setData<TemplateData>({key: `/templates/${id}`, idbData: template});
+  return setData<TemplateData>({key: `/templates/${id}`, record: template});
 };
 
 export const updateTemplate: UpdateTemplate = (template: Template): Promise<Template> => {
   const {id} = template;
 
-  return setData<TemplateData>({key: `/templates/${id}`, idbData: template});
+  return setData<TemplateData>({key: `/templates/${id}`, record: template});
 };

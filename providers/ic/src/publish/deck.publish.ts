@@ -43,10 +43,11 @@ export const publishDeck = async ({
   // 3. Update deck meta information
   const deck: Deck = await setData<DeckData>({
     key: `/decks/${id}`,
-    idbData: {
+    record: {
       ...deckSource,
       data: deckData
-    }
+    },
+    updateTimestamps: true
   });
 
   // 4. Upload
