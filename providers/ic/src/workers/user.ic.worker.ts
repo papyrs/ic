@@ -98,7 +98,7 @@ const createUser = async ({
 
   return setData<UserData>({
     key: `/user`,
-    idbData: {
+    record: {
       id,
       data
     },

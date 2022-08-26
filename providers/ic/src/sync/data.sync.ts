@@ -23,9 +23,10 @@ export const uploadDeckData = async ({
 }) =>
   setData<DeckData>({
     key: `/decks/${deck.id}`,
-    idbData: deck,
+    record: deck,
     actor,
-    log
+    log,
+    updateTimestamps: true
   });
 
 export const uploadSlideData = async ({
@@ -41,9 +42,10 @@ export const uploadSlideData = async ({
 }) =>
   setData<SlideData>({
     key: `/decks/${deckId}/slides/${slide.id}`,
-    idbData: slide,
+    record: slide,
     actor,
-    log
+    log,
+    updateTimestamps: true
   });
 
 export const uploadDocData = async ({
@@ -57,9 +59,10 @@ export const uploadDocData = async ({
 }) =>
   setData<DocData>({
     key: `/docs/${doc.id}`,
-    idbData: doc,
+    record: doc,
     actor,
-    log
+    log,
+    updateTimestamps: true
   });
 
 export const uploadParagraphData = async ({
@@ -75,7 +78,8 @@ export const uploadParagraphData = async ({
 }) =>
   setData<ParagraphData>({
     key: `/docs/${docId}/paragraphs/${paragraph.id}`,
-    idbData: paragraph,
+    record: paragraph,
     actor,
-    log
+    log,
+    updateTimestamps: true
   });
