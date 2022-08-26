@@ -1,3 +1,11 @@
+# 0.0.19 (2022-08-26)
+
+### Hot fix 🔥
+
+- new sign-in issue: user cannot be created because updating Indexedb fails as there is no current entity to deconstruct
+
+workaround: hit browser "refresh"
+
 # 0.0.18 (2022-08-26)
 
 ### Build
