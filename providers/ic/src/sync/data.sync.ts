@@ -25,7 +25,8 @@ export const uploadDeckData = async ({
     key: `/decks/${deck.id}`,
     idbData: deck,
     actor,
-    log
+    log,
+    overwriteIdbData: false
   });
 
 export const uploadSlideData = async ({
@@ -43,7 +44,8 @@ export const uploadSlideData = async ({
     key: `/decks/${deckId}/slides/${slide.id}`,
     idbData: slide,
     actor,
-    log
+    log,
+    overwriteIdbData: false
   });
 
 export const uploadDocData = async ({
@@ -59,7 +61,8 @@ export const uploadDocData = async ({
     key: `/docs/${doc.id}`,
     idbData: doc,
     actor,
-    log
+    log,
+    overwriteIdbData: false
   });
 
 export const uploadParagraphData = async ({
@@ -77,5 +80,6 @@ export const uploadParagraphData = async ({
     key: `/docs/${docId}/paragraphs/${paragraph.id}`,
     idbData: paragraph,
     actor,
-    log
+    log,
+    overwriteIdbData: false
   });
