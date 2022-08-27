@@ -29,15 +29,15 @@ export interface StorageBucket {
   commitUpload: ActorMethod<
     [
       {
-        headers: Array<HeaderField__1>,
-        chunkIds: Array<bigint>,
-        batchId: bigint
+        headers: Array<HeaderField__1>;
+        chunkIds: Array<bigint>;
+        batchId: bigint;
       }
     ],
     undefined
   >;
   cyclesBalance: ActorMethod<[], bigint>;
-  del: ActorMethod<[{token: [] | [string], fullPath: string}], undefined>;
+  del: ActorMethod<[{token: [] | [string]; fullPath: string}], undefined>;
   http_request: ActorMethod<[HttpRequest], HttpResponse>;
   http_request_streaming_callback: ActorMethod<
     [StreamingCallbackToken],
@@ -68,9 +68,9 @@ export interface StreamingCallbackToken__1 {
 }
 export type StreamingStrategy = {
   Callback: {
-    token: StreamingCallbackToken__1,
-    callback: [Principal, string]
-  }
+    token: StreamingCallbackToken__1;
+    callback: [Principal, string];
+  };
 };
 export type UserId = Principal;
 export interface _SERVICE extends StorageBucket {}

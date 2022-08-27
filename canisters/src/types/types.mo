@@ -3,6 +3,6 @@ import Principal "mo:base/Principal";
 
 module {
 
-    public type UserId = Principal;
+  public type UserId = Principal;
 
-}
+};

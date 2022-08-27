@@ -4,38 +4,38 @@ import Array "mo:base/Array";
 import Env "../env";
 
 module {
-    public func isPrincipalEqual(x: Principal, y: Principal): Bool { x == y };
+  public func isPrincipalEqual(x : Principal, y : Principal) : Bool {x == y};
 
-    public func isPrincipalNotEqual(x: Principal, y: Principal): Bool { x != y };
+  public func isPrincipalNotEqual(x : Principal, y : Principal) : Bool {x != y};
 
-    public func isAdmin(caller: Principal): Bool {
-        hasPrivilege(caller, Env.admin);
+  public func isAdmin(caller : Principal) : Bool {
+    hasPrivilege(caller, Env.admin);
+  };
+
+  public func isManager(caller : Principal) : Bool {
+    hasPrivilege(caller, Env.manager);
+  };
+
+  private func hasPrivilege(caller : Principal, privileges : [Text]) : Bool {
+    func toPrincipal(entry : Text) : Principal {
+      Principal.fromText(entry);
     };
 
-    public func isManager(caller: Principal): Bool {
-        hasPrivilege(caller, Env.manager);
+    let principals : [Principal] = Array.map(privileges, toPrincipal);
+
+    func filterAdmin(admin : Principal) : Bool {
+      admin == caller;
     };
 
-    private func hasPrivilege(caller: Principal, privileges: [Text]): Bool {
-        func toPrincipal(entry: Text) : Principal {
-            Principal.fromText(entry);
-        };
+    let admin : ?Principal = Array.find(principals, filterAdmin);
 
-        let principals: [Principal] = Array.map(privileges, toPrincipal);
-
-        func filterAdmin(admin: Principal): Bool {
-            admin == caller
-        };
-
-        let admin: ?Principal = Array.find(principals, filterAdmin);
-
-        switch (admin) {
-            case (null) {
-                return false;
-            };
-            case (?admin) {
-                return true;
-            }
-        }
+    switch (admin) {
+      case (null) {
+        return false;
+      };
+      case (?admin) {
+        return true;
+      };
     };
-}
+  };
+};

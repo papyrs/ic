@@ -21,204 +21,208 @@ import StorageBucket "../storage/storage";
 import Utils "../utils/utils";
 
 actor Manager {
-    private type UserId = Types.UserId;
+  private type UserId = Types.UserId;
 
-    private type DataBucket = DataBucket.DataBucket;
-    private type StorageBucket = StorageBucket.StorageBucket;
+  private type DataBucket = DataBucket.DataBucket;
+  private type StorageBucket = StorageBucket.StorageBucket;
 
-    private type Bucket = BucketTypes.Bucket;
+  private type Bucket = BucketTypes.Bucket;
 
-    private let walletUtils: WalletUtils.WalletUtils = WalletUtils.WalletUtils();
-    private let canisterUtils: CanisterUtils.CanisterUtils = CanisterUtils.CanisterUtils();
+  private let walletUtils : WalletUtils.WalletUtils = WalletUtils.WalletUtils();
+  private let canisterUtils : CanisterUtils.CanisterUtils = CanisterUtils.CanisterUtils();
 
-    let dataStore: BucketStore.BucketStore = BucketStore.BucketStore();
-    let storagesStore: BucketStore.BucketStore = BucketStore.BucketStore();
+  let dataStore : BucketStore.BucketStore = BucketStore.BucketStore();
+  let storagesStore : BucketStore.BucketStore = BucketStore.BucketStore();
 
-    // Preserve the application state on upgrades
-    private stable var data : [(Principal, BucketTypes.Bucket)] = [];
-    private stable var storages : [(Principal, BucketTypes.Bucket)] = [];
+  // Preserve the application state on upgrades
+  private stable var data : [(Principal, BucketTypes.Bucket)] = [];
+  private stable var storages : [(Principal, BucketTypes.Bucket)] = [];
 
-    /**
+  /**
      * Data
      */
 
-    public shared({ caller }) func initData(): async (Bucket) {
-        return await initBucket(caller, dataStore, initNewDataBucket);
-    };
+  public shared ({caller}) func initData() : async (Bucket) {
+    return await initBucket(caller, dataStore, initNewDataBucket);
+  };
 
-    private func initNewDataBucket(manager: Principal, user: UserId): async (Principal) {
-        Cycles.add(1_000_000_000_000);
-        let b: DataBucket = await DataBucket.DataBucket(user);
+  private func initNewDataBucket(manager : Principal, user : UserId) : async (Principal) {
+    Cycles.add(1_000_000_000_000);
+    let b : DataBucket = await DataBucket.DataBucket(user);
 
-        let canisterId: Principal = Principal.fromActor(b);
+    let canisterId : Principal = Principal.fromActor(b);
 
-        await canisterUtils.updateSettings(canisterId, manager);
+    await canisterUtils.updateSettings(canisterId, manager);
 
-        return canisterId;
-    };
+    return canisterId;
+  };
 
-    public shared query({ caller }) func getData() : async ?Bucket {
-        let result: Result.Result<?Bucket, Text> = dataStore.getBucket(caller);
+  public shared query ({caller}) func getData() : async ?Bucket {
+    let result : Result.Result<?Bucket, Text> = dataStore.getBucket(caller);
 
-        switch (result) {
-            case (#err error) {
-                throw Error.reject(error);
-            };
-            case (#ok bucket) {
-                switch (bucket) {
-                    case (?bucket) {
-                        return ?bucket;
-                    };
-                    case null {
-                        // We do not throw a "Not found error" here.
-                        // For performance reason, in web app we first query if the bucket exists and then if not, we init it.
-                        return null;
-                    };
-                };
-            };
+    switch (result) {
+      case (#err error) {
+        throw Error.reject(error);
+      };
+      case (#ok bucket) {
+        switch (bucket) {
+          case (?bucket) {
+            return ?bucket;
+          };
+          case null {
+            // We do not throw a "Not found error" here.
+            // For performance reason, in web app we first query if the bucket exists and then if not, we init it.
+            return null;
+          };
         };
+      };
     };
+  };
 
-    public shared({ caller }) func delData() : async (Bool) {
-        return await delBucket(caller, dataStore);
-    };
+  public shared ({caller}) func delData() : async (Bool) {
+    return await delBucket(caller, dataStore);
+  };
 
-    /**
+  /**
      * Storages
      */
 
-    public shared({ caller }) func initStorage(): async (Bucket) {
-        return await initBucket(caller, storagesStore, initNewStorageBucket);
-    };
+  public shared ({caller}) func initStorage() : async (Bucket) {
+    return await initBucket(caller, storagesStore, initNewStorageBucket);
+  };
 
-    private func initNewStorageBucket(manager: Principal, user: UserId): async (Principal) {
-        Cycles.add(1_000_000_000_000);
-        let b: StorageBucket = await StorageBucket.StorageBucket(user);
+  private func initNewStorageBucket(manager : Principal, user : UserId) : async (Principal) {
+    Cycles.add(1_000_000_000_000);
+    let b : StorageBucket = await StorageBucket.StorageBucket(user);
 
-        let canisterId: Principal = Principal.fromActor(b);
+    let canisterId : Principal = Principal.fromActor(b);
 
-        await canisterUtils.updateSettings(canisterId, manager);
+    await canisterUtils.updateSettings(canisterId, manager);
 
-        return canisterId;
-    };
+    return canisterId;
+  };
 
-    public shared query({ caller }) func getStorage() : async ?Bucket {
-        let result: Result.Result<?Bucket, Text> = storagesStore.getBucket(caller);
+  public shared query ({caller}) func getStorage() : async ?Bucket {
+    let result : Result.Result<?Bucket, Text> = storagesStore.getBucket(caller);
 
-        switch (result) {
-            case (#err error) {
-                throw Error.reject(error);
-            };
-            case (#ok bucket) {
-                switch (bucket) {
-                    case (?bucket) {
-                        return ?bucket;
-                    };
-                    case null {
-                        // We do not throw a "Not found error" here.
-                        // For performance reason, in web app we first query if the bucket exists and then if not, we init it.
-                        return null;
-                    };
-                };
-            };
+    switch (result) {
+      case (#err error) {
+        throw Error.reject(error);
+      };
+      case (#ok bucket) {
+        switch (bucket) {
+          case (?bucket) {
+            return ?bucket;
+          };
+          case null {
+            // We do not throw a "Not found error" here.
+            // For performance reason, in web app we first query if the bucket exists and then if not, we init it.
+            return null;
+          };
         };
+      };
     };
+  };
 
-    public shared({ caller }) func delStorage() : async (Bool) {
-        return await delBucket(caller, storagesStore);
-    };
+  public shared ({caller}) func delStorage() : async (Bool) {
+    return await delBucket(caller, storagesStore);
+  };
 
-    /**
+  /**
      * Buckets
      */
 
-    private func initBucket(caller: Principal, store: BucketStore.BucketStore, initNewBucket: (manager: Principal, user: UserId) -> async (Principal)): async (Bucket) {
-        let self: Principal = Principal.fromActor(Manager);
+  private func initBucket(
+    caller : Principal,
+    store : BucketStore.BucketStore,
+    initNewBucket : (manager : Principal, user : UserId) -> async (Principal)
+  ) : async (Bucket) {
+    let self : Principal = Principal.fromActor(Manager);
 
-        let result: Result.Result<Bucket, Text> = await store.init(self, caller, initNewBucket);
+    let result : Result.Result<Bucket, Text> = await store.init(self, caller, initNewBucket);
 
-        switch (result) {
-            case (#err error) {
-                throw Error.reject(error);
-            };
-            case (#ok bucket) {
-                return bucket;
-            };
-        };
+    switch (result) {
+      case (#err error) {
+        throw Error.reject(error);
+      };
+      case (#ok bucket) {
+        return bucket;
+      };
     };
+  };
 
-    private func delBucket(caller: Principal, store: BucketStore.BucketStore) : async (Bool) {
-        let result: Result.Result<?Bucket, Text> = await store.deleteBucket(caller);
+  private func delBucket(caller : Principal, store : BucketStore.BucketStore) : async (Bool) {
+    let result : Result.Result<?Bucket, Text> = await store.deleteBucket(caller);
 
-        switch (result) {
-            case (#err error) {
-                throw Error.reject(error);
-            };
-            case (#ok bucket) {
-                let exists: Bool = Option.isSome(bucket);
-                return exists;
-            };
-        };
+    switch (result) {
+      case (#err error) {
+        throw Error.reject(error);
+      };
+      case (#ok bucket) {
+        let exists : Bool = Option.isSome(bucket);
+        return exists;
+      };
     };
+  };
 
-    /**
+  /**
      * Admin: restricted for manager
      */
 
-    public shared query({ caller }) func list(store: Text) : async [Bucket] {
-        if (not Utils.isAdmin(caller)) {
-            throw Error.reject("Unauthorized access. Caller is not an admin. " # Principal.toText(caller));
-        };
-
-        if (Text.equal(store, "data")) {
-            return dataStore.entries();
-        };
-
-        if (Text.equal(store, "storage")) {
-            return storagesStore.entries();
-        };
-
-        throw Error.reject("Type of store not supported");
+  public shared query ({caller}) func list(store : Text) : async [Bucket] {
+    if (not Utils.isAdmin(caller)) {
+      throw Error.reject("Unauthorized access. Caller is not an admin. " # Principal.toText(caller));
     };
 
-    public shared({ caller }) func installCode(canisterId: Principal, owner: Blob, wasmModule: Blob): async() {
-        if (not Utils.isAdmin(caller)) {
-            throw Error.reject("Unauthorized access. Caller is not an admin. " # Principal.toText(caller));
-        };
-
-        await canisterUtils.installCode(canisterId, owner, wasmModule);
+    if (Text.equal(store, "data")) {
+      return dataStore.entries();
     };
 
-    public shared({ caller }) func transferCycles(canisterId: Principal, amount: Nat): async() {
-        if (not Utils.isAdmin(caller)) {
-            throw Error.reject("Unauthorized access. Caller is not an admin. " # Principal.toText(caller));
-        };
-
-        await walletUtils.transferCycles(canisterId, amount);
+    if (Text.equal(store, "storage")) {
+      return storagesStore.entries();
     };
 
-    public shared query({ caller }) func cyclesBalance(): async (Nat) {
-        if (not Utils.isAdmin(caller)) {
-            throw Error.reject("Unauthorized access. Caller is not an admin. " # Principal.toText(caller));
-        };
+    throw Error.reject("Type of store not supported");
+  };
 
-        return walletUtils.cyclesBalance();
+  public shared ({caller}) func installCode(canisterId : Principal, owner : Blob, wasmModule : Blob) : async () {
+    if (not Utils.isAdmin(caller)) {
+      throw Error.reject("Unauthorized access. Caller is not an admin. " # Principal.toText(caller));
     };
 
-    /**
+    await canisterUtils.installCode(canisterId, owner, wasmModule);
+  };
+
+  public shared ({caller}) func transferCycles(canisterId : Principal, amount : Nat) : async () {
+    if (not Utils.isAdmin(caller)) {
+      throw Error.reject("Unauthorized access. Caller is not an admin. " # Principal.toText(caller));
+    };
+
+    await walletUtils.transferCycles(canisterId, amount);
+  };
+
+  public shared query ({caller}) func cyclesBalance() : async (Nat) {
+    if (not Utils.isAdmin(caller)) {
+      throw Error.reject("Unauthorized access. Caller is not an admin. " # Principal.toText(caller));
+    };
+
+    return walletUtils.cyclesBalance();
+  };
+
+  /**
      * Stable memory for upgrade
      */
 
-    system func preupgrade() {
-        data := Iter.toArray(dataStore.preupgrade().entries());
-        storages := Iter.toArray(storagesStore.preupgrade().entries());
-    };
+  system func preupgrade() {
+    data := Iter.toArray(dataStore.preupgrade().entries());
+    storages := Iter.toArray(storagesStore.preupgrade().entries());
+  };
 
-    system func postupgrade() {
-        dataStore.postupgrade(data);
-        data := [];
+  system func postupgrade() {
+    dataStore.postupgrade(data);
+    data := [];
 
-        storagesStore.postupgrade(storages);
-        storages := [];
-    };
-}
+    storagesStore.postupgrade(storages);
+    storages := [];
+  };
+};

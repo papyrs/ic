@@ -94,3 +94,4 @@ An example to make above rules a bit more concrete:
     created_at: 2,
     updated_at: 4,
 }
+```

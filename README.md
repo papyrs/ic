@@ -12,7 +12,7 @@ Backend canister smart contracts and frontend providers of [Papyrs].
 Some useful links:
 
 - See the [ADMIN](/ADMIN.md) document for some information about the tools and command lines use for administration purpose
-- [DOCS](/DOCS.md) provide some additional information to the not that documented code 😉 
+- [DOCS](/DOCS.md) provide some additional information to the not that documented code 😉
 
 ## License
 
