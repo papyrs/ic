@@ -42,10 +42,7 @@ module {
       };
     };
 
-    public func updateStatus(storageId : CanisterId, id : Text, status : ProposalStatus) : Result.Result<
-      Text,
-      Text
-    > {
+    public func updateStatus(storageId : CanisterId, id : Text, status : ProposalStatus) : Result.Result<Text, Text> {
       let entry : ?ProposalEntry = get(storageId, id);
 
       switch (entry) {
@@ -83,10 +80,7 @@ module {
 
           let {status} = filter;
 
-          let values : [(Text, ProposalEntry)] = Array.mapFilter<
-            (Text, ProposalEntry),
-            (Text, ProposalEntry)
-          >(
+          let values : [(Text, ProposalEntry)] = Array.mapFilter<(Text, ProposalEntry), (Text, ProposalEntry)>(
             keyValues,
             func((key : Text, value : ProposalEntry)) : ?(Text, ProposalEntry) {
               if (ProposalFilter.matchStatus(value, status)) {

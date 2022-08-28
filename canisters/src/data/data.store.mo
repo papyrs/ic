@@ -125,10 +125,7 @@ module {
       };
     };
 
-    private func checkTimestamp(record : Data, id : Text, updated_at : Time.Time) : Result.Result<
-      Text,
-      Text
-    > {
+    private func checkTimestamp(record : Data, id : Text, updated_at : Time.Time) : Result.Result<Text, Text> {
       if (record.updated_at != updated_at) {
         return #err(
           "Data timestamp is outdated or in the future - updated_at does not match most recent timesteamp. " # Int.toText(
