@@ -14,116 +14,118 @@ import ProposalFilter "./proposal.filter";
 import ProposalTypes "./proposal.types";
 
 module {
-    type ProposalFilter = ProposalFilter.ProposalFilter;
+  type ProposalFilter = ProposalFilter.ProposalFilter;
 
-    type Proposal = ProposalTypes.Proposal;
-    type ProposalStatus = ProposalTypes.ProposalStatus;
-    type ProposalEntry = ProposalTypes.ProposalEntry;
+  type Proposal = ProposalTypes.Proposal;
+  type ProposalStatus = ProposalTypes.ProposalStatus;
+  type ProposalEntry = ProposalTypes.ProposalEntry;
 
-    type CanisterId = IC.canister_id;
+  type CanisterId = IC.canister_id;
 
-    public class ProposalStore() {
-        private let store: Store.Store<ProposalEntry> = Store.Store<ProposalEntry>();
+  public class ProposalStore() {
+    private let store : Store.Store<ProposalEntry> = Store.Store<ProposalEntry>();
 
-        public func submit(proposal: Proposal) {
-            let post: ProposalEntry = initEntry(proposal);
+    public func submit(proposal : Proposal) {
+      let post : ProposalEntry = initEntry(proposal);
 
-            let {storageId; id} = proposal;
+      let {storageId; id} = proposal;
 
-            let entry: ?ProposalEntry = get(storageId, id);
+      let entry : ?ProposalEntry = get(storageId, id);
 
-            switch (entry) {
-                case (?entry) {
-                    // We only put proposal if it was never submitted otherwise we silenty ignore the entry because it has already been submitted. We do not want to crash the frontend it it happens.
-                };
-                case (null) {
-                    put(post.proposal, post);
-                };
-            };
+      switch (entry) {
+        case (?entry) {
+          // We only put proposal if it was never submitted otherwise we silenty ignore the entry because it has already been submitted. We do not want to crash the frontend it it happens.
         };
-
-        public func updateStatus(storageId: CanisterId, id: Text, status: ProposalStatus): Result.Result<Text, Text> {
-            let entry: ?ProposalEntry = get(storageId, id);
-
-            switch (entry) {
-                case (?entry) {
-                    let updatedEntry: ProposalEntry = cloneToStatus(entry, status);
-                    put(entry.proposal, updatedEntry);
-
-                    return #ok "Proposal status updated";
-                };
-                case (null) {
-                    #err "Status cannot be updated, proposal does not exist"
-                };
-            };
+        case (null) {
+          put(post.proposal, post);
         };
+      };
+    };
 
-        private func put({storageId; id;}: Proposal, value: ProposalEntry) {
-            let key: Text = toKey(storageId, id);
-            store.put(key, value);
+    public func updateStatus(storageId : CanisterId, id : Text, status : ProposalStatus) : Result.Result<Text, Text> {
+      let entry : ?ProposalEntry = get(storageId, id);
+
+      switch (entry) {
+        case (?entry) {
+          let updatedEntry : ProposalEntry = cloneToStatus(entry, status);
+          put(entry.proposal, updatedEntry);
+
+          return #ok "Proposal status updated";
         };
-
-        public func get(storageId: CanisterId, id: Text): ?ProposalEntry {
-            let key: Text = toKey(storageId, id);
-            return store.get(key);
+        case (null) {
+          #err "Status cannot be updated, proposal does not exist";
         };
+      };
+    };
 
-        public func entries(filter: ?ProposalFilter): [(Text, ProposalEntry)] {
-            let entries: Iter.Iter<(Text, ProposalEntry)> = store.entries();
+    private func put({storageId; id} : Proposal, value : ProposalEntry) {
+      let key : Text = toKey(storageId, id);
+      store.put(key, value);
+    };
 
-            switch (filter) {
-                case null {
-                    return Iter.toArray(entries);
-                };
-                case (?filter) {
-                    let keyValues: [(Text, ProposalEntry)] = Iter.toArray(entries);
+    public func get(storageId : CanisterId, id : Text) : ?ProposalEntry {
+      let key : Text = toKey(storageId, id);
+      return store.get(key);
+    };
 
-                    let {status} = filter;
+    public func entries(filter : ?ProposalFilter) : [(Text, ProposalEntry)] {
+      let entries : Iter.Iter<(Text, ProposalEntry)> = store.entries();
 
-                    let values: [(Text, ProposalEntry)] = Array.mapFilter<(Text, ProposalEntry), (Text, ProposalEntry)>(keyValues, func ((key: Text, value: ProposalEntry)) : ?(Text, ProposalEntry) {
-                        if (ProposalFilter.matchStatus(value, status)) {
-                            return ?(key, value);
-                        };
-
-                        return null;
-                    });
-
-
-                    return values;
-                };
-            };
+      switch (filter) {
+        case null {
+          return Iter.toArray(entries);
         };
+        case (?filter) {
+          let keyValues : [(Text, ProposalEntry)] = Iter.toArray(entries);
 
-        private func toKey(storageId: CanisterId, id: Text): Text {
-            Principal.toText(storageId) # "___" # id
+          let {status} = filter;
+
+          let values : [(Text, ProposalEntry)] = Array.mapFilter<(Text, ProposalEntry), (Text, ProposalEntry)>(
+            keyValues,
+            func((key : Text, value : ProposalEntry)) : ?(Text, ProposalEntry) {
+              if (ProposalFilter.matchStatus(value, status)) {
+                return ?(key, value);
+              };
+
+              return null;
+            }
+          );
+
+          return values;
         };
+      };
+    };
 
-        private func initEntry(proposal: Proposal): ProposalEntry {
-            let now: Time.Time = Time.now();
+    private func toKey(storageId : CanisterId, id : Text) : Text {
+      Principal.toText(storageId) # "___" # id;
+    };
 
-            return {
-                proposal = proposal;
-                status = #open;
-                created_at = now;
-                updated_at = now;
-            };
-        };
+    private func initEntry(proposal : Proposal) : ProposalEntry {
+      let now : Time.Time = Time.now();
 
-        private func cloneToStatus(entry: ProposalEntry, status: ProposalStatus): ProposalEntry {
-            {
-                proposal = entry.proposal;
-                status;
-                created_at = entry.created_at;
-                updated_at = Time.now();
-            };
-        };
+      return {
+        proposal = proposal;
+        status = #open;
+        created_at = now;
+        updated_at = now;
+      };
+    };
 
-        public func preupgrade(): HashMap.HashMap<Text, ProposalEntry> {
-            return store.preupgrade();
-        };
+    private func cloneToStatus(entry : ProposalEntry, status : ProposalStatus) : ProposalEntry {
+      {
+        proposal = entry.proposal;
+        status;
+        created_at = entry.created_at;
+        updated_at = Time.now();
+      };
+    };
 
-        public func postupgrade(stableData: [(Text, ProposalEntry)]) {
-            store.postupgrade(stableData);
-        };
-    }
-}
+    public func preupgrade() : HashMap.HashMap<Text, ProposalEntry> {
+      return store.preupgrade();
+    };
+
+    public func postupgrade(stableData : [(Text, ProposalEntry)]) {
+      store.postupgrade(stableData);
+    };
+  };
+};

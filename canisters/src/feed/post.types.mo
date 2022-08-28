@@ -8,11 +8,11 @@ import ProposalTypes "./proposal.types";
 
 module {
 
-    type Proposal = ProposalTypes.Proposal;
+  type Proposal = ProposalTypes.Proposal;
 
-    public type Post = Proposal and {
-        created_at: Time.Time;
-        updated_at: Time.Time;
-    };
+  public type Post = Proposal and {
+    created_at : Time.Time;
+    updated_at : Time.Time;
+  };
 
-}
+};
