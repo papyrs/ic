@@ -1,3 +1,10 @@
+# 0.0.20 (2022-09-01)
+
+### Fix
+
+- agent-js Safari desktop broken sign-in
+- generate social image card if user used an uploaded images as first paragraphs
+
 # 0.0.19 (2022-08-26)
 
 ### Hot fix 🔥
