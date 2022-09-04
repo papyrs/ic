@@ -35,5 +35,8 @@ export const config: Config = {
   devServer: {
     openBrowser: false,
     port: 3335
+  },
+  extras: {
+    experimentalImportInjection: true
   }
 };
