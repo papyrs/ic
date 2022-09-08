@@ -9,6 +9,7 @@ import {SignOutWindow} from '../../types/sync.window';
 import {createManagerActor} from '../../utils/manager.utils';
 import {startIdleTime, stopIdleTimer} from '../../workers/idle.ic.worker';
 import {initUserWorker} from '../../workers/user.ic.worker';
+import { delegationIdentityExpiration } from "../../constants/auth.constants";
 
 declare global {
   interface Window {
@@ -104,11 +105,6 @@ export const signOut: SignOut = async (): Promise<void> => {
   // Just in case the user has been wrongly saved locally - this can be deleted in a bit
   await del('/user');
 };
-
-// How long the delegation identity should remain valid?
-// e.g. BigInt(7 * 24 * 60 * 60 * 1000 * 1000 * 1000) = 7 days in nanoseconds
-// For Papyrs: 4 hours
-const delegationIdentityExpiration: bigint = BigInt(4 * 60 * 60 * 1000 * 1000 * 1000);
 
 export const signIn = async ({
   onSuccess,
