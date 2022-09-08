@@ -41,7 +41,7 @@ export interface AuthResponseFailure extends Omit<SigninPostMessage, 'kind'> {
 
 // Type: custom type
 
-export interface PapyrsSigninInit extends Omit<SigninPostMessage, 'kind'> {
+export interface PapyrsPostMessageSigninInit extends Omit<SigninPostMessage, 'kind'> {
   kind: 'papyrs-signin-init';
   key: ArrayBuffer;
 }

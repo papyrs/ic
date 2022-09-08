@@ -22,6 +22,10 @@ export interface IcSigninCustomEvent<T> extends CustomEvent<T> {
     detail: T;
     target: HTMLIcSigninElement;
 }
+export interface IcSigninProxyCustomEvent<T> extends CustomEvent<T> {
+    detail: T;
+    target: HTMLIcSigninProxyElement;
+}
 declare global {
     interface HTMLIcSigninElement extends Components.IcSignin, HTMLStencilElement {
     }
@@ -54,6 +58,7 @@ declare namespace LocalJSX {
     }
     interface IcSigninProxy {
         "localIdentityCanisterId"?: string;
+        "onSignInError"?: (event: IcSigninProxyCustomEvent<string | undefined>) => void;
     }
     interface IntrinsicElements {
         "ic-signin": IcSignin;

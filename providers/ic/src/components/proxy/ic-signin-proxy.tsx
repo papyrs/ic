@@ -1,3 +1,5 @@
+import {DerEncodedPublicKey, Signature} from '@dfinity/agent';
+import {Delegation, DelegationChain} from '@dfinity/identity';
 import {
   Component,
   ComponentInterface,
@@ -13,8 +15,10 @@ import {
   internetIdentityMainnet
 } from '../../constants/auth.constants';
 import {
+  AuthResponseFailure,
   InternetIdentityAuthRequest,
-  PapyrsSigninInit,
+  InternetIdentityAuthResponseSuccess,
+  PapyrsPostMessageSigninInit,
   SigninPostMessage
 } from '../../types/singin.messages';
 
@@ -63,22 +67,27 @@ export class IcSigninProxy implements ComponentInterface {
 
     switch (kind) {
       case 'papyrs-signin-init':
-        this.publicKey = (data as PapyrsSigninInit).key;
+        this.publicKey = (data as PapyrsPostMessageSigninInit).key;
         return;
       case 'authorize-ready':
-        this.initInternetIdentityAuth();
+        this.onInternetIdentityReady();
+        return;
+      case 'authorize-client-failure':
+        this.onInternetIdentityFailure(data as AuthResponseFailure);
+        return;
+      case 'authorize-client-success':
+        this.onInternetIdentitySuccess(data as InternetIdentityAuthResponseSuccess);
         return;
     }
   }
 
   /**
-   * Once Internet Identity has started, set the origin and the delegation length.
+   * Once Internet Identity has started, set the origin and the delegation duration (session length).
    * @private
    */
-  private initInternetIdentityAuth() {
+  private onInternetIdentityReady() {
     if (!this.tab || this.signInState() !== 'ready') {
-      this.signInError.emit('Authentication not ready.');
-      this.signInInProgress = false;
+      this.error('Authentication not ready.');
       return;
     }
 
@@ -92,7 +101,44 @@ export class IcSigninProxy implements ComponentInterface {
 
     const {origin} = this.identityProviderUrl;
 
-    this.tab?.postMessage(request, origin);
+    this.tab.postMessage(request, origin);
+  }
+
+  /**
+   * The sign-in failed in internet identity
+   * @private
+   */
+  private onInternetIdentityFailure({text}: AuthResponseFailure) {
+    this.error(text);
+  }
+
+  private error(text: string) {
+    this.signInError.emit(text);
+    this.signInInProgress = false;
+  }
+
+  private onInternetIdentitySuccess({
+    delegations: messageDelegations,
+    userPublicKey
+  }: InternetIdentityAuthResponseSuccess) {
+    const delegations = messageDelegations.map((signedDelegation) => ({
+      delegation: new Delegation(
+        signedDelegation.delegation.pubkey,
+        signedDelegation.delegation.expiration,
+        signedDelegation.delegation.targets
+      ),
+      signature: signedDelegation.signature.buffer as Signature
+    }));
+
+    const delegationChain = DelegationChain.fromDelegations(
+      delegations,
+      userPublicKey.buffer as DerEncodedPublicKey
+    );
+
+    // TODO postMessage to origin
+    console.log(delegationChain);
+
+    this.tab?.close();
   }
 
   private onSignIn = () => {
