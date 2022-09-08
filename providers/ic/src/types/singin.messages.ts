@@ -1,3 +1,4 @@
+import type {DelegationChain} from '@dfinity/identity';
 import type {Principal} from '@dfinity/principal';
 
 export interface SigninPostMessage {
@@ -6,7 +7,7 @@ export interface SigninPostMessage {
     | 'authorize-client-success'
     | 'authorize-ready'
     | 'authorize-client-failure'
-    | 'papyrs-signin-init';
+    | 'papyrs-signin-init' | 'papyrs-signin-delegation';
 }
 
 // Types copied from agent-js
@@ -41,7 +42,12 @@ export interface AuthResponseFailure extends Omit<SigninPostMessage, 'kind'> {
 
 // Type: custom type
 
-export interface PapyrsPostMessageSigninInit extends Omit<SigninPostMessage, 'kind'> {
+export interface PostMessageSignInInit extends Omit<SigninPostMessage, 'kind'> {
   kind: 'papyrs-signin-init';
   key: ArrayBuffer;
+}
+
+export interface PostMessageSignInDelegation extends Omit<SigninPostMessage, 'kind'> {
+  kind: 'papyrs-signin-delegation';
+  delegation: DelegationChain;
 }

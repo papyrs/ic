@@ -18,7 +18,7 @@ import {
   AuthResponseFailure,
   InternetIdentityAuthRequest,
   InternetIdentityAuthResponseSuccess,
-  PapyrsPostMessageSigninInit,
+  PostMessageSignInInit,
   SigninPostMessage
 } from '../../types/singin.messages';
 
@@ -44,6 +44,8 @@ export class IcSigninProxy implements ComponentInterface {
 
   private tab: WindowProxy | null | undefined;
 
+  private parentOrigin: string | undefined;
+
   componentWillLoad() {
     this.identityProviderUrl = new URL(
       this.localIdentityCanisterId !== undefined
@@ -54,7 +56,7 @@ export class IcSigninProxy implements ComponentInterface {
   }
 
   @Listen('message', {target: 'window'})
-  onMessage({data}: MessageEvent<Partial<SigninPostMessage>>) {
+  onMessage({data, origin}: MessageEvent<Partial<SigninPostMessage>>) {
     const {kind} = data ?? {};
 
     // TODO: ⚠️ validate origin of caller ⚠️
@@ -63,11 +65,9 @@ export class IcSigninProxy implements ComponentInterface {
       return;
     }
 
-    // TODO: handle ii auth success and failure
-
     switch (kind) {
       case 'papyrs-signin-init':
-        this.publicKey = (data as PapyrsPostMessageSigninInit).key;
+        this.onPapyrsInit({origin, data: data as PostMessageSignInInit});
         return;
       case 'authorize-ready':
         this.onInternetIdentityReady();
@@ -79,6 +79,11 @@ export class IcSigninProxy implements ComponentInterface {
         this.onInternetIdentitySuccess(data as InternetIdentityAuthResponseSuccess);
         return;
     }
+  }
+
+  private onPapyrsInit({origin, data: {key}}: {origin: string; data: PostMessageSignInInit}) {
+    this.parentOrigin = origin;
+    this.publicKey = key;
   }
 
   /**
@@ -135,10 +140,22 @@ export class IcSigninProxy implements ComponentInterface {
       userPublicKey.buffer as DerEncodedPublicKey
     );
 
-    // TODO postMessage to origin
-    console.log(delegationChain);
+    if (!this.parentOrigin) {
+      this.error('No parent origin');
+      return;
+    }
+
+    parent.postMessage(
+      {
+        kind: 'papyrs-signin-delegation',
+        delegation: delegationChain
+      },
+      this.parentOrigin
+    );
 
     this.tab?.close();
+
+    this.signInInProgress = false;
   }
 
   private onSignIn = () => {
@@ -146,7 +163,11 @@ export class IcSigninProxy implements ComponentInterface {
   };
 
   private signInState(): 'initializing' | 'ready' | 'in-progress' {
-    if (this.publicKey === undefined || this.identityProviderUrl === undefined) {
+    if (
+      this.publicKey === undefined ||
+      this.parentOrigin === undefined ||
+      this.identityProviderUrl === undefined
+    ) {
       return 'initializing';
     }
 
