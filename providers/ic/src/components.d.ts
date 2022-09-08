@@ -14,6 +14,8 @@ export namespace Components {
         "signInError": (err?: string) => void;
         "signInSuccess": () => void;
     }
+    interface IcSigninCaller {
+    }
     interface IcSigninProxy {
         "localIdentityCanisterId"?: string;
     }
@@ -22,9 +24,9 @@ export interface IcSigninCustomEvent<T> extends CustomEvent<T> {
     detail: T;
     target: HTMLIcSigninElement;
 }
-export interface IcSigninProxyCustomEvent<T> extends CustomEvent<T> {
+export interface IcSigninCallerCustomEvent<T> extends CustomEvent<T> {
     detail: T;
-    target: HTMLIcSigninProxyElement;
+    target: HTMLIcSigninCallerElement;
 }
 declare global {
     interface HTMLIcSigninElement extends Components.IcSignin, HTMLStencilElement {
@@ -32,6 +34,12 @@ declare global {
     var HTMLIcSigninElement: {
         prototype: HTMLIcSigninElement;
         new (): HTMLIcSigninElement;
+    };
+    interface HTMLIcSigninCallerElement extends Components.IcSigninCaller, HTMLStencilElement {
+    }
+    var HTMLIcSigninCallerElement: {
+        prototype: HTMLIcSigninCallerElement;
+        new (): HTMLIcSigninCallerElement;
     };
     interface HTMLIcSigninProxyElement extends Components.IcSigninProxy, HTMLStencilElement {
     }
@@ -41,6 +49,7 @@ declare global {
     };
     interface HTMLElementTagNameMap {
         "ic-signin": HTMLIcSigninElement;
+        "ic-signin-caller": HTMLIcSigninCallerElement;
         "ic-signin-proxy": HTMLIcSigninProxyElement;
     }
 }
@@ -56,12 +65,15 @@ declare namespace LocalJSX {
         "signInError"?: (err?: string) => void;
         "signInSuccess"?: () => void;
     }
+    interface IcSigninCaller {
+        "onSignInError"?: (event: IcSigninCallerCustomEvent<string | undefined>) => void;
+    }
     interface IcSigninProxy {
         "localIdentityCanisterId"?: string;
-        "onSignInError"?: (event: IcSigninProxyCustomEvent<string | undefined>) => void;
     }
     interface IntrinsicElements {
         "ic-signin": IcSignin;
+        "ic-signin-caller": IcSigninCaller;
         "ic-signin-proxy": IcSigninProxy;
     }
 }
@@ -70,6 +82,7 @@ declare module "@stencil/core" {
     export namespace JSX {
         interface IntrinsicElements {
             "ic-signin": LocalJSX.IcSignin & JSXBase.HTMLAttributes<HTMLIcSigninElement>;
+            "ic-signin-caller": LocalJSX.IcSigninCaller & JSXBase.HTMLAttributes<HTMLIcSigninCallerElement>;
             "ic-signin-proxy": LocalJSX.IcSigninProxy & JSXBase.HTMLAttributes<HTMLIcSigninProxyElement>;
         }
     }

@@ -1,4 +1,3 @@
-import type {DelegationChain} from '@dfinity/identity';
 import type {Principal} from '@dfinity/principal';
 
 export interface SigninPostMessage {
@@ -7,7 +6,20 @@ export interface SigninPostMessage {
     | 'authorize-client-success'
     | 'authorize-ready'
     | 'authorize-client-failure'
-    | 'papyrs-signin-init' | 'papyrs-signin-delegation';
+    | 'papyrs-signin-init'
+    | 'papyrs-signin-success'
+    | 'papyrs-signin-error';
+}
+
+export interface InternetIdentityDelegation {
+  pubkey: Uint8Array;
+  expiration: bigint;
+  targets?: Principal[];
+}
+
+export interface InternetIdentityDelegationSignature {
+  delegation: InternetIdentityDelegation;
+  signature: Uint8Array;
 }
 
 // Types copied from agent-js
@@ -20,14 +32,7 @@ export interface InternetIdentityAuthRequest extends Omit<SigninPostMessage, 'ki
 
 export interface InternetIdentityAuthResponseSuccess extends Omit<SigninPostMessage, 'kind'> {
   kind: 'authorize-client-success';
-  delegations: {
-    delegation: {
-      pubkey: Uint8Array;
-      expiration: bigint;
-      targets?: Principal[];
-    };
-    signature: Uint8Array;
-  }[];
+  delegations: InternetIdentityDelegationSignature[];
   userPublicKey: Uint8Array;
 }
 
@@ -47,7 +52,11 @@ export interface PostMessageSignInInit extends Omit<SigninPostMessage, 'kind'> {
   key: ArrayBuffer;
 }
 
-export interface PostMessageSignInDelegation extends Omit<SigninPostMessage, 'kind'> {
-  kind: 'papyrs-signin-delegation';
-  delegation: DelegationChain;
+export interface PostMessageSignInSuccess extends Omit<InternetIdentityAuthResponseSuccess, 'kind'> {
+  kind: 'papyrs-signin-success';
+}
+
+export interface PostMessageSignInError extends Omit<SigninPostMessage, 'kind'> {
+  kind: 'papyrs-signin-error';
+  text: string;
 }

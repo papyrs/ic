@@ -1,15 +1,4 @@
-import {DerEncodedPublicKey, Signature} from '@dfinity/agent';
-import {Delegation, DelegationChain} from '@dfinity/identity';
-import {
-  Component,
-  ComponentInterface,
-  Event,
-  EventEmitter,
-  h,
-  Listen,
-  Prop,
-  State
-} from '@stencil/core';
+import {Component, ComponentInterface, h, Listen, Prop, State} from '@stencil/core';
 import {
   delegationIdentityExpiration,
   internetIdentityMainnet
@@ -18,7 +7,9 @@ import {
   AuthResponseFailure,
   InternetIdentityAuthRequest,
   InternetIdentityAuthResponseSuccess,
+  PostMessageSignInError,
   PostMessageSignInInit,
+  PostMessageSignInSuccess,
   SigninPostMessage
 } from '../../types/singin.messages';
 
@@ -38,9 +29,6 @@ export class IcSigninProxy implements ComponentInterface {
 
   @State()
   private signInInProgress: boolean = false;
-
-  @Event()
-  signInError: EventEmitter<string | undefined>;
 
   private tab: WindowProxy | null | undefined;
 
@@ -118,40 +106,33 @@ export class IcSigninProxy implements ComponentInterface {
   }
 
   private error(text: string) {
-    this.signInError.emit(text);
+    this.parentPostMessage({
+      kind: 'papyrs-signin-error',
+      text
+    });
+
     this.signInInProgress = false;
   }
 
-  private onInternetIdentitySuccess({
-    delegations: messageDelegations,
-    userPublicKey
-  }: InternetIdentityAuthResponseSuccess) {
-    const delegations = messageDelegations.map((signedDelegation) => ({
-      delegation: new Delegation(
-        signedDelegation.delegation.pubkey,
-        signedDelegation.delegation.expiration,
-        signedDelegation.delegation.targets
-      ),
-      signature: signedDelegation.signature.buffer as Signature
-    }));
-
-    const delegationChain = DelegationChain.fromDelegations(
-      delegations,
-      userPublicKey.buffer as DerEncodedPublicKey
-    );
-
+  private parentPostMessage(msg: PostMessageSignInSuccess | PostMessageSignInError) {
     if (!this.parentOrigin) {
-      this.error('No parent origin');
+      console.error('No parent origin');
+      this.signInInProgress = false;
       return;
     }
 
-    parent.postMessage(
-      {
-        kind: 'papyrs-signin-delegation',
-        delegation: delegationChain
-      },
-      this.parentOrigin
-    );
+    parent.postMessage(msg, this.parentOrigin);
+  }
+
+  private onInternetIdentitySuccess({
+    delegations,
+    userPublicKey
+  }: InternetIdentityAuthResponseSuccess) {
+    this.parentPostMessage({
+      kind: 'papyrs-signin-success',
+      delegations,
+      userPublicKey
+    });
 
     this.tab?.close();
 
