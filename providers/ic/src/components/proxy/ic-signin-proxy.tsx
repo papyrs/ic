@@ -88,24 +88,44 @@ export class IcSigninProxy implements ComponentInterface {
   }
 
   /**
-   * ⚠️ validate origin of caller ⚠️
+   * ⚠️ Validate origin of caller ⚠️
    * @param origin
    * @private
    */
-  private async assertOrigin(_origin: string) {
+  private async assertOrigin(origin: string) {
     if (this.trustOrigin === false) {
-      throw new Error('Previous calls were emitted from a not trusted origin and therefore this service shall not be used.');
+      throw new Error(
+        'Previous calls were emitted from a not trusted origin and therefore this service shall not be used.'
+      );
+    }
+
+    // We test host and not hostname because doing so, we also test the origin with port
+    const {host: originHost}: URL = new URL(origin);
+
+    const {host: proxyHost} = window.location;
+
+    // We trust our own domain (papy.rs or e.g. localhost:5173 while developing). If does not match we are going to extract the canister id and check the origin with the manager canister.
+    if (originHost === proxyHost) {
+      this.trustOrigin = true;
+      return;
+    }
+
+    const canisterId: string = originHost.split('.')[0];
+    const regExp = /([a-z0-9]{5}-){4}[a-z0-9]{3}/;
+
+    if (!regExp.test(canisterId)) {
+      this.trustOrigin = false;
+      throw new Error(
+        `Origin (${origin}) of the message is not a canister and therefore, shall not use this signin.`
+      );
     }
 
     const identity: Identity = new AnonymousIdentity();
     const managerActor: ManagerActor = await createManagerActor({identity});
-    this.trustOrigin = await managerActor.knownBucket(
-      'qhbym-qaaaa-aaaaa-aaafq-cai',
-      'storage'
-    );
+    this.trustOrigin = await managerActor.knownBucket(canisterId, 'storage');
 
     if (this.trustOrigin !== true) {
-      throw new Error('Caller is not a valid Papyrs origin and has no right to use this signin.');
+      throw new Error(`Caller origin (${origin}) is not a valid Papyrs origin and has no right to use this signin.`);
     }
   }
 
