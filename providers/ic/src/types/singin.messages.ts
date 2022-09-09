@@ -52,7 +52,8 @@ export interface PostMessageSignInInit extends Omit<SigninPostMessage, 'kind'> {
   key: ArrayBuffer;
 }
 
-export interface PostMessageSignInSuccess extends Omit<InternetIdentityAuthResponseSuccess, 'kind'> {
+export interface PostMessageSignInSuccess
+  extends Omit<InternetIdentityAuthResponseSuccess, 'kind'> {
   kind: 'papyrs-signin-success';
 }
 

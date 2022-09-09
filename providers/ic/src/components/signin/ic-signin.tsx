@@ -70,7 +70,9 @@ export class IcSignin implements ComponentInterface {
   }
 
   private isDisabled(): boolean {
-    return this.signInInProgress || ['initializing', 'in-progress'].includes(this.externalSignInState);
+    return (
+      this.signInInProgress || ['initializing', 'in-progress'].includes(this.externalSignInState)
+    );
   }
 
   render() {
