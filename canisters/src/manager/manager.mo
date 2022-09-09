@@ -171,7 +171,7 @@ actor Manager {
      */
 
   // is a canister id known by the manager?
-  public shared func knownBucket(bucketId: Text, store : Text) : async (Bool) {
+  public shared func knownBucket(bucketId : Text, store : Text) : async (Bool) {
     if (Text.equal(store, "data")) {
       return dataStore.exists(Principal.fromText(bucketId));
     };
