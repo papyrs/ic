@@ -43,6 +43,8 @@ export class IcSigninProxy implements ComponentInterface {
 
   private tab: WindowProxy | null | undefined;
 
+  private trustOrigin: boolean | undefined = undefined;
+
   componentWillLoad() {
     EnvStore.getInstance().set(this.config as EnvironmentIC);
 
@@ -91,14 +93,18 @@ export class IcSigninProxy implements ComponentInterface {
    * @private
    */
   private async assertOrigin(_origin: string) {
+    if (this.trustOrigin === false) {
+      throw new Error('Previous calls were emitted from a not trusted origin and therefore this service shall not be used.');
+    }
+
     const identity: Identity = new AnonymousIdentity();
     const managerActor: ManagerActor = await createManagerActor({identity});
-    const knownBucket: boolean = await managerActor.knownBucket(
-      'rkp4c-7iaaa-aaaaa-aaaca-cai',
+    this.trustOrigin = await managerActor.knownBucket(
+      'qhbym-qaaaa-aaaaa-aaafq-cai',
       'storage'
     );
 
-    if (!knownBucket) {
+    if (this.trustOrigin !== true) {
       throw new Error('Caller is not a valid Papyrs origin and has no right to use this signin.');
     }
   }
