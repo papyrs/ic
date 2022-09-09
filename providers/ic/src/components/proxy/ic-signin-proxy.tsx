@@ -115,10 +115,8 @@ export class IcSigninProxy implements ComponentInterface {
     // We test host and not hostname because doing so, we also test the origin with port
     const {host: originHost}: URL = new URL(origin);
 
-    const {host: proxyHost} = window.location;
-
-    // We trust our own domain (papy.rs or e.g. localhost:5173 while developing). If does not match we are going to extract the canister id and check the origin with the manager canister.
-    if (originHost === proxyHost) {
+    // We trust papy.rs - our own domain
+    if (originHost.endsWith('papy.rs')) {
       this.trustOrigin = true;
       return;
     }
