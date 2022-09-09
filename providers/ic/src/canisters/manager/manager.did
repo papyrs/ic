@@ -13,6 +13,7 @@ service : {
   initData : () -> (Bucket);
   initStorage : () -> (Bucket);
   installCode : (principal, blob, blob) -> ();
+  knownBucket : (text, text) -> (bool);
   list : (text) -> (vec Bucket) query;
   transferCycles : (principal, nat) -> ();
 };

@@ -16,6 +16,7 @@ export interface _SERVICE {
   initData: ActorMethod<[], Bucket>;
   initStorage: ActorMethod<[], Bucket>;
   installCode: ActorMethod<[Principal, Array<number>, Array<number>], undefined>;
+  knownBucket: ActorMethod<[string, string], boolean>;
   list: ActorMethod<[string], Array<Bucket>>;
   transferCycles: ActorMethod<[Principal, bigint], undefined>;
 }
