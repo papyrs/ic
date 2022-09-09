@@ -63,12 +63,7 @@ export class IcSigninProxy implements ComponentInterface {
   async onMessage({data, origin}: MessageEvent<Partial<SigninPostMessage>>) {
     const {kind} = data ?? {};
 
-    try {
-      await this.assertOrigin(origin);
-    } catch (err) {
-      this.error(err.message);
-      return;
-    }
+    await this.assertOrigin(origin);
 
     if (!kind) {
       return;
