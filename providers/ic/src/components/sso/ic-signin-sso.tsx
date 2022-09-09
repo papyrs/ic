@@ -6,7 +6,7 @@ import {
   DelegationIdentity,
   Ed25519KeyIdentity
 } from '@dfinity/identity';
-import {Component, ComponentInterface, Event, EventEmitter, h, Listen} from '@stencil/core';
+import {Component, ComponentInterface, Event, EventEmitter, h, Listen, Prop} from '@stencil/core';
 import {createStore, setMany} from 'idb-keyval';
 import {
   PostMessageSignInError,
@@ -15,10 +15,13 @@ import {
 } from '../../types/singin.messages';
 
 @Component({
-  tag: 'ic-signin-caller',
+  tag: 'ic-signin-sso',
   shadow: true
 })
 export class IcSigninProxy implements ComponentInterface {
+  @Prop()
+  signInProxyUrl!: string;
+
   @Event()
   signInError: EventEmitter<string | undefined>;
 
@@ -27,15 +30,7 @@ export class IcSigninProxy implements ComponentInterface {
   private ed25519Key: Ed25519KeyIdentity | undefined = undefined;
 
   @Listen('message', {target: 'window'})
-  async onMessage({data, origin: messageOrigin}: MessageEvent<Partial<SigninPostMessage>>) {
-    const {
-      contentWindow: {origin}
-    } = this.ref;
-
-    if (origin !== messageOrigin) {
-      return;
-    }
-
+  async onMessage({data, origin}: MessageEvent<Partial<SigninPostMessage>>) {
     const {kind} = data ?? {};
 
     if (!kind) {
@@ -43,6 +38,9 @@ export class IcSigninProxy implements ComponentInterface {
     }
 
     switch (kind) {
+      case 'papyrs-signin-ready':
+        this.onSignInReady(origin);
+        return;
       case 'papyrs-signin-success':
         await this.onSignInSuccess(data as PostMessageSignInSuccess);
         return;
@@ -50,6 +48,18 @@ export class IcSigninProxy implements ComponentInterface {
         this.onSignInError(data as PostMessageSignInError);
     }
   }
+
+  private onSignInReady(origin: string) {
+    this.ed25519Key = Ed25519KeyIdentity.generate();
+
+    this.ref.contentWindow.postMessage(
+      {
+        kind: 'papyrs-signin-init',
+        key: this.ed25519Key.getPublicKey().toDer() as ArrayBuffer
+      },
+      origin
+    );
+  };
 
   private onSignInError({text}: PostMessageSignInError) {
     this.error(text);
@@ -112,24 +122,12 @@ export class IcSigninProxy implements ComponentInterface {
     this.signInError.emit(text);
   }
 
-  private emitPublicKey = () => {
-    this.ed25519Key = Ed25519KeyIdentity.generate();
-
-    this.ref.contentWindow.postMessage(
-      {
-        kind: 'papyrs-signin-init',
-        key: this.ed25519Key.getPublicKey().toDer() as ArrayBuffer
-      },
-      '*'
-    );
-  };
-
   render() {
     return (
       <object
-        onLoad={this.emitPublicKey}
         type={'text/html'}
-        data={'http://localhost:3335/proxy.html'}
+        data={this.signInProxyUrl}
+        part="object"
         ref={(el) => (this.ref = el as HTMLObjectElement)}></object>
     );
   }

@@ -14,7 +14,7 @@ export const config: Config = {
     {
       type: 'www',
       serviceWorker: null,
-      copy: [{src: 'proxy.html'}, {src: 'caller.html'}]
+      copy: [{src: 'sso.html'}]
     },
     {
       type: 'dist-custom-elements'

@@ -8,7 +8,8 @@ export interface SigninPostMessage {
     | 'authorize-client-failure'
     | 'papyrs-signin-init'
     | 'papyrs-signin-success'
-    | 'papyrs-signin-error';
+    | 'papyrs-signin-error'
+    | 'papyrs-signin-ready';
 }
 
 export interface InternetIdentityDelegation {
@@ -46,6 +47,10 @@ export interface AuthResponseFailure extends Omit<SigninPostMessage, 'kind'> {
 }
 
 // Type: custom type
+
+export interface PostMessageSignInReady extends Omit<SigninPostMessage, 'kind'> {
+  kind: 'papyrs-signin-ready';
+}
 
 export interface PostMessageSignInInit extends Omit<SigninPostMessage, 'kind'> {
   kind: 'papyrs-signin-init';

@@ -19,6 +19,12 @@ import {
 })
 export class IcSigninProxy implements ComponentInterface {
   @Prop()
+  i18n: Record<string, Record<string, string>>;
+
+  @Prop()
+  config: Record<string, string>;
+
+  @Prop()
   localIdentityCanisterId?: string;
 
   @State()
@@ -30,9 +36,10 @@ export class IcSigninProxy implements ComponentInterface {
   @State()
   private signInInProgress: boolean = false;
 
-  private tab: WindowProxy | null | undefined;
-
+  @State()
   private parentOrigin: string | undefined;
+
+  private tab: WindowProxy | null | undefined;
 
   componentWillLoad() {
     this.identityProviderUrl = new URL(
@@ -41,6 +48,11 @@ export class IcSigninProxy implements ComponentInterface {
         : internetIdentityMainnet
     );
     this.identityProviderUrl.hash = '#authorize';
+  }
+
+  componentDidLoad() {
+    // We broadcast the message because there is no caller yet. This is safe since it does not include any data exchange.
+    parent.postMessage({kind: 'papyrs-signin-ready'}, '*');
   }
 
   @Listen('message', {target: 'window'})
@@ -157,7 +169,11 @@ export class IcSigninProxy implements ComponentInterface {
 
   render() {
     return (
-      <ic-signin externalSignInState={this.signInState()} signIn={this.onSignIn}>
+      <ic-signin
+        i18n={this.i18n}
+        config={this.config}
+        externalSignInState={this.signInState()}
+        signIn={this.onSignIn}>
         <div slot="spinner">
           <slot name="spinner" />
         </div>
