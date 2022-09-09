@@ -59,7 +59,7 @@ export class IcSigninProxy implements ComponentInterface {
       },
       origin
     );
-  };
+  }
 
   private onSignInError({text}: PostMessageSignInError) {
     this.error(text);

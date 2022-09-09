@@ -1,4 +1,6 @@
+import {AnonymousIdentity, Identity} from '@dfinity/agent';
 import {Component, ComponentInterface, h, Listen, Prop, State} from '@stencil/core';
+import {_SERVICE as ManagerActor} from '../../canisters/manager/manager.did';
 import {
   delegationIdentityExpiration,
   internetIdentityMainnet
@@ -14,9 +16,7 @@ import {
   PostMessageSignInSuccess,
   SigninPostMessage
 } from '../../types/singin.messages';
-import { AnonymousIdentity, Identity } from "@dfinity/agent";
-import { _SERVICE as ManagerActor } from "../../canisters/manager/manager.did";
-import { createManagerActor } from "../../utils/manager.utils";
+import {createManagerActor} from '../../utils/manager.utils';
 
 @Component({
   tag: 'ic-signin-proxy',
@@ -98,7 +98,10 @@ export class IcSigninProxy implements ComponentInterface {
   private async assertOrigin(_origin: string) {
     const identity: Identity = new AnonymousIdentity();
     const managerActor: ManagerActor = await createManagerActor({identity});
-    const knownBucket: boolean = await managerActor.knownBucket('rkp4c-7iaaa-aaaaa-aaaca-cai', 'storage');
+    const knownBucket: boolean = await managerActor.knownBucket(
+      'rkp4c-7iaaa-aaaaa-aaaca-cai',
+      'storage'
+    );
 
     if (!knownBucket) {
       throw new Error('Caller is not a valid Papyrs origin and has no right to use this signin.');
