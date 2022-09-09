@@ -17,7 +17,6 @@ export namespace Components {
     interface IcSigninProxy {
         "config": Record<string, string>;
         "i18n": Record<string, Record<string, string>>;
-        "localIdentityCanisterId"?: string;
     }
     interface IcSigninSso {
         "signInProxyUrl": string;
@@ -71,7 +70,6 @@ declare namespace LocalJSX {
     interface IcSigninProxy {
         "config"?: Record<string, string>;
         "i18n"?: Record<string, Record<string, string>>;
-        "localIdentityCanisterId"?: string;
     }
     interface IcSigninSso {
         "onSignInError"?: (event: IcSigninSsoCustomEvent<string | undefined>) => void;

@@ -3,6 +3,8 @@ import {
   delegationIdentityExpiration,
   internetIdentityMainnet
 } from '../../constants/auth.constants';
+import {EnvStore} from '../../stores/env.store';
+import {EnvironmentIC} from '../../types/env.types';
 import {
   AuthResponseFailure,
   InternetIdentityAuthRequest,
@@ -12,6 +14,9 @@ import {
   PostMessageSignInSuccess,
   SigninPostMessage
 } from '../../types/singin.messages';
+import { AnonymousIdentity, Identity } from "@dfinity/agent";
+import { _SERVICE as ManagerActor } from "../../canisters/manager/manager.did";
+import { createManagerActor } from "../../utils/manager.utils";
 
 @Component({
   tag: 'ic-signin-proxy',
@@ -23,9 +28,6 @@ export class IcSigninProxy implements ComponentInterface {
 
   @Prop()
   config: Record<string, string>;
-
-  @Prop()
-  localIdentityCanisterId?: string;
 
   @State()
   private publicKey: ArrayBuffer | undefined = undefined;
@@ -42,9 +44,11 @@ export class IcSigninProxy implements ComponentInterface {
   private tab: WindowProxy | null | undefined;
 
   componentWillLoad() {
+    EnvStore.getInstance().set(this.config as EnvironmentIC);
+
     this.identityProviderUrl = new URL(
-      this.localIdentityCanisterId !== undefined
-        ? `http://${this.localIdentityCanisterId}.localhost:8000`
+      EnvStore.getInstance().get().localIdentityCanisterId !== undefined
+        ? `http://${EnvStore.getInstance().get().localIdentityCanisterId}.localhost:8000`
         : internetIdentityMainnet
     );
     this.identityProviderUrl.hash = '#authorize';
@@ -56,10 +60,15 @@ export class IcSigninProxy implements ComponentInterface {
   }
 
   @Listen('message', {target: 'window'})
-  onMessage({data, origin}: MessageEvent<Partial<SigninPostMessage>>) {
+  async onMessage({data, origin}: MessageEvent<Partial<SigninPostMessage>>) {
     const {kind} = data ?? {};
 
-    // TODO: ⚠️ validate origin of caller ⚠️
+    try {
+      await this.assertOrigin(origin);
+    } catch (err) {
+      this.error(err.message);
+      return;
+    }
 
     if (!kind) {
       return;
@@ -78,6 +87,21 @@ export class IcSigninProxy implements ComponentInterface {
       case 'authorize-client-success':
         this.onInternetIdentitySuccess(data as InternetIdentityAuthResponseSuccess);
         return;
+    }
+  }
+
+  /**
+   * ⚠️ validate origin of caller ⚠️
+   * @param origin
+   * @private
+   */
+  private async assertOrigin(_origin: string) {
+    const identity: Identity = new AnonymousIdentity();
+    const managerActor: ManagerActor = await createManagerActor({identity});
+    const knownBucket: boolean = await managerActor.knownBucket('rkp4c-7iaaa-aaaaa-aaaca-cai', 'storage');
+
+    if (!knownBucket) {
+      throw new Error('Caller is not a valid Papyrs origin and has no right to use this signin.');
     }
   }
 
