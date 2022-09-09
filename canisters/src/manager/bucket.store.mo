@@ -157,7 +157,7 @@ module {
     };
 
     /**
-     * Does a bucket id exists? - i.e. not a bucket for a user but is a canister id linked to any user's bucket? 
+     * Does a bucket id exists? - i.e. not a bucket for a user but is a canister id linked to any user bucket? 
      */
     public func exists(canisterId : Principal) : (Bool) {
       let entries : Iter.Iter<(UserId, Bucket)> = buckets.entries();
