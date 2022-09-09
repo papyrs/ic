@@ -65,10 +65,15 @@ export class IcSigninProxy implements ComponentInterface {
   async onMessage({data, origin}: MessageEvent<Partial<SigninPostMessage>>) {
     const {kind} = data ?? {};
 
-    await this.assertOrigin(origin);
-
     if (!kind) {
       return;
+    }
+
+    // The initialization of the validity of the origin must come first (we do not want to perform an update cal to the manager on each message)
+    if (kind === 'papyrs-signin-init') {
+      await this.assertOrigin(origin);
+    } else {
+      this.assertTrustOrigin();
     }
 
     switch (kind) {
@@ -87,18 +92,26 @@ export class IcSigninProxy implements ComponentInterface {
     }
   }
 
-  /**
-   * ⚠️ Validate origin of caller ⚠️
-   * @param origin
-   * @private
-   */
-  private async assertOrigin(origin: string) {
+  private assertTrustOrigin() {
     if (this.trustOrigin === false) {
       throw new Error(
         'Previous calls were emitted from a not trusted origin and therefore this service shall not be used.'
       );
     }
 
+    if (this.trustOrigin === undefined) {
+      throw new Error(
+        'The origin has not been initialized and therefore we cannot tell if this message can be trusted or not.'
+      );
+    }
+  }
+
+  /**
+   * ⚠️ Validate origin of caller ⚠️
+   * @param origin
+   * @private
+   */
+  private async assertOrigin(origin: string) {
     // We test host and not hostname because doing so, we also test the origin with port
     const {host: originHost}: URL = new URL(origin);
 
@@ -125,7 +138,9 @@ export class IcSigninProxy implements ComponentInterface {
     this.trustOrigin = await managerActor.knownBucket(canisterId, 'storage');
 
     if (this.trustOrigin !== true) {
-      throw new Error(`Caller origin (${origin}) is not a valid Papyrs origin and has no right to use this signin.`);
+      throw new Error(
+        `Caller origin (${origin}) is not a valid Papyrs origin and has no right to use this signin.`
+      );
     }
   }
 
@@ -162,7 +177,11 @@ export class IcSigninProxy implements ComponentInterface {
    * @private
    */
   private onInternetIdentityFailure({text}: AuthResponseFailure) {
+    this.tab?.close();
+
     this.error(text);
+
+    this.cleanUp();
   }
 
   private error(text: string) {
@@ -197,6 +216,13 @@ export class IcSigninProxy implements ComponentInterface {
     this.tab?.close();
 
     this.signInInProgress = false;
+
+    this.cleanUp();
+  }
+
+  private cleanUp() {
+    this.trustOrigin = undefined;
+    this.publicKey = undefined;
   }
 
   private onSignIn = () => {
