@@ -43,7 +43,7 @@ export class IcSigninProxy implements ComponentInterface {
 
   private tab: WindowProxy | null | undefined;
 
-  private trustOrigin: boolean | undefined = undefined;
+  private trustedOrigin: boolean | undefined = undefined;
 
   componentWillLoad() {
     EnvStore.getInstance().set(this.config as EnvironmentIC);
@@ -71,9 +71,10 @@ export class IcSigninProxy implements ComponentInterface {
 
     // The initialization of the validity of the origin must come first (we do not want to perform an update cal to the manager on each message)
     if (kind === 'papyrs-signin-init') {
-      await this.assertOrigin(origin);
+      await this.assertOriginSSO(origin);
     } else {
-      this.assertTrustOrigin();
+      this.assertOriginTrusted();
+      this.assertOriginII(origin);
     }
 
     switch (kind) {
@@ -92,32 +93,40 @@ export class IcSigninProxy implements ComponentInterface {
     }
   }
 
-  private assertTrustOrigin() {
-    if (this.trustOrigin === false) {
+  private assertOriginTrusted() {
+    if (this.trustedOrigin === false) {
       throw new Error(
         'Previous calls were emitted from a not trusted origin and therefore this service shall not be used.'
       );
     }
 
-    if (this.trustOrigin === undefined) {
+    if (this.trustedOrigin === undefined) {
       throw new Error(
         'The origin has not been initialized and therefore we cannot tell if this message can be trusted or not.'
       );
     }
   }
 
+  private assertOriginII(origin: string) {
+    const {origin: expectedOriginII} = new URL(this.identityProviderUrl);
+
+    if (expectedOriginII !== origin) {
+      throw new Error('An authentication message was not provided by Internet Identity!');
+    }
+  }
+
   /**
-   * ⚠️ Validate origin of caller ⚠️
+   * ⚠️ Validate origin of caller that initialized the SSO ⚠️
    * @param origin
    * @private
    */
-  private async assertOrigin(origin: string) {
+  private async assertOriginSSO(origin: string) {
     // We test host and not hostname because doing so, we also test the origin with port
     const {host: originHost}: URL = new URL(origin);
 
     // We trust papy.rs - our own domain
     if (originHost.endsWith('papy.rs')) {
-      this.trustOrigin = true;
+      this.trustedOrigin = true;
       return;
     }
 
@@ -125,7 +134,7 @@ export class IcSigninProxy implements ComponentInterface {
     const regExp = /([a-z0-9]{5}-){4}[a-z0-9]{3}/;
 
     if (!regExp.test(canisterId)) {
-      this.trustOrigin = false;
+      this.trustedOrigin = false;
       throw new Error(
         `Origin (${origin}) of the message is not a canister and therefore, shall not use this signin.`
       );
@@ -133,9 +142,9 @@ export class IcSigninProxy implements ComponentInterface {
 
     const identity: Identity = new AnonymousIdentity();
     const managerActor: ManagerActor = await createManagerActor({identity});
-    this.trustOrigin = await managerActor.knownBucket(canisterId, 'storage');
+    this.trustedOrigin = await managerActor.knownBucket(canisterId, 'storage');
 
-    if (this.trustOrigin !== true) {
+    if (this.trustedOrigin !== true) {
       throw new Error(
         `Caller origin (${origin}) is not a valid Papyrs origin and has no right to use this signin.`
       );
@@ -219,7 +228,7 @@ export class IcSigninProxy implements ComponentInterface {
   }
 
   private cleanUp() {
-    this.trustOrigin = undefined;
+    this.trustedOrigin = undefined;
     this.publicKey = undefined;
   }
 

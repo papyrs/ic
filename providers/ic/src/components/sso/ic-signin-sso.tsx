@@ -37,6 +37,11 @@ export class IcSigninProxy implements ComponentInterface {
       return;
     }
 
+    // We consider only the messages that are sent from the sign-in proxy url
+    if (!this.signInOrigin(origin)) {
+      return;
+    }
+
     switch (kind) {
       case 'papyrs-signin-ready':
         this.onSignInReady(origin);
@@ -47,6 +52,11 @@ export class IcSigninProxy implements ComponentInterface {
       case 'papyrs-signin-error':
         this.onSignInError(data as PostMessageSignInError);
     }
+  }
+
+  private signInOrigin(origin: string): boolean {
+    const {origin: expectedOrigin} = new URL(this.signInProxyUrl);
+    return expectedOrigin === origin;
   }
 
   private onSignInReady(origin: string) {
