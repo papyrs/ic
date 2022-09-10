@@ -8,14 +8,27 @@ import { HTMLStencilElement, JSXBase } from "@stencil/core/internal";
 export namespace Components {
     interface IcSignin {
         "config": Record<string, string>;
+        "externalSignInState": 'initializing' | 'ready' | 'in-progress' | undefined;
         "i18n": Record<string, Record<string, string>>;
+        "signIn": () => void;
         "signInError": (err?: string) => void;
         "signInSuccess": () => void;
+    }
+    interface IcSigninProxy {
+        "config": Record<string, string>;
+        "i18n": Record<string, Record<string, string>>;
+    }
+    interface IcSigninSso {
+        "signInProxyUrl": string;
     }
 }
 export interface IcSigninCustomEvent<T> extends CustomEvent<T> {
     detail: T;
     target: HTMLIcSigninElement;
+}
+export interface IcSigninSsoCustomEvent<T> extends CustomEvent<T> {
+    detail: T;
+    target: HTMLIcSigninSsoElement;
 }
 declare global {
     interface HTMLIcSigninElement extends Components.IcSignin, HTMLStencilElement {
@@ -24,22 +37,48 @@ declare global {
         prototype: HTMLIcSigninElement;
         new (): HTMLIcSigninElement;
     };
+    interface HTMLIcSigninProxyElement extends Components.IcSigninProxy, HTMLStencilElement {
+    }
+    var HTMLIcSigninProxyElement: {
+        prototype: HTMLIcSigninProxyElement;
+        new (): HTMLIcSigninProxyElement;
+    };
+    interface HTMLIcSigninSsoElement extends Components.IcSigninSso, HTMLStencilElement {
+    }
+    var HTMLIcSigninSsoElement: {
+        prototype: HTMLIcSigninSsoElement;
+        new (): HTMLIcSigninSsoElement;
+    };
     interface HTMLElementTagNameMap {
         "ic-signin": HTMLIcSigninElement;
+        "ic-signin-proxy": HTMLIcSigninProxyElement;
+        "ic-signin-sso": HTMLIcSigninSsoElement;
     }
 }
 declare namespace LocalJSX {
     interface IcSignin {
         "config"?: Record<string, string>;
+        "externalSignInState"?: 'initializing' | 'ready' | 'in-progress' | undefined;
         "i18n"?: Record<string, Record<string, string>>;
         "onDdgSignInError"?: (event: IcSigninCustomEvent<string | undefined>) => void;
         "onDdgSignInSuccess"?: (event: IcSigninCustomEvent<void>) => void;
         "onInProgress"?: (event: IcSigninCustomEvent<boolean>) => void;
+        "signIn"?: () => void;
         "signInError"?: (err?: string) => void;
         "signInSuccess"?: () => void;
     }
+    interface IcSigninProxy {
+        "config"?: Record<string, string>;
+        "i18n"?: Record<string, Record<string, string>>;
+    }
+    interface IcSigninSso {
+        "onSignInError"?: (event: IcSigninSsoCustomEvent<string | undefined>) => void;
+        "signInProxyUrl": string;
+    }
     interface IntrinsicElements {
         "ic-signin": IcSignin;
+        "ic-signin-proxy": IcSigninProxy;
+        "ic-signin-sso": IcSigninSso;
     }
 }
 export { LocalJSX as JSX };
@@ -47,6 +86,8 @@ declare module "@stencil/core" {
     export namespace JSX {
         interface IntrinsicElements {
             "ic-signin": LocalJSX.IcSignin & JSXBase.HTMLAttributes<HTMLIcSigninElement>;
+            "ic-signin-proxy": LocalJSX.IcSigninProxy & JSXBase.HTMLAttributes<HTMLIcSigninProxyElement>;
+            "ic-signin-sso": LocalJSX.IcSigninSso & JSXBase.HTMLAttributes<HTMLIcSigninSsoElement>;
         }
     }
 }

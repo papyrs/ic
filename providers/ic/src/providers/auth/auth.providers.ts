@@ -3,6 +3,7 @@ import {Identity} from '@dfinity/agent';
 import {AuthClient} from '@dfinity/auth-client';
 import {del} from 'idb-keyval';
 import {_SERVICE as ManagerActor} from '../../canisters/manager/manager.did';
+import {delegationIdentityExpiration} from '../../constants/auth.constants';
 import {EnvStore} from '../../stores/env.store';
 import {EnvironmentIC} from '../../types/env.types';
 import {SignOutWindow} from '../../types/sync.window';
@@ -104,11 +105,6 @@ export const signOut: SignOut = async (): Promise<void> => {
   // Just in case the user has been wrongly saved locally - this can be deleted in a bit
   await del('/user');
 };
-
-// How long the delegation identity should remain valid?
-// e.g. BigInt(7 * 24 * 60 * 60 * 1000 * 1000 * 1000) = 7 days in nanoseconds
-// For Papyrs: 4 hours
-const delegationIdentityExpiration: bigint = BigInt(4 * 60 * 60 * 1000 * 1000 * 1000);
 
 export const signIn = async ({
   onSuccess,

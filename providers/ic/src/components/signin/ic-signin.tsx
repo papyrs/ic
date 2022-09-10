@@ -23,10 +23,16 @@ export class IcSignin implements ComponentInterface {
   config: Record<string, string>;
 
   @Prop()
+  signIn: () => void;
+
+  @Prop()
   signInSuccess: () => void;
 
   @Prop()
   signInError: (err?: string) => void;
+
+  @Prop()
+  externalSignInState: 'initializing' | 'ready' | 'in-progress' | undefined = undefined;
 
   @Event()
   inProgress: EventEmitter<boolean>;
@@ -41,6 +47,11 @@ export class IcSignin implements ComponentInterface {
   ddgSignInError: EventEmitter<string | undefined>;
 
   private async signUserIn() {
+    if (this.signIn) {
+      this.signIn();
+      return;
+    }
+
     this.inProgress.emit(true);
     this.signInInProgress = true;
 
@@ -58,6 +69,12 @@ export class IcSignin implements ComponentInterface {
     });
   }
 
+  private isDisabled(): boolean {
+    return (
+      this.signInInProgress || ['initializing', 'in-progress'].includes(this.externalSignInState)
+    );
+  }
+
   render() {
     return (
       <Host>
@@ -71,14 +88,14 @@ export class IcSignin implements ComponentInterface {
 
   private renderSpinner() {
     return (
-      <div class={`spinner ${!this.signInInProgress ? 'hidden' : ''}`}>
+      <div class={`spinner ${!this.isDisabled() ? 'hidden' : ''}`}>
         <slot name="spinner" />
       </div>
     );
   }
 
   private renderAction() {
-    if (this.signInInProgress) {
+    if (this.isDisabled()) {
       return undefined;
     }
 
@@ -91,7 +108,7 @@ export class IcSignin implements ComponentInterface {
   }
 
   private renderTerms() {
-    if (this.signInInProgress) {
+    if (this.isDisabled()) {
       return undefined;
     }
 

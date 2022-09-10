@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html dir="ltr" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=5.0" />
+    <title>Papyrs</title>
+
+    <script type="module" src="/build/papyrs-ic.esm.js"></script>
+    <script nomodule src="/build/papyrs-ic.js"></script>
+
+    <style>
+      ic-signin-sso::part(object) {
+        display: block;
+        width: 100vw;
+        height: 100vh;
+      }
+    </style>
+  </head>
+  <body style="margin: 0; background: beige">
+    <ic-signin-sso sign-in-proxy-url="http://localhost:5173/proxy/signin"> </ic-signin-sso>
+  </body>
+</html>

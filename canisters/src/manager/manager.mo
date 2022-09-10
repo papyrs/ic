@@ -27,6 +27,7 @@ actor Manager {
   private type StorageBucket = StorageBucket.StorageBucket;
 
   private type Bucket = BucketTypes.Bucket;
+  private type BucketId = BucketTypes.BucketId;
 
   private let walletUtils : WalletUtils.WalletUtils = WalletUtils.WalletUtils();
   private let canisterUtils : CanisterUtils.CanisterUtils = CanisterUtils.CanisterUtils();
@@ -163,6 +164,23 @@ actor Manager {
         return exists;
       };
     };
+  };
+
+  /**
+     * Utilities
+     */
+
+  // is a canister id known by the manager?
+  public shared func knownBucket(bucketId : Text, store : Text) : async (Bool) {
+    if (Text.equal(store, "data")) {
+      return dataStore.exists(Principal.fromText(bucketId));
+    };
+
+    if (Text.equal(store, "storage")) {
+      return storagesStore.exists(Principal.fromText(bucketId));
+    };
+
+    throw Error.reject("Type of store not supported");
   };
 
   /**

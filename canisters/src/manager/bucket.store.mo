@@ -156,6 +156,28 @@ module {
       return Iter.toArray(values);
     };
 
+    /**
+     * Does a bucket id exists? - i.e. not a bucket for a user but is a canister id linked to any user bucket? 
+     */
+    public func exists(canisterId : Principal) : (Bool) {
+      let entries : Iter.Iter<(UserId, Bucket)> = buckets.entries();
+      let values : Iter.Iter<(UserId, Bucket)> = Iter.filter(
+        entries,
+        func((key : UserId, {bucketId} : Bucket)) : Bool {
+          switch (bucketId) {
+            case null {
+              return false;
+            };
+            case (?bucketId) {
+              return bucketId == canisterId;
+            };
+          };
+        }
+      );
+
+      return Iter.size(values) > 0;
+    };
+
     public func preupgrade() : HashMap.HashMap<UserId, Bucket> {
       return buckets;
     };
