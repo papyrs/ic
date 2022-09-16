@@ -27,24 +27,37 @@ export const uploadResources = async ({meta}: {meta: Meta | undefined}) => {
   // 1. Get actor
   const {actor}: BucketActor<StorageBucketActor> = await getStorageActor();
 
-  // 2. Get already uploaded assets
+  // 2. Get already uploaded assets and their respective sha256 value (if defined)
   const assetKeys: {key: AssetKey; sha256: [] | [Array<number>]}[] = await actor.shas(
     toNullable<string>('resources')
   );
 
-  // TODO: decode correctly sha256 to string
-  const keys: {name: string, sha256: string}[] = assetKeys.map(({key: {name}, sha256}) => ({
-    name,
-    sha256: new TextDecoder().decode(new Uint8Array(fromNullable(sha256) ?? []))
-  }));
+  const arrayToBase64String = (sha256: [] | [Array<number>]): string =>
+    btoa(
+      [...new Uint8Array(fromNullable(sha256) ?? [])].map((c) => String.fromCharCode(c)).join('')
+    );
 
-  console.log(keys);
+  const keys: {name: string; sha256: string | undefined}[] = assetKeys.map(
+    ({key: {name}, sha256: sha256Array}) => {
+      const sha256: string = arrayToBase64String(sha256Array);
+
+      return {
+        name,
+        sha256: sha256 === '' ? undefined : sha256
+      };
+    }
+  );
 
   // 3. Get list of resources - i.e. the kit
   const kit: Kit[] = await getKit();
 
   // 4. We only upload resources that have not been yet uploaded. In other words: we upload the resources the first time or if hashes are modified.
-  const kitNewFiles: Kit[] = kit.filter(({filename}: Kit) => keys.find(({name}) => filename !== name) === undefined);
+  const kitNewFiles: Kit[] = kit.filter(({filename, sha256}: Kit) => {
+    const key: {name: string; sha256: string | undefined} | undefined = keys.find(
+      ({name}) => filename !== name
+    );
+    return key === undefined || sha256 === undefined || sha256 !== key.sha256;
+  });
 
   if (!kitNewFiles || kitNewFiles.length <= 0) {
     return;
@@ -190,7 +203,7 @@ const getKit = async (): Promise<Kit[]> => {
   };
 
   return resources
-    .map((src: string) => toResource(src))
+    .map((resource: (KitResource | string)) => toResource(resource))
     .map((resource: Partial<Kit>) => {
       const {pathname}: URL = new URL(resource.src);
       return {
