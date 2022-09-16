@@ -23,6 +23,14 @@ interface Kit {
 
 const getKitPath = (): string => EnvStore.getInstance().get().kitPath;
 
+interface AssetKeys {
+  fullPath: string;
+  sha256: string | undefined;
+}
+
+const sha256ToBase64String = (sha256: Iterable<number>): string =>
+  btoa([...sha256].map((c) => String.fromCharCode(c)).join(''));
+
 export const uploadResources = async ({meta}: {meta: Meta | undefined}) => {
   // 1. Get actor
   const {actor}: BucketActor<StorageBucketActor> = await getStorageActor();
@@ -32,54 +40,106 @@ export const uploadResources = async ({meta}: {meta: Meta | undefined}) => {
     toNullable<string>('resources')
   );
 
-  const arrayToBase64String = (sha256: [] | [Array<number>]): string =>
-    btoa(
-      [...new Uint8Array(fromNullable(sha256) ?? [])].map((c) => String.fromCharCode(c)).join('')
-    );
+  const keys: AssetKeys[] = assetKeys.map(({key: {fullPath}, sha256: sha256Array}) => {
+    const sha256: string = sha256ToBase64String(new Uint8Array(fromNullable(sha256Array) ?? []));
 
-  const keys: {name: string; sha256: string | undefined}[] = assetKeys.map(
-    ({key: {name}, sha256: sha256Array}) => {
-      const sha256: string = arrayToBase64String(sha256Array);
-
-      return {
-        name,
-        sha256: sha256 === '' ? undefined : sha256
-      };
-    }
-  );
+    return {
+      fullPath,
+      sha256: sha256 === '' ? undefined : sha256
+    };
+  });
 
   // 3. Get list of resources - i.e. the kit
   const kit: Kit[] = await getKit();
 
-  // 4. We only upload resources that have not been yet uploaded. In other words: we upload the resources the first time or if hashes are modified.
-  const kitNewFiles: Kit[] = kit.filter(({filename, sha256}: Kit) => {
-    const key: {name: string; sha256: string | undefined} | undefined = keys.find(
-      ({name}) => filename !== name
-    );
-    return key === undefined || sha256 === undefined || sha256 !== key.sha256;
-  });
+  const promises: Promise<void>[] = kit.map((kit: Kit) =>
+    addKitIC({kit, actor, meta, assetKeys: keys})
+  );
+  await Promise.all(promises);
+};
 
-  if (!kitNewFiles || kitNewFiles.length <= 0) {
+const updatedResource = ({
+  src,
+  sha256,
+  assetKeys
+}: {
+  src: string;
+  sha256: string | undefined;
+  assetKeys: AssetKeys[];
+}): boolean => {
+  const kitFullPath: string = src.replace(getKitPath(), '');
+
+  const key: {fullPath: string; sha256: string | undefined} | undefined = assetKeys.find(
+    ({fullPath}) => kitFullPath === fullPath
+  );
+
+  return key === undefined || sha256 === undefined || sha256 !== key.sha256;
+};
+
+// Source: https://stackoverflow.com/a/70891826/5404186
+const digestMessage = async (message): Promise<ArrayBuffer> => {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(message);
+  return crypto.subtle.digest('SHA-256', data);
+};
+
+const addDynamicKitIC = async ({
+  kit,
+  actor,
+  meta,
+  assetKeys
+}: {
+  kit: Kit;
+  actor: StorageBucketActor;
+  meta: Meta | undefined;
+  assetKeys: AssetKeys[];
+}) => {
+  const {src, filename, mimeType, updateContent, headers} = kit;
+
+  const content: string = await downloadKit(src);
+  const updatedContent: string = updateContent({content, meta});
+  const sha256: string = sha256ToBase64String(new Uint8Array(await digestMessage(updatedContent)));
+
+  if (!updatedResource({src, sha256, assetKeys})) {
     return;
   }
 
-  const promises: Promise<void>[] = kitNewFiles.map((kit: Kit) => addKitIC({kit, actor, meta}));
-  await Promise.all(promises);
-
-  // If there was an update, we ensure we also update the sw list
-  await addSwKitIC({kitNewFiles, kit, actor, meta});
+  await uploadKit({
+    filename,
+    content: updatedContent,
+    actor,
+    mimeType,
+    headers,
+    fullPath: src.replace(getKitPath(), '')
+  });
 };
 
 const addKitIC = async ({
   kit,
   actor,
-  meta
+  meta,
+  assetKeys
 }: {
   kit: Kit;
   actor: StorageBucketActor;
   meta: Meta | undefined;
+  assetKeys: AssetKeys[];
 }) => {
-  const {src, filename, mimeType, updateContent, headers} = kit;
+  const {updateContent} = kit;
+
+  // If updateContent is defined we have to compare the sha256 value of the content that will be updated first
+  // e.g. avoiding uploading the manifest at each publish
+  if (updateContent !== undefined) {
+    await addDynamicKitIC({kit, actor, meta, assetKeys});
+
+    return;
+  }
+
+  const {src, filename, mimeType, headers, sha256} = kit;
+
+  if (!updatedResource({src, sha256, assetKeys})) {
+    return;
+  }
 
   const content: string = await downloadKit(src);
 
@@ -93,34 +153,6 @@ const addKitIC = async ({
     headers,
     fullPath: src.replace(getKitPath(), '')
   });
-};
-
-const addSwKitIC = async ({
-  kitNewFiles,
-  kit,
-  actor,
-  meta
-}: {
-  kitNewFiles: Kit[];
-  kit: Kit[];
-  actor: StorageBucketActor;
-  meta: Meta | undefined;
-}) => {
-  const sw: Kit | undefined = kitNewFiles.find(
-    ({filename}: Kit) => filename === 'service-worker.js'
-  );
-
-  if (sw !== undefined) {
-    return;
-  }
-
-  const swKit: Kit | undefined = kit.find(({filename}: Kit) => filename === 'service-worker.js');
-
-  if (!swKit !== undefined) {
-    return;
-  }
-
-  await addKitIC({kit: swKit, actor, meta});
 };
 
 const uploadKit = async ({
@@ -203,7 +235,7 @@ const getKit = async (): Promise<Kit[]> => {
   };
 
   return resources
-    .map((resource: (KitResource | string)) => toResource(resource))
+    .map((resource: KitResource | string) => toResource(resource))
     .map((resource: Partial<Kit>) => {
       const {pathname}: URL = new URL(resource.src);
       return {
