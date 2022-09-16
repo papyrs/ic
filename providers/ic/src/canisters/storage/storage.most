@@ -2,7 +2,12 @@
 type Asset =
   {encoding : AssetEncoding; headers : [(Text, Text)]; key : AssetKey};
 type AssetEncoding =
-  {contentChunks : [[Nat8]]; modified : Int; totalLength : Nat};
+  {
+    contentChunks : [[Nat8]];
+    modified : Int;
+    sha256 : ?[Nat8];
+    totalLength : Nat
+  };
 type AssetKey = {folder : Text; fullPath : Text; name : Text; token : ?Text};
 type Asset__2 = Asset;
 actor {

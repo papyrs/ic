@@ -9,6 +9,7 @@ module {
     modified : Int;
     contentChunks : [[Nat8]];
     totalLength : Nat;
+    sha256 : ?[Nat8];
   };
 
   public type AssetKey = {

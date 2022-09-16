@@ -10,6 +10,8 @@ import Buffer "mo:base/Buffer";
 
 import StorageTypes "./storage.types";
 
+import Sha256Utils "../utils/sha256.utils";
+
 module {
 
   type Chunk = StorageTypes.Chunk;
@@ -148,6 +150,25 @@ module {
       };
     };
 
+    public func getShas(folder : ?Text) : [{key : AssetKey; sha256 : ?[Nat8]}] {
+      let keys : [AssetKey] = getKeys(folder);
+
+      let shas : Buffer.Buffer<{key : AssetKey; sha256 : ?[Nat8]}> = Buffer.Buffer(1);
+
+      for (key in keys.vals()) {
+        let result : Result.Result<Asset, Text> = getAsset(key.fullPath, key.token);
+
+        switch (result) {
+          case (#ok asset) {
+            shas.add({key; sha256 = asset.encoding.sha256});
+          };
+          case (#err error) {};
+        };
+      };
+
+      return shas.toArray();
+    };
+
     /**
          * Upload batch and chunks
          */
@@ -260,9 +281,12 @@ module {
         return {error = ?"No chunk to commit."};
       };
 
+      let sha256Digest : Sha256Utils.Digest = Sha256Utils.Digest();
       var totalLength = 0;
+
       for (chunk in contentChunks.vals()) {
         totalLength += chunk.size();
+        sha256Digest.write(chunk);
       };
 
       assets.put(
@@ -274,6 +298,7 @@ module {
             modified = Time.now();
             contentChunks = contentChunks.toArray();
             totalLength;
+            sha256 = ?sha256Digest.sum();
           };
         }
       );

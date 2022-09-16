@@ -6,7 +6,7 @@ import {
   _SERVICE as StorageBucketActor
 } from '../canisters/storage/storage.did';
 import {EnvStore} from '../stores/env.store';
-import {toNullable} from '../utils/did.utils';
+import {fromNullable, toNullable} from '../utils/did.utils';
 import {BucketActor} from '../utils/manager.utils';
 import {getAuthor} from './common.publish';
 
@@ -16,6 +16,7 @@ interface Kit {
   src: string;
   filename: string;
   mimeType: KitMimeType;
+  sha256: string | undefined;
   headers: HeaderField[];
   updateContent?: ({content, meta}: {meta: Meta | undefined; content: string}) => string;
 }
@@ -27,19 +28,23 @@ export const uploadResources = async ({meta}: {meta: Meta | undefined}) => {
   const {actor}: BucketActor<StorageBucketActor> = await getStorageActor();
 
   // 2. Get already uploaded assets
-  const assetKeys: AssetKey[] = await actor.list(toNullable<string>('resources'));
-  const keys: string[] = assetKeys.map(({name}: AssetKey) => name);
+  const assetKeys: {key: AssetKey; sha256: [] | [Array<number>]}[] = await actor.shas(
+    toNullable<string>('resources')
+  );
+
+  // TODO: decode correctly sha256 to string
+  const keys: {name: string, sha256: string}[] = assetKeys.map(({key: {name}, sha256}) => ({
+    name,
+    sha256: new TextDecoder().decode(new Uint8Array(fromNullable(sha256) ?? []))
+  }));
+
+  console.log(keys);
 
   // 3. Get list of resources - i.e. the kit
   const kit: Kit[] = await getKit();
 
   // 4. We only upload resources that have not been yet uploaded. In other words: we upload the resources the first time or if hashes are modified.
-  // TODO: 23.06.2022 - temporary update CSS on publish to roll out last changes
-  // TODO: 29.07.2022 - temporary update index.js on publish to roll out last changes for <web-social-share />
-  const kitNewFiles: Kit[] = kit.filter(
-    ({filename, mimeType}: Kit) =>
-      !keys.includes(filename) || ['text/css', 'text/javascript'].includes(mimeType)
-  );
+  const kitNewFiles: Kit[] = kit.filter(({filename}: Kit) => keys.find(({name}) => filename !== name) === undefined);
 
   if (!kitNewFiles || kitNewFiles.length <= 0) {
     return;
@@ -136,25 +141,34 @@ const downloadKit = async (src: string): Promise<string> => {
   return htmlTemplate.text();
 };
 
+interface KitResource {
+  fullPath: string;
+  sha256: string;
+}
+
 const getKit = async (): Promise<Kit[]> => {
   const kitPath: string = getKitPath();
 
-  const resources: string[] = await (await fetch(`${kitPath}/build.json`)).json();
+  const resources: (KitResource | string)[] = await (await fetch(`${kitPath}/build.json`)).json();
 
-  const toResource = (resource: string): Partial<Kit> => {
-    const src: string = `${kitPath}/${resource}`;
+  const toResource = (resource: KitResource | string): Partial<Kit> => {
+    const src: string =
+      typeof resource === 'string' ? `${kitPath}/${resource}` : `${kitPath}/${resource.fullPath}`;
+    const sha256: string | undefined = typeof resource === 'string' ? undefined : resource.sha256;
 
     if (src.includes('.js')) {
       return {
         src,
-        mimeType: 'text/javascript'
+        mimeType: 'text/javascript',
+        sha256
       };
     }
 
     if (src.includes('.css')) {
       return {
         src,
-        mimeType: 'text/css'
+        mimeType: 'text/css',
+        sha256
       };
     }
 
@@ -162,6 +176,7 @@ const getKit = async (): Promise<Kit[]> => {
       return {
         src,
         mimeType: 'application/manifest+json',
+        sha256,
         updateContent: ({content, meta}: {meta: Meta | undefined; content: string}) =>
           content.replace('{{DECKDECKGO_AUTHOR}}', meta?.author?.name || getAuthor())
       };
@@ -169,7 +184,8 @@ const getKit = async (): Promise<Kit[]> => {
 
     return {
       src,
-      mimeType: 'text/plain'
+      mimeType: 'text/plain',
+      sha256
     };
   };
 
