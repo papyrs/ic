@@ -39,3 +39,11 @@ Send cycles to local canister `manager` (useful to create more than two users lo
 ```bash
 dfx wallet send rrkah-fqaaa-aaaaa-aaaaq-cai 20000000000000
 ```
+
+## Mainnet
+
+Deploy `manager` to mainnet:
+
+```bash
+dfx deploy manager --network ic --no-wallet
+```
