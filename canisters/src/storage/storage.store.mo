@@ -19,6 +19,7 @@ module {
   type Batch = StorageTypes.Batch;
 
   type AssetKey = StorageTypes.AssetKey;
+  type AssetEncoding = StorageTypes.AssetEncoding;
 
   public class StorageStore() {
 
@@ -341,7 +342,33 @@ module {
     };
 
     public func postupgrade(stableAssets : [(Text, Asset)]) {
-      assets := HashMap.fromIter<Text, Asset>(stableAssets.vals(), 10, Text.equal, Text.hash);
+      // TODO: remove - temporary migration of the sha256 values
+      // For simplicity and performance reason, we just set null for previous values for the sha256.
+      // In any case next time resources are uploaded they will get a sha256 and dapp frontend handles undefined values.
+      // But we explicitly set a value to avoid issue in the future - see https://forum.dfinity.org/t/loosing-data-when-upgrading-records/8672
+      let migrateShas : Buffer.Buffer<(Text, Asset)> = Buffer.Buffer(1);
+
+      for ((key, asset) in stableAssets.vals()) {
+        let assetEncoding : AssetEncoding = {
+          modified = asset.encoding.modified;
+          contentChunks = asset.encoding.contentChunks;
+          totalLength = asset.encoding.totalLength;
+          sha256 = null;
+        };
+
+        let newAsset : Asset = {
+          key = asset.key;
+          headers = asset.headers;
+          encoding = assetEncoding;
+        };
+
+        migrateShas.add((key, newAsset));
+      };
+
+      assets := HashMap.fromIter<Text, Asset>(migrateShas.toArray().vals(), 10, Text.equal, Text.hash);
+
+      // TODO: revert - temporary migration of the sha256 values
+      // assets := HashMap.fromIter<Text, Asset>(stableAssets.vals(), 10, Text.equal, Text.hash);
     };
   }
 
