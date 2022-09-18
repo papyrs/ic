@@ -1,8 +1,25 @@
+# 0.0.22 (2022-09-18)
+
+### Features
+
+- introduce `sha256` for the content of the "storage" canister to not upload data that already exists
+- single sign-on (SSO) components and flow
+- I (David) got a new computer - add my new principal ID to the `admin` list in `env.mo`
+
+### Fix
+
+- auth client has to be reset after signout
+
+### Build
+
+- new shortcut script `npm run feed:list`
+
 # 0.0.21 (2022-09-04)
 
 ### Build
 
 - improve support for `vite`
+- bump dfx
 
 # 0.0.20 (2022-09-01)
 
