@@ -1,3 +1,14 @@
+# 0.0.24 (2022-09-18)
+
+### Features
+
+- compute assets sha256 only for resources (js, css, etc.) and this on the frontend side
+
+### Fix
+
+- remove sha256 computation from backend to prevent issue `Canister 6zvwc-sqaaa-aaaal-aalma-cai exceeded the instruction limit for single message execution.`
+- remove `shas` endpoint from "storage" since not needed anymore
+
 # 0.0.23 (2022-09-18)
 
 ### Fix

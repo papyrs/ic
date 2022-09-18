@@ -2,7 +2,7 @@
 
 import {IDL} from '@dfinity/candid';
 import {readFileSync} from 'fs';
-import {managerActorIC} from './actors/manager.actors.mjs';
+import {managerActorLocal} from './actors/manager.actors.mjs';
 import {fromNullable} from './utils/utils.mjs';
 
 const upgradeBucketData = async ({actor, owner, bucketId, wasmModule}) => {
@@ -32,7 +32,7 @@ const loadWasm = (type) => {
   }
 
   try {
-    const actor = await managerActorIC();
+    const actor = await managerActorLocal();
 
     // data or storage
     const type =

@@ -9,7 +9,6 @@ module {
     modified : Int;
     contentChunks : [[Nat8]];
     totalLength : Nat;
-    sha256 : ?[Nat8];
   };
 
   public type AssetKey = {
@@ -21,6 +20,8 @@ module {
     fullPath : Text;
     // ?token=1223-3345-5564-3333
     token : ?Text;
+    // The sha256 representation of the content
+    sha256 : ?[Nat8];
   };
 
   public type Asset = {

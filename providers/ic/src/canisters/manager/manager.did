@@ -1,20 +1,19 @@
 type UserId = principal;
 type BucketId = principal;
-type Bucket = 
- record {
-   bucketId: opt BucketId;
-   owner: UserId;
- };
+type Bucket = record {
+  bucketId : opt BucketId;
+  owner : UserId;
+};
 service : {
-  cyclesBalance: () -> (nat) query;
-  delData: () -> (bool);
-  delStorage: () -> (bool);
-  getData: () -> (opt Bucket) query;
-  getStorage: () -> (opt Bucket) query;
-  initData: () -> (Bucket);
-  initStorage: () -> (Bucket);
-  installCode: (principal, blob, blob) -> ();
-  knownBucket: (text, text) -> (bool);
-  list: (text) -> (vec Bucket) query;
-  transferCycles: (principal, nat) -> ();
-}
+  cyclesBalance : () -> (nat) query;
+  delData : () -> (bool);
+  delStorage : () -> (bool);
+  getData : () -> (opt Bucket) query;
+  getStorage : () -> (opt Bucket) query;
+  initData : () -> (Bucket);
+  initStorage : () -> (Bucket);
+  installCode : (principal, blob, blob) -> ();
+  knownBucket : (text, text) -> (bool);
+  list : (text) -> (vec Bucket) query;
+  transferCycles : (principal, nat) -> ();
+};
