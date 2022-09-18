@@ -26,6 +26,7 @@ export const updateTemplate = ({
     (acc: string, [key, value]: [string, string]) =>
       acc
         .replaceAll(`{{DECKDECKGO_${key.toUpperCase()}}}`, value || '')
+        .replaceAll(`%%DECKDECKGO_${key.toUpperCase()}%%`, value || '')
         .replaceAll(`<!-- DECKDECKGO_${key.toUpperCase()} -->`, value || ''),
     template
   );
