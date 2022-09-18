@@ -102,6 +102,9 @@ export const signOut: SignOut = async (): Promise<void> => {
 
   await authClient?.logout();
 
+  // Reset local object otherwise next sign in (sign in - sign out - sign in) might not work out - i.e. agent-js might not recreate the delegation or identity if not resetted
+  authClient = undefined;
+
   // Just in case the user has been wrongly saved locally - this can be deleted in a bit
   await del('/user');
 };
