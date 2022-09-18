@@ -23,11 +23,6 @@ interface Kit {
 
 const getKitPath = (): string => EnvStore.getInstance().get().kitPath;
 
-interface AssetKeys {
-  fullPath: string;
-  sha256: string | undefined;
-}
-
 const sha256ToBase64String = (sha256: Iterable<number>): string =>
   btoa([...sha256].map((c) => String.fromCharCode(c)).join(''));
 
@@ -36,25 +31,12 @@ export const uploadResources = async ({meta}: {meta: Meta | undefined}) => {
   const {actor}: BucketActor<StorageBucketActor> = await getStorageActor();
 
   // 2. Get already uploaded assets and their respective sha256 value (if defined)
-  const assetKeys: {key: AssetKey; sha256: [] | [Array<number>]}[] = await actor.shas(
-    toNullable<string>('resources')
-  );
-
-  const keys: AssetKeys[] = assetKeys.map(({key: {fullPath}, sha256: sha256Array}) => {
-    const sha256: string = sha256ToBase64String(new Uint8Array(fromNullable(sha256Array) ?? []));
-
-    return {
-      fullPath,
-      sha256: sha256 === '' ? undefined : sha256
-    };
-  });
+  const assetKeys: AssetKey[] = await actor.list(toNullable<string>('resources'));
 
   // 3. Get list of resources - i.e. the kit
   const kit: Kit[] = await getKit();
 
-  const promises: Promise<void>[] = kit.map((kit: Kit) =>
-    addKitIC({kit, actor, meta, assetKeys: keys})
-  );
+  const promises: Promise<void>[] = kit.map((kit: Kit) => addKitIC({kit, actor, meta, assetKeys}));
   await Promise.all(promises);
 };
 
@@ -65,15 +47,15 @@ const updatedResource = ({
 }: {
   src: string;
   sha256: string | undefined;
-  assetKeys: AssetKeys[];
+  assetKeys: AssetKey[];
 }): boolean => {
   const kitFullPath: string = src.replace(getKitPath(), '');
 
-  const key: {fullPath: string; sha256: string | undefined} | undefined = assetKeys.find(
-    ({fullPath}) => kitFullPath === fullPath
-  );
+  const key: AssetKey | undefined = assetKeys.find(({fullPath}) => kitFullPath === fullPath);
 
-  return key === undefined || sha256 === undefined || sha256 !== key.sha256;
+  const assetSha256: string = sha256ToBase64String(new Uint8Array(fromNullable(key.sha256) ?? []));
+
+  return key === undefined || sha256 === undefined || sha256 !== assetSha256;
 };
 
 // Source: https://stackoverflow.com/a/70891826/5404186
@@ -92,7 +74,7 @@ const addDynamicKitIC = async ({
   kit: Kit;
   actor: StorageBucketActor;
   meta: Meta | undefined;
-  assetKeys: AssetKeys[];
+  assetKeys: AssetKey[];
 }) => {
   const {src, filename, mimeType, updateContent, headers} = kit;
 
@@ -123,7 +105,7 @@ const addKitIC = async ({
   kit: Kit;
   actor: StorageBucketActor;
   meta: Meta | undefined;
-  assetKeys: AssetKeys[];
+  assetKeys: AssetKey[];
 }) => {
   const {updateContent} = kit;
 

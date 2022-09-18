@@ -33,7 +33,8 @@ export const upload = async ({
     name: filename,
     fullPath,
     token: toNullable<string>(token),
-    folder
+    folder,
+    sha256: []
   });
 
   const t1 = performance.now();
