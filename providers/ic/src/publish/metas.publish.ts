@@ -80,8 +80,10 @@ const publishMetas = async ({
 }): Promise<void> => {
   const metas: PublishMeta[] = sortPublishMetaEntries(entries);
 
+  // Do not upload all metas at the same time to not stress the storage canisters
+  await publishIndexHtml({storageUpload, publishData, metas});
+
   const promises: Promise<void>[] = [
-    publishIndexHtml({storageUpload, publishData, metas}),
     publishSitemap({storageUpload, metas}),
     publishRSS({storageUpload, metas, publishData})
   ];
