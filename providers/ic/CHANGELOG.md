@@ -1,3 +1,10 @@
+# 0.0.23 (2022-09-18)
+
+### Fix
+
+- update meta title on publish with `%%`
+- try to upload `/index.html` before sitemap and rss feed to avoid issue `Canister 6zvwc-sqaaa-aaaal-aalma-cai exceeded the instruction limit for single message execution.`
+
 # 0.0.22 (2022-09-18)
 
 ### Features
