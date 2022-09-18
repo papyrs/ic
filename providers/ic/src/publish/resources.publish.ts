@@ -9,6 +9,7 @@ import {EnvStore} from '../stores/env.store';
 import {fromNullable, toNullable} from '../utils/did.utils';
 import {BucketActor} from '../utils/manager.utils';
 import {getAuthor} from './common.publish';
+import {digestMessage} from '../utils/crypto.utils';
 
 type KitMimeType = 'text/javascript' | 'text/plain' | 'application/manifest+json' | 'text/css';
 
@@ -56,13 +57,6 @@ const updatedResource = ({
   const assetSha256: string = sha256ToBase64String(new Uint8Array(fromNullable(key.sha256) ?? []));
 
   return key === undefined || sha256 === undefined || sha256 !== assetSha256;
-};
-
-// Source: https://stackoverflow.com/a/70891826/5404186
-const digestMessage = async (message): Promise<ArrayBuffer> => {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(message);
-  return crypto.subtle.digest('SHA-256', data);
 };
 
 const addDynamicKitIC = async ({
@@ -152,6 +146,8 @@ const uploadKit = async ({
   mimeType: KitMimeType;
   headers: HeaderField[];
 }): Promise<void> => {
+  const sha256: number[] = [...new Uint8Array(await digestMessage(content))];
+
   await upload({
     data: new Blob([content], {type: mimeType}),
     filename,
@@ -159,7 +155,8 @@ const uploadKit = async ({
     storageActor: actor,
     fullPath,
     headers,
-    log
+    log,
+    sha256
   });
 };
 

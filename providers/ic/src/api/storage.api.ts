@@ -13,7 +13,8 @@ export const upload = async ({
   headers,
   token,
   fullPath: storagePath,
-  log
+  log,
+  sha256
 }: {
   data: Blob;
   folder: string;
@@ -23,6 +24,7 @@ export const upload = async ({
   token?: string;
   fullPath?: string;
   log: LogWindow;
+  sha256?: number[];
 }): Promise<{fullPath: string; filename: string; token: string}> => {
   log({msg: `[upload][start] ${filename}`, level: 'info'});
   const t0 = performance.now();
@@ -34,7 +36,7 @@ export const upload = async ({
     fullPath,
     token: toNullable<string>(token),
     folder,
-    sha256: []
+    sha256: toNullable(sha256)
   });
 
   const t1 = performance.now();
