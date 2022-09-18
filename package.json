@@ -9,6 +9,7 @@
     "ic:install": "node ./scripts/ic.installcode.mjs",
     "ic:transfer": "node ./scripts/ic.transfer.mjs",
     "ic:types": "node ./scripts/ic.types.js",
+    "feed:list": "node ./scripts/ic.feed.mjs --list-proposals=open",
     "build": "npm run ic:types && cd providers/ic && npm run build",
     "postbuild": "npm run format",
     "format": "prettier --write ."
