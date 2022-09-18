@@ -318,43 +318,7 @@ module {
     };
 
     public func postupgrade(stableAssets : [(Text, Asset)]) {
-      // TODO: remove - temporary migration of the sha256 values
-      // The sha now moves to the AssetKey
-      let migrateShas : Buffer.Buffer<(Text, Asset)> = Buffer.Buffer(1);
-
-      for ((key, asset) in stableAssets.vals()) {
-        let assetEncoding : AssetEncoding = {
-          modified = asset.encoding.modified;
-          contentChunks = asset.encoding.contentChunks;
-          totalLength = asset.encoding.totalLength;
-        };
-
-        let assetKey : AssetKey = {
-          name = asset.key.name;
-          folder = asset.key.folder;
-          fullPath = asset.key.fullPath;
-          token = asset.key.token;
-          sha256 = null;
-        };
-
-        let newAsset : Asset = {
-          key = asset.key;
-          headers = asset.headers;
-          encoding = assetEncoding;
-        };
-
-        migrateShas.add((key, newAsset));
-      };
-
-      assets := HashMap.fromIter<Text, Asset>(
-        migrateShas.toArray().vals(),
-        10,
-        Text.equal,
-        Text.hash
-      );
-
-      // TODO: revert - temporary migration of the sha256 values
-      // assets := HashMap.fromIter<Text, Asset>(stableAssets.vals(), 10, Text.equal, Text.hash);
+      assets := HashMap.fromIter<Text, Asset>(stableAssets.vals(), 10, Text.equal, Text.hash);
     };
   }
 
