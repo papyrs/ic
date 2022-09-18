@@ -70,6 +70,18 @@ export const idlFactory = ({IDL}) => {
     ),
     initUpload: IDL.Func([AssetKey], [IDL.Record({batchId: IDL.Nat})], []),
     list: IDL.Func([IDL.Opt(IDL.Text)], [IDL.Vec(AssetKey)], ['query']),
+    shas: IDL.Func(
+      [IDL.Opt(IDL.Text)],
+      [
+        IDL.Vec(
+          IDL.Record({
+            key: AssetKey,
+            sha256: IDL.Opt(IDL.Vec(IDL.Nat8))
+          })
+        )
+      ],
+      ['query']
+    ),
     transferFreezingThresholdCycles: IDL.Func([], [], []),
     uploadChunk: IDL.Func([Chunk], [IDL.Record({chunkId: IDL.Nat})], [])
   });

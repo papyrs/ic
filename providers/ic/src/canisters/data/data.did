@@ -1,38 +1,41 @@
 type UserId = principal;
 type Time = int;
-type PutData = record {
-  created_at : opt Time;
-  data : blob;
-  id : text;
-  updated_at : opt Time;
-};
-type DelData = record {
-  id : text;
-  updated_at : Time;
-};
-type DataFilter = record {
-  notContains : opt text;
-  startsWith : opt text;
-};
-type DataBucket = service {
-  cyclesBalance : () -> (nat) query;
-  del : (text) -> ();
-  delete : (text, DelData) -> ();
-  get : (text) -> (opt Data) query;
-  list : (opt DataFilter) -> (
-    vec record {
-      text;
-      Data;
-    }
-  ) query;
-  put : (text, PutData) -> (Data);
-  set : (text, Data) -> ();
-  transferFreezingThresholdCycles : () -> ();
-};
-type Data = record {
-  created_at : Time;
-  data : blob;
-  id : text;
-  updated_at : Time;
-};
-service : (UserId) -> DataBucket;
+type PutData = 
+ record {
+   created_at: opt Time;
+   data: blob;
+   id: text;
+   updated_at: opt Time;
+ };
+type DelData = 
+ record {
+   id: text;
+   updated_at: Time;
+ };
+type DataFilter = 
+ record {
+   notContains: opt text;
+   startsWith: opt text;
+ };
+type DataBucket = 
+ service {
+   cyclesBalance: () -> (nat) query;
+   del: (text) -> ();
+   delete: (text, DelData) -> ();
+   get: (text) -> (opt Data) query;
+   list: (opt DataFilter) -> (vec record {
+                                    text;
+                                    Data;
+                                  }) query;
+   put: (text, PutData) -> (Data);
+   set: (text, Data) -> ();
+   transferFreezingThresholdCycles: () -> ();
+ };
+type Data = 
+ record {
+   created_at: Time;
+   data: blob;
+   id: text;
+   updated_at: Time;
+ };
+service : (UserId) -> DataBucket

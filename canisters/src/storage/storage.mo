@@ -14,10 +14,9 @@ import HTTP "../types/http.types";
 import StorageTypes "./storage.types";
 
 import Utils "../utils/utils";
+import WalletUtils "../utils/wallet.utils";
 
 import StorageStore "./storage.store";
-
-import WalletUtils "../utils/wallet.utils";
 
 actor class StorageBucket(owner : Types.UserId) = this {
 
@@ -151,7 +150,7 @@ actor class StorageBucket(owner : Types.UserId) = this {
       token = key.token;
       headers;
       index = chunkIndex + 1;
-      sha256 = null;
+      sha256 = encoding.sha256;
     };
 
     return streamingToken;
@@ -220,6 +219,17 @@ actor class StorageBucket(owner : Types.UserId) = this {
 
     let keys : [AssetKey] = storageStore.getKeys(folder);
     return keys;
+  };
+
+  public shared query ({caller}) func shas(folder : ?Text) : async [
+    {key : AssetKey; sha256 : ?[Nat8]}
+  ] {
+    if (Utils.isPrincipalNotEqual(caller, user)) {
+      throw Error.reject("User does not have the permission to list the assets and their sha256.");
+    };
+
+    let shas : [{key : AssetKey; sha256 : ?[Nat8]}] = storageStore.getShas(folder);
+    return shas;
   };
 
   public shared ({caller}) func del({fullPath; token} : {fullPath : Text; token : ?Text}) : async () {

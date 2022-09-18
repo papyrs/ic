@@ -10,6 +10,8 @@ import Buffer "mo:base/Buffer";
 
 import StorageTypes "./storage.types";
 
+import Sha256Utils "../utils/sha256.utils";
+
 module {
 
   type Chunk = StorageTypes.Chunk;
@@ -17,6 +19,7 @@ module {
   type Batch = StorageTypes.Batch;
 
   type AssetKey = StorageTypes.AssetKey;
+  type AssetEncoding = StorageTypes.AssetEncoding;
 
   public class StorageStore() {
 
@@ -148,6 +151,25 @@ module {
       };
     };
 
+    public func getShas(folder : ?Text) : [{key : AssetKey; sha256 : ?[Nat8]}] {
+      let keys : [AssetKey] = getKeys(folder);
+
+      let shas : Buffer.Buffer<{key : AssetKey; sha256 : ?[Nat8]}> = Buffer.Buffer(1);
+
+      for (key in keys.vals()) {
+        let result : Result.Result<Asset, Text> = getAsset(key.fullPath, key.token);
+
+        switch (result) {
+          case (#ok asset) {
+            shas.add({key; sha256 = asset.encoding.sha256});
+          };
+          case (#err error) {};
+        };
+      };
+
+      return shas.toArray();
+    };
+
     /**
          * Upload batch and chunks
          */
@@ -260,9 +282,12 @@ module {
         return {error = ?"No chunk to commit."};
       };
 
+      let sha256Digest : Sha256Utils.Digest = Sha256Utils.Digest();
       var totalLength = 0;
+
       for (chunk in contentChunks.vals()) {
         totalLength += chunk.size();
+        sha256Digest.write(chunk);
       };
 
       assets.put(
@@ -274,6 +299,7 @@ module {
             modified = Time.now();
             contentChunks = contentChunks.toArray();
             totalLength;
+            sha256 = ?sha256Digest.sum();
           };
         }
       );
@@ -316,7 +342,33 @@ module {
     };
 
     public func postupgrade(stableAssets : [(Text, Asset)]) {
-      assets := HashMap.fromIter<Text, Asset>(stableAssets.vals(), 10, Text.equal, Text.hash);
+      // TODO: remove - temporary migration of the sha256 values
+      // For simplicity and performance reason, we just set null for previous values for the sha256.
+      // In any case next time resources are uploaded they will get a sha256 and dapp frontend handles undefined values.
+      // But we explicitly set a value to avoid issue in the future - see https://forum.dfinity.org/t/loosing-data-when-upgrading-records/8672
+      let migrateShas : Buffer.Buffer<(Text, Asset)> = Buffer.Buffer(1);
+
+      for ((key, asset) in stableAssets.vals()) {
+        let assetEncoding : AssetEncoding = {
+          modified = asset.encoding.modified;
+          contentChunks = asset.encoding.contentChunks;
+          totalLength = asset.encoding.totalLength;
+          sha256 = null;
+        };
+
+        let newAsset : Asset = {
+          key = asset.key;
+          headers = asset.headers;
+          encoding = assetEncoding;
+        };
+
+        migrateShas.add((key, newAsset));
+      };
+
+      assets := HashMap.fromIter<Text, Asset>(migrateShas.toArray().vals(), 10, Text.equal, Text.hash);
+
+      // TODO: revert - temporary migration of the sha256 values
+      // assets := HashMap.fromIter<Text, Asset>(stableAssets.vals(), 10, Text.equal, Text.hash);
     };
   }
 
