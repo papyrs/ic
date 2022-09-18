@@ -131,7 +131,7 @@ export class IcSigninProxy implements ComponentInterface {
     }
 
     const canisterId: string = originHost.split('.')[0];
-    const regExp = /([a-z0-9]{5}-){4}[a-z0-9]{3}/;
+    const regExp = /([a-zA-Z0-9]{5}-){4}[a-zA-Z0-9]{3}/;
 
     if (!regExp.test(canisterId)) {
       this.trustedOrigin = false;
