@@ -1,3 +1,9 @@
+# 0.0.24-1 (2022-09-20)
+
+### Fix
+
+- asset keys might be empty for new users
+
 # 0.0.24 (2022-09-18)
 
 ### Features
