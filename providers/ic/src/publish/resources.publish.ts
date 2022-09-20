@@ -54,7 +54,7 @@ const updatedResource = ({
 
   const key: AssetKey | undefined = assetKeys.find(({fullPath}) => kitFullPath === fullPath);
 
-  const assetSha256: string = sha256ToBase64String(new Uint8Array(fromNullable(key.sha256) ?? []));
+  const assetSha256: string = sha256ToBase64String(new Uint8Array(fromNullable(key?.sha256) ?? []));
 
   return key === undefined || sha256 === undefined || sha256 !== assetSha256;
 };
