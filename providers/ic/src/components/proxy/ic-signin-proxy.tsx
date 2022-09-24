@@ -45,6 +45,8 @@ export class IcSigninProxy implements ComponentInterface {
 
   private trustedOrigin: boolean | undefined = undefined;
 
+  private closeTabInterval: NodeJS.Timer | undefined = undefined;
+
   componentWillLoad() {
     EnvStore.getInstance().set(this.config as EnvironmentIC);
 
@@ -59,6 +61,10 @@ export class IcSigninProxy implements ComponentInterface {
   componentDidLoad() {
     // We broadcast the message because there is no caller yet. This is safe since it does not include any data exchange.
     parent.postMessage({kind: 'papyrs-signin-ready'}, '*');
+  }
+
+  disconnectedCallback() {
+    this.clearCloseTabInterval();
   }
 
   @Listen('message', {target: 'window'})
@@ -162,7 +168,7 @@ export class IcSigninProxy implements ComponentInterface {
    */
   private onInternetIdentityReady() {
     if (!this.tab || this.signInState() !== 'ready') {
-      this.error('Authentication not ready.');
+      this.throwError('Authentication not ready.');
       return;
     }
 
@@ -186,12 +192,12 @@ export class IcSigninProxy implements ComponentInterface {
   private onInternetIdentityFailure({text}: AuthResponseFailure) {
     this.tab?.close();
 
-    this.error(text);
+    this.throwError(text);
 
     this.cleanUp();
   }
 
-  private error(text: string) {
+  private throwError(text: string) {
     this.parentPostMessage({
       kind: 'papyrs-signin-error',
       text
@@ -234,7 +240,29 @@ export class IcSigninProxy implements ComponentInterface {
 
   private onSignIn = () => {
     this.tab = window.open(this.identityProviderUrl.toString(), 'idpWindow');
+
+    this.observeCloseTab();
   };
+
+  private observeCloseTab() {
+    this.closeTabInterval = setInterval(() => {
+      if (!this.tab?.closed) {
+        return;
+      }
+
+      this.clearCloseTabInterval();
+
+      this.throwError('User interrupted sign in.');
+    }, 500);
+  }
+
+  private clearCloseTabInterval() {
+    if (!this.closeTabInterval) {
+      return;
+    }
+
+    clearInterval(this.closeTabInterval);
+  }
 
   private signInState(): 'initializing' | 'ready' | 'in-progress' {
     if (
