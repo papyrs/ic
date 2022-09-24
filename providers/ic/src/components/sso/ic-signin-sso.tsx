@@ -1,5 +1,4 @@
 import {DerEncodedPublicKey, Identity, Signature} from '@dfinity/agent';
-import {AuthClient} from '@dfinity/auth-client';
 import {
   Delegation,
   DelegationChain,
@@ -21,6 +20,9 @@ import {
 export class IcSigninProxy implements ComponentInterface {
   @Prop()
   signInProxyUrl!: string;
+
+  @Event()
+  signInSuccess: EventEmitter<void>;
 
   @Event()
   signInError: EventEmitter<string | undefined>;
@@ -85,9 +87,7 @@ export class IcSigninProxy implements ComponentInterface {
 
     await this.saveToIdb(delegation);
 
-    // TODO: remove - just for test
-    const authClient = await AuthClient.create();
-    console.log('Is signed in?', await authClient.isAuthenticated());
+    this.signInSuccess.emit();
   }
 
   private decode({delegations: messageDelegations, userPublicKey}: PostMessageSignInSuccess): {

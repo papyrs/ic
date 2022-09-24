@@ -220,6 +220,8 @@ export class IcSigninProxy implements ComponentInterface {
     delegations,
     userPublicKey
   }: InternetIdentityAuthResponseSuccess) {
+    this.clearCloseTabInterval();
+
     this.parentPostMessage({
       kind: 'papyrs-signin-success',
       delegations,
@@ -257,11 +259,7 @@ export class IcSigninProxy implements ComponentInterface {
   }
 
   private clearCloseTabInterval() {
-    if (!this.closeTabInterval) {
-      return;
-    }
-
-    clearInterval(this.closeTabInterval);
+   clearInterval(this.closeTabInterval);
   }
 
   private signInState(): 'initializing' | 'ready' | 'in-progress' {

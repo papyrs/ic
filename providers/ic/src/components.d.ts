@@ -73,6 +73,7 @@ declare namespace LocalJSX {
     }
     interface IcSigninSso {
         "onSignInError"?: (event: IcSigninSsoCustomEvent<string | undefined>) => void;
+        "onSignInSuccess"?: (event: IcSigninSsoCustomEvent<void>) => void;
         "signInProxyUrl": string;
     }
     interface IntrinsicElements {
