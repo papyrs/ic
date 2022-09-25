@@ -6,14 +6,15 @@ import Error "mo:base/Error";
 
 import Types "../types/types";
 import DataTypes "./data.types";
+import InteractionTypes "./interaction.types";
 
-import Filter "./data.filter";
+import Filter "./record.filter";
 
 import Utils "../utils/utils";
-
 import WalletUtils "../utils/wallet.utils";
 
 import DataStore "./data.store";
+import InteractionStore "./interaction.store";
 
 actor class DataBucket(owner : Types.UserId) = this {
 
@@ -23,16 +24,22 @@ actor class DataBucket(owner : Types.UserId) = this {
   type PutData = DataTypes.PutData;
   type DelData = DataTypes.DelData;
 
-  type DataFilter = Filter.DataFilter;
+  type Interaction = InteractionTypes.Interaction;
+  type PutInteraction = InteractionTypes.PutInteraction;
+  type DelInteraction = InteractionTypes.DelInteraction;
+
+  type RecordFilter = Filter.RecordFilter;
 
   private stable let user : Types.UserId = owner;
 
   private let walletUtils : WalletUtils.WalletUtils = WalletUtils.WalletUtils();
 
-  private let store : DataStore.DataStore = DataStore.DataStore();
+  private let dataStore : DataStore.DataStore = DataStore.DataStore();
+  private let interactionStore : InteractionStore.InteractionStore = InteractionStore.InteractionStore();
 
   // Preserve the application state on upgrades
-  private stable var entries : [(Text, Data)] = [];
+  private stable var dataEntries : [(Text, Data)] = [];
+  private stable var interactionEntries : [(Text, Interaction)] = [];
 
   /**
     * Data
@@ -43,16 +50,16 @@ actor class DataBucket(owner : Types.UserId) = this {
       throw Error.reject("User does not have the permission to get the data.");
     };
 
-    let entry : ?Data = store.get(key);
+    let entry : ?Data = dataStore.get(key);
     return entry;
   };
 
-  public shared query ({caller}) func list(filter : ?DataFilter) : async [(Text, Data)] {
+  public shared query ({caller}) func list(filter : ?RecordFilter) : async [(Text, Data)] {
     if (Utils.isPrincipalNotEqual(caller, user)) {
       throw Error.reject("User does not have the permission to list the data.");
     };
 
-    let results : [(Text, Data)] = store.entries(filter);
+    let results : [(Text, Data)] = dataStore.entries(filter);
     return results;
   };
 
@@ -62,7 +69,7 @@ actor class DataBucket(owner : Types.UserId) = this {
       throw Error.reject("User does not have the permission to set data.");
     };
 
-    store.putNoChecks(key, data);
+    dataStore.putNoChecks(key, data);
   };
 
   public shared ({caller}) func put(key : Text, data : PutData) : async (Data) {
@@ -70,7 +77,7 @@ actor class DataBucket(owner : Types.UserId) = this {
       throw Error.reject("User does not have the permission to set data.");
     };
 
-    let result : Result.Result<Data, Text> = store.put(key, data);
+    let result : Result.Result<Data, Text> = dataStore.put(key, data);
 
     switch (result) {
       case (#err error) {
@@ -88,7 +95,7 @@ actor class DataBucket(owner : Types.UserId) = this {
       throw Error.reject("User does not have the permission to delete the data.");
     };
 
-    let entry : ?Data = store.delNoChecks(key);
+    let entry : ?Data = dataStore.delNoChecks(key);
   };
 
   public shared ({caller}) func delete(key : Text, data : DelData) : async () {
@@ -96,7 +103,47 @@ actor class DataBucket(owner : Types.UserId) = this {
       throw Error.reject("User does not have the permission to delete the data.");
     };
 
-    let result : Result.Result<?Data, Text> = store.del(key, data);
+    let result : Result.Result<?Data, Text> = dataStore.del(key, data);
+
+    switch (result) {
+      case (#err error) {
+        throw Error.reject(error);
+      };
+      case (#ok resultData) {};
+    };
+  };
+
+  /**
+   * Interaction
+   */
+
+  // Get interaction is public for everyone - no checks on the user or caller
+  public shared query ({caller}) func getInteraction(key : Text) : async (?Interaction) {
+    let entry : ?Interaction = interactionStore.get(key);
+    return entry;
+  };
+
+  public shared ({caller}) func putInteraction(key : Text, interaction : PutInteraction) : async (
+    Interaction
+  ) {
+    let result : Result.Result<Interaction, Text> = interactionStore.put(
+      key,
+      interaction,
+      {caller; user}
+    );
+
+    switch (result) {
+      case (#err error) {
+        throw Error.reject(error);
+      };
+      case (#ok resultData) {
+        return resultData;
+      };
+    };
+  };
+
+  public shared ({caller}) func deleteInteraction(key : Text, data : DelInteraction) : async () {
+    let result : Result.Result<?Interaction, Text> = interactionStore.del(key, data, {caller; user;});
 
     switch (result) {
       case (#err error) {
@@ -127,12 +174,16 @@ actor class DataBucket(owner : Types.UserId) = this {
   };
 
   system func preupgrade() {
-    entries := Iter.toArray(store.preupgrade().entries());
+    dataEntries := Iter.toArray(dataStore.preupgrade().entries());
+    interactionEntries := Iter.toArray(interactionStore.preupgrade().entries());
   };
 
   system func postupgrade() {
-    store.postupgrade(entries);
-    entries := [];
+    dataStore.postupgrade(dataEntries);
+    dataEntries := [];
+
+    interactionStore.postupgrade(interactionEntries);
+    interactionEntries := [];
   };
 
 };
