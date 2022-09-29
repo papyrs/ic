@@ -3,6 +3,7 @@ import Text "mo:base/Text";
 import Iter "mo:base/Iter";
 import Result "mo:base/Result";
 import Error "mo:base/Error";
+import Array "mo:base/Array";
 
 import Types "../types/types";
 import DataTypes "./data.types";
@@ -117,11 +118,22 @@ actor class DataBucket(owner : Types.UserId) = this {
    * Interaction
    */
 
+  // TODO: comments public but likes private
+
   // Get interaction is public for everyone - no checks on the user or caller
   public shared query ({caller}) func getInteraction(key : Text) : async (?Interaction) {
     let entry : ?Interaction = interactionStore.get(key);
     return entry;
   };
+
+  
+  /**
+   * TODO: to be removed
+   *
+   * /docs/{docId}​/likes/{principal.asText}
+   * /docs/{docId}​/comments/​{principal.asText}
+   *
+   */
 
   public shared ({caller}) func putInteraction(key : Text, interaction : PutInteraction) : async (
     Interaction
@@ -151,6 +163,16 @@ actor class DataBucket(owner : Types.UserId) = this {
       };
       case (#ok resultData) {};
     };
+  };
+
+  // Get the count of interactions is public for everyone - no checks on the user or caller
+  public shared func countInteractions(key: Text) : async Nat {
+    let results : [(Text, Interaction)] = interactionStore.entries(?{
+      startsWith = ?key;
+      notContains = null;
+    });
+
+    return results.size();
   };
 
   /**
