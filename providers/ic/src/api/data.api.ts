@@ -1,6 +1,6 @@
 import type {DataRecord} from '@deckdeckgo/editor';
 import {Identity} from '@dfinity/agent';
-import {Data, DataFilter, DelData, _SERVICE as DataBucketActor} from '../canisters/data/data.did';
+import {Data, RecordFilter, DelData, _SERVICE as DataBucketActor} from '../canisters/data/data.did';
 import {getIdentity} from '../providers/auth/auth.providers';
 import {fromArray, fromNullable, toArray, toNullable} from '../utils/did.utils';
 import {BucketActor, getDataBucket} from '../utils/manager.utils';
@@ -27,7 +27,7 @@ export const entries = async <D>({
   }
 
   const data: [string, Data][] = await actor.list(
-    toNullable<DataFilter>({
+    toNullable<RecordFilter>({
       startsWith: toNullable<string>(startsWith),
       notContains: toNullable<string>(notContains)
     })
