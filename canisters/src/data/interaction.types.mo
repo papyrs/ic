@@ -9,7 +9,7 @@ import Types "../types/types";
 module {
 
   public type InteractionRecord = RecordTypes.Record and {
-    author: Types.UserId;
+    author : Types.UserId;
   };
 
   public type Interaction = InteractionRecord and RecordTypes.RecordTimestamp;
@@ -21,9 +21,9 @@ module {
    */
   public type InteractionUsers = {
     // Who calls the the function - the canister update call
-    caller: Types.UserId;
+    caller : Types.UserId;
     // The user - owner of the canister
-    user: Types.UserId;
+    user : Types.UserId;
   };
 
-}
+};

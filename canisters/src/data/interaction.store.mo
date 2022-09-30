@@ -138,7 +138,7 @@ module {
               return #err error;
             };
             case (#ok msg) {
-              return #ok (?record);
+              return #ok(?record);
             };
           };
         };

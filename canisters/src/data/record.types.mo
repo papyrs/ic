@@ -33,4 +33,4 @@ module {
     updated_at : Time.Time;
   };
 
-}
+};

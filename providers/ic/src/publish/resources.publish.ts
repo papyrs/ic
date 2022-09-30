@@ -6,10 +6,10 @@ import {
   _SERVICE as StorageBucketActor
 } from '../canisters/storage/storage.did';
 import {EnvStore} from '../stores/env.store';
+import {digestMessage} from '../utils/crypto.utils';
 import {fromNullable, toNullable} from '../utils/did.utils';
 import {BucketActor} from '../utils/manager.utils';
 import {getAuthor} from './common.publish';
-import {digestMessage} from '../utils/crypto.utils';
 
 type KitMimeType = 'text/javascript' | 'text/plain' | 'application/manifest+json' | 'text/css';
 

@@ -12,7 +12,7 @@ module {
 
   public func isValidCaller({author} : Interaction, {caller; user} : InteractionUsers) : Result.Result<Text, Text> {
     if (Utils.isPrincipalEqual(caller, user)) {
-        return #ok "Caller is the owner of the canister. Interaction can be edited.";
+      return #ok "Caller is the owner of the canister. Interaction can be edited.";
     };
 
     if (Utils.isPrincipalEqual(caller, author)) {

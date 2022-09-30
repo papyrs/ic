@@ -52,7 +52,11 @@ module {
           return #ok newData;
         };
         case (?updated_at) {
-          let timestamp : Result.Result<Text, Text> = RecordUtils.checkTimestamp(record, id, updated_at);
+          let timestamp : Result.Result<Text, Text> = RecordUtils.checkTimestamp(
+            record,
+            id,
+            updated_at
+          );
 
           switch (timestamp) {
             case (#err error) {
@@ -110,7 +114,11 @@ module {
           return #ok null;
         };
         case (?record) {
-          let timestamp : Result.Result<Text, Text> = RecordUtils.checkTimestamp(record, id, updated_at);
+          let timestamp : Result.Result<Text, Text> = RecordUtils.checkTimestamp(
+            record,
+            id,
+            updated_at
+          );
 
           switch (timestamp) {
             case (#err error) {
