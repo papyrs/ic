@@ -119,7 +119,33 @@ module {
       return store.get(key);
     };
 
-    public func del(key : Text, {id; updated_at} : DelInteraction, users: InteractionUsers) : Result.Result<?Interaction, Text> {
+    public func getProctected(key : Text, users : InteractionUsers) : Result.Result<?Interaction, Text> {
+      let record : ?Interaction = get(key);
+
+      switch (record) {
+        case (null) {
+          return #ok null;
+        };
+        case (?record) {
+          let validCaller : Result.Result<Text, Text> = InteractionUtils.isValidCaller(
+            record,
+            users
+          );
+
+          // Only valid caller - the author of the interaction or the owner of the canister - can edit an interaction
+          switch (validCaller) {
+            case (#err error) {
+              return #err error;
+            };
+            case (#ok msg) {
+              return #ok (?record);
+            };
+          };
+        };
+      };
+    };
+
+    public func del(key : Text, {id; updated_at} : DelInteraction, users : InteractionUsers) : Result.Result<?Interaction, Text> {
       let record : ?Interaction = get(key);
 
       switch (record) {

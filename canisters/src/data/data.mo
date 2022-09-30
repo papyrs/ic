@@ -115,26 +115,39 @@ actor class DataBucket(owner : Types.UserId) = this {
   };
 
   /**
-   * Interaction
+   * Interactions: comments and likes
+   * 
+   * key = /docs/{docId}
+   *
+   * comments = /docs/{docId}/comments/{commentId}
+   * likes = /docs/{docId}/likes/{principalId}
    */
 
-  // TODO: comments public but likes private
-
-  // Get interaction is public for everyone - no checks on the user or caller
-  public shared query ({caller}) func getInteraction(key : Text) : async (?Interaction) {
-    let entry : ?Interaction = interactionStore.get(key);
-    return entry;
+  // Getting a comment is public for everyone - no checks on the user or caller
+  public shared query ({caller}) func getComment(key : Text, commentId : Text) : async (
+    ?Interaction
+  ) {
+    interactionStore.get(key # "/comments/" # commentId);
   };
 
-  
-  /**
-   * TODO: to be removed
-   *
-   * /docs/{docId}​/likes/{principal.asText}
-   * /docs/{docId}​/comments/​{principal.asText}
-   *
-   */
+  // Getting a like is restricted. Only the author of the like can get it.
+  public shared query ({caller}) func getLike(key : Text) : async (?Interaction) {
+    let result : Result.Result<?Interaction, Text> = interactionStore.getProctected(
+      key,
+      {caller; user}
+    );
 
+    switch (result) {
+      case (#err error) {
+        throw Error.reject(error);
+      };
+      case (#ok resultData) {
+        return resultData;
+      };
+    };
+  };
+
+  // Puting a new interaction is public. Updating an interaction is restricted to its author or user (owner of the canister)
   public shared ({caller}) func putInteraction(key : Text, interaction : PutInteraction) : async (
     Interaction
   ) {
@@ -154,8 +167,9 @@ actor class DataBucket(owner : Types.UserId) = this {
     };
   };
 
+  // Deleting an interaction is restricted to its author or user (owner of the canister)
   public shared ({caller}) func deleteInteraction(key : Text, data : DelInteraction) : async () {
-    let result : Result.Result<?Interaction, Text> = interactionStore.del(key, data, {caller; user;});
+    let result : Result.Result<?Interaction, Text> = interactionStore.del(key, data, {caller; user});
 
     switch (result) {
       case (#err error) {
@@ -165,12 +179,24 @@ actor class DataBucket(owner : Types.UserId) = this {
     };
   };
 
-  // Get the count of interactions is public for everyone - no checks on the user or caller
-  public shared func countInteractions(key: Text) : async Nat {
-    let results : [(Text, Interaction)] = interactionStore.entries(?{
-      startsWith = ?key;
-      notContains = null;
-    });
+  // Listing the comments is public for everyone - no checks on the user or caller
+  public shared func listComments(key : Text) : async [(Text, Interaction)] {
+    interactionStore.entries(
+      ?{
+        startsWith = ?(key # "/comments");
+        notContains = null;
+      }
+    );
+  };
+
+  // Getting the count of likes is public for everyone - no checks on the user or caller
+  public shared func countLikes(key : Text) : async Nat {
+    let results : [(Text, Interaction)] = interactionStore.entries(
+      ?{
+        startsWith = ?(key # "/likes");
+        notContains = null;
+      }
+    );
 
     return results.size();
   };
