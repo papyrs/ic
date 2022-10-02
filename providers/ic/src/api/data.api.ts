@@ -1,6 +1,6 @@
 import type {DataRecord} from '@deckdeckgo/editor';
 import {Identity} from '@dfinity/agent';
-import {Data, RecordFilter, DelData, _SERVICE as DataBucketActor} from '../canisters/data/data.did';
+import {Data, DelData, RecordFilter, _SERVICE as DataBucketActor} from '../canisters/data/data.did';
 import {getIdentity} from '../providers/auth/auth.providers';
 import {fromArray, fromNullable, toArray, toNullable} from '../utils/did.utils';
 import {BucketActor, getDataBucket} from '../utils/manager.utils';

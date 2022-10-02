@@ -34,7 +34,7 @@ export const idlFactory = ({IDL}) => {
     author: UserId
   });
   const DataBucket = IDL.Service({
-    countLikes: IDL.Func([IDL.Text], [IDL.Nat], []),
+    countLikes: IDL.Func([IDL.Text], [IDL.Nat], ['query']),
     cyclesBalance: IDL.Func([], [IDL.Nat], ['query']),
     del: IDL.Func([IDL.Text], [], []),
     delete: IDL.Func([IDL.Text, DelData], [], []),
@@ -43,7 +43,7 @@ export const idlFactory = ({IDL}) => {
     getComment: IDL.Func([IDL.Text, IDL.Text], [IDL.Opt(Interaction)], ['query']),
     getLike: IDL.Func([IDL.Text], [IDL.Opt(Interaction)], ['query']),
     list: IDL.Func([IDL.Opt(RecordFilter)], [IDL.Vec(IDL.Tuple(IDL.Text, Data))], ['query']),
-    listComments: IDL.Func([IDL.Text], [IDL.Vec(IDL.Tuple(IDL.Text, Interaction))], []),
+    listComments: IDL.Func([IDL.Text], [IDL.Vec(IDL.Tuple(IDL.Text, Interaction))], ['query']),
     put: IDL.Func([IDL.Text, PutData], [Data], []),
     putInteraction: IDL.Func([IDL.Text, PutInteraction], [Interaction], []),
     set: IDL.Func([IDL.Text, Data], [], []),

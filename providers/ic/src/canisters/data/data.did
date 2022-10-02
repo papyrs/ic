@@ -33,7 +33,7 @@ type DelData = record {
   updated_at : Time;
 };
 type DataBucket = service {
-  countLikes : (text) -> (nat);
+  countLikes : (text) -> (nat) query;
   cyclesBalance : () -> (nat) query;
   del : (text) -> ();
   delete : (text, DelData) -> ();
@@ -52,7 +52,7 @@ type DataBucket = service {
       text;
       Interaction;
     }
-  );
+  ) query;
   put : (text, PutData) -> (Data);
   putInteraction : (text, PutInteraction) -> (Interaction);
   set : (text, Data) -> ();

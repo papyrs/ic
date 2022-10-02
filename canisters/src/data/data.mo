@@ -124,7 +124,7 @@ actor class DataBucket(owner : Types.UserId) = this {
    */
 
   // Getting a comment is public for everyone - no checks on the user or caller
-  public shared query ({caller}) func getComment(key : Text, commentId : Text) : async (
+  public shared query func getComment(key : Text, commentId : Text) : async (
     ?Interaction
   ) {
     interactionStore.get(key # "/comments/" # commentId);
@@ -180,7 +180,7 @@ actor class DataBucket(owner : Types.UserId) = this {
   };
 
   // Listing the comments is public for everyone - no checks on the user or caller
-  public shared func listComments(key : Text) : async [(Text, Interaction)] {
+  public shared query func listComments(key : Text) : async [(Text, Interaction)] {
     interactionStore.entries(
       ?{
         startsWith = ?(key # "/comments");
@@ -190,7 +190,7 @@ actor class DataBucket(owner : Types.UserId) = this {
   };
 
   // Getting the count of likes is public for everyone - no checks on the user or caller
-  public shared func countLikes(key : Text) : async Nat {
+  public shared query func countLikes(key : Text) : async Nat {
     let results : [(Text, Interaction)] = interactionStore.entries(
       ?{
         startsWith = ?(key # "/likes");
