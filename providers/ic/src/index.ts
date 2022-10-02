@@ -11,3 +11,4 @@ export * from './providers/feed/feed.providers';
 export * from './providers/publish/publish.providers';
 export * from './providers/storage/storage.providers';
 export * from './providers/sync/sync.providers';
+export * from './providers/interaction/like.providers';
