@@ -2,23 +2,26 @@ import type {Interaction, LikeData} from '@deckdeckgo/editor';
 import {Identity} from '@dfinity/agent';
 import {Interaction as InteractionDid} from '../../canisters/data/data.did';
 import {fromArray, fromNullable, toArray, toNullable} from '../../utils/did.utils';
-import {getDataBucket} from '../../utils/manager.utils';
+import {createDataActor} from '../../utils/interaction.utils';
 import {getIdentity} from '../auth/auth.providers';
 
 export const countLikes = async ({
   key,
-  id
+  id,
+  canisterId
 }: {
   key: 'decks' | 'docs';
   id: string;
+  canisterId: string;
 }): Promise<bigint> => {
   const identity: Identity | undefined = getIdentity();
 
-  const {actor} = await getDataBucket({
-    identity
+  const {countLikes} = await createDataActor({
+    identity,
+    canisterId
   });
 
-  return actor.countLikes(`/${key}/${id}`);
+  return countLikes(`/${key}/${id}`);
 };
 
 const likeKey = ({
@@ -45,10 +48,12 @@ const toInteraction = async (interaction: InteractionDid): Promise<Interaction> 
 
 export const getLike = async ({
   key,
-  id
+  id,
+  canisterId
 }: {
   key: 'decks' | 'docs';
   id: string;
+  canisterId: string;
 }): Promise<Interaction | undefined> => {
   const identity: Identity | undefined = getIdentity();
 
@@ -57,12 +62,13 @@ export const getLike = async ({
     return undefined;
   }
 
-  const {actor} = await getDataBucket({
-    identity
+  const {getLike} = await createDataActor({
+    identity,
+    canisterId
   });
 
   const interaction: InteractionDid | undefined = fromNullable<InteractionDid>(
-    await actor.getLike(likeKey({key, id, identity}))
+    await getLike(likeKey({key, id, identity}))
   );
 
   if (!interaction) {
@@ -75,11 +81,13 @@ export const getLike = async ({
 export const like = async ({
   key,
   id,
-  like
+  like,
+  canisterId
 }: {
   key: 'decks' | 'docs';
   id: string | undefined;
   like: Interaction;
+  canisterId: string;
 }) => {
   const identity: Identity | undefined = getIdentity();
 
@@ -87,13 +95,14 @@ export const like = async ({
     throw new Error('No internet identity to record the like');
   }
 
-  const {actor} = await getDataBucket({
-    identity
+  const {putInteraction} = await createDataActor({
+    identity,
+    canisterId
   });
 
   const {id: likeId, data, created_at, updated_at} = like;
 
-  const updatedInteraction: InteractionDid = await actor.putInteraction(
+  const updatedInteraction: InteractionDid = await putInteraction(
     likeKey({key, id, identity}),
     {
       id: likeId,
