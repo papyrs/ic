@@ -4,6 +4,7 @@ import {Interaction as InteractionDid} from '../../canisters/data/data.did';
 import {fromArray, fromNullable, toArray, toNullable} from '../../utils/did.utils';
 import {createDataActor} from '../../utils/interaction.utils';
 import {getIdentity} from '../auth/auth.providers';
+import {nanoid} from "nanoid";
 
 export const countLikes = async ({
   key,
@@ -78,7 +79,7 @@ export const getLike = async ({
   return toInteraction(interaction);
 };
 
-export const like = async ({
+export const likeDislike = async ({
   key,
   id,
   like,
@@ -86,9 +87,9 @@ export const like = async ({
 }: {
   key: 'decks' | 'docs';
   id: string | undefined;
-  like: Interaction;
+  like: Interaction | undefined;
   canisterId: string;
-}) => {
+}): Promise<Interaction> => {
   const identity: Identity | undefined = getIdentity();
 
   if (!identity) {
@@ -100,7 +101,25 @@ export const like = async ({
     canisterId
   });
 
-  const {id: likeId, data, created_at, updated_at} = like;
+  const now: Date = new Date();
+
+  const updateLike: Interaction = like === undefined ? {
+    id: nanoid(),
+    data: {
+      like: true,
+      created_at: now,
+      updated_at: now
+    },
+    author_id: identity.getPrincipal().toText()
+  } : {
+    ...like,
+    data: {
+      ...like.data,
+      like: !like.data.like
+    }
+  }
+
+  const {id: likeId, data, created_at, updated_at} = updateLike;
 
   const updatedInteraction: InteractionDid = await putInteraction(
     likeKey({key, id, identity}),
