@@ -16,7 +16,7 @@ module {
     };
 
     if (Utils.isPrincipalEqual(caller, author)) {
-      return #err "Caller has originally created the interaction and therefore it can be edited.";
+      return #ok "Caller has originally created the interaction and therefore it can be edited.";
     };
 
     return #err "Interaction cannot be edited the caller is neither the owner of the canister nor the author of the interaction.";
