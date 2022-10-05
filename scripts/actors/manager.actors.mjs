@@ -38,7 +38,7 @@ export const managerActorLocal = async () => {
 
   const identity = initIdentity();
 
-  const agent = new HttpAgent({identity, fetch, host: 'http://localhost:8000/'});
+  const agent = new HttpAgent({identity, fetch, host: 'http://127.0.0.1:8000/'});
 
   await agent.fetchRootKey();
 
