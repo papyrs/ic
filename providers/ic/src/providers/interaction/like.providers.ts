@@ -1,10 +1,10 @@
 import type {Interaction, LikeData} from '@deckdeckgo/editor';
 import {Identity} from '@dfinity/agent';
+import {nanoid} from 'nanoid';
 import {Interaction as InteractionDid} from '../../canisters/data/data.did';
 import {fromArray, fromNullable, toArray, toNullable} from '../../utils/did.utils';
 import {createDataActor} from '../../utils/interaction.utils';
 import {getIdentity} from '../auth/auth.providers';
-import {nanoid} from "nanoid";
 
 export const countLikes = async ({
   key,
@@ -103,34 +103,34 @@ export const likeDislike = async ({
 
   const now: Date = new Date();
 
-  const updateLike: Interaction = like === undefined ? {
-    id: nanoid(),
-    data: {
-      like: true,
-      created_at: now,
-      updated_at: now
-    },
-    author_id: identity.getPrincipal().toText()
-  } : {
-    ...like,
-    data: {
-      ...like.data,
-      like: !like.data.like
-    }
-  }
+  const updateLike: Interaction =
+    like === undefined
+      ? {
+          id: nanoid(),
+          data: {
+            like: true,
+            created_at: now,
+            updated_at: now
+          },
+          author_id: identity.getPrincipal().toText()
+        }
+      : {
+          ...like,
+          data: {
+            ...like.data,
+            like: !like.data.like
+          }
+        };
 
   const {id: likeId, data, created_at, updated_at} = updateLike;
 
-  const updatedInteraction: InteractionDid = await putInteraction(
-    likeKey({key, id, identity}),
-    {
-      id: likeId,
-      data: await toArray<LikeData>(data),
-      author: identity.getPrincipal(),
-      created_at: toNullable(created_at as bigint),
-      updated_at: toNullable(updated_at as bigint)
-    }
-  );
+  const updatedInteraction: InteractionDid = await putInteraction(likeKey({key, id, identity}), {
+    id: likeId,
+    data: await toArray<LikeData>(data),
+    author: identity.getPrincipal(),
+    created_at: toNullable(created_at as bigint),
+    updated_at: toNullable(updated_at as bigint)
+  });
 
   return toInteraction(updatedInteraction);
 };
