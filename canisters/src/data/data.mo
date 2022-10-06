@@ -4,6 +4,7 @@ import Iter "mo:base/Iter";
 import Result "mo:base/Result";
 import Error "mo:base/Error";
 import Array "mo:base/Array";
+import Buffer "mo:base/Buffer";
 
 import Types "../types/types";
 import DataTypes "./data.types";
@@ -199,6 +200,37 @@ actor class DataBucket(owner : Types.UserId) = this {
     );
 
     return results.size();
+  };
+
+  // Getting the count of all comments and likes is reserved to user (owner of the canister)
+  public shared query ({caller}) func countInteractions(keys : [Text]) : async [
+    (Text, {likes : Nat; comments : Nat})
+  ] {
+    if (Utils.isPrincipalNotEqual(caller, user)) {
+      throw Error.reject("User does not have the permission to count all interactions.");
+    };
+
+    let results : Buffer.Buffer<(Text, {likes : Nat; comments : Nat})> = Buffer.Buffer(1);
+
+    for (key in keys.vals()) {
+      let likes : [(Text, Interaction)] = interactionStore.entries(
+        ?{
+          startsWith = ?(key # "/likes");
+          notContains = null;
+        }
+      );
+
+      let comments : [(Text, Interaction)] = interactionStore.entries(
+        ?{
+          startsWith = ?(key # "/comments");
+          notContains = null;
+        }
+      );
+
+      results.add((key, {likes = likes.size(); comments = comments.size()}));
+    };
+
+    return results.toArray();
   };
 
   /**

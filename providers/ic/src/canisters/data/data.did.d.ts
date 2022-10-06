@@ -8,6 +8,10 @@ export interface Data {
   created_at: Time;
 }
 export interface DataBucket {
+  countInteractions: ActorMethod<
+    [Array<string>],
+    Array<[string, {likes: bigint; comments: bigint}]>
+  >;
   countLikes: ActorMethod<[string], bigint>;
   cyclesBalance: ActorMethod<[], bigint>;
   del: ActorMethod<[string], undefined>;

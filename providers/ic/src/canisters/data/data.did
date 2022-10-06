@@ -33,6 +33,15 @@ type DelData = record {
   updated_at : Time;
 };
 type DataBucket = service {
+  countInteractions : (vec text) -> (
+    vec record {
+      text;
+      record {
+        comments : nat;
+        likes : nat;
+      };
+    }
+  ) query;
   countLikes : (text) -> (nat) query;
   cyclesBalance : () -> (nat) query;
   del : (text) -> ();

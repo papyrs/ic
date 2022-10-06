@@ -34,6 +34,11 @@ export const idlFactory = ({IDL}) => {
     author: UserId
   });
   const DataBucket = IDL.Service({
+    countInteractions: IDL.Func(
+      [IDL.Vec(IDL.Text)],
+      [IDL.Vec(IDL.Tuple(IDL.Text, IDL.Record({likes: IDL.Nat, comments: IDL.Nat})))],
+      ['query']
+    ),
     countLikes: IDL.Func([IDL.Text], [IDL.Nat], ['query']),
     cyclesBalance: IDL.Func([], [IDL.Nat], ['query']),
     del: IDL.Func([IDL.Text], [], []),

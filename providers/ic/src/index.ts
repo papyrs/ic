@@ -8,6 +8,7 @@ export * from './providers/data/slide.providers';
 export * from './providers/data/template.providers';
 export * from './providers/data/user.providers';
 export * from './providers/feed/feed.providers';
+export * from './providers/interaction/interaction.providers';
 export * from './providers/interaction/like.providers';
 export * from './providers/publish/publish.providers';
 export * from './providers/storage/storage.providers';
