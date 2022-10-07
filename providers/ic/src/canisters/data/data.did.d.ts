@@ -8,10 +8,6 @@ export interface Data {
   created_at: Time;
 }
 export interface DataBucket {
-  countInteractions: ActorMethod<
-    [Array<string>],
-    Array<[string, {likes: bigint; comments: bigint}]>
-  >;
   countLikes: ActorMethod<[string], bigint>;
   cyclesBalance: ActorMethod<[], bigint>;
   del: ActorMethod<[string], undefined>;
@@ -22,6 +18,19 @@ export interface DataBucket {
   getLike: ActorMethod<[string], [] | [Interaction]>;
   list: ActorMethod<[[] | [RecordFilter]], Array<[string, Data]>>;
   listComments: ActorMethod<[string], Array<[string, Interaction]>>;
+  listInteractions: ActorMethod<
+    [Array<string>],
+    Array<
+      [
+        string,
+        {
+          countComments: bigint;
+          countLikes: bigint;
+          like: [] | [Interaction];
+        }
+      ]
+    >
+  >;
   put: ActorMethod<[string, PutData], Data>;
   putInteraction: ActorMethod<[string, PutInteraction], Interaction>;
   set: ActorMethod<[string, Data], undefined>;

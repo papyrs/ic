@@ -5,6 +5,7 @@ import Result "mo:base/Result";
 import Error "mo:base/Error";
 import Array "mo:base/Array";
 import Buffer "mo:base/Buffer";
+import Principal "mo:base/Principal";
 
 import Types "../types/types";
 import DataTypes "./data.types";
@@ -124,7 +125,7 @@ actor class DataBucket(owner : Types.UserId) = this {
    * likes = /docs/{docId}/likes/{principalId}
    */
 
-  // Getting a comment is public for everyone - no checks on the user or caller
+  // Getting a comment is public - no checks on the user or caller
   public shared query func getComment(key : Text, commentId : Text) : async (
     ?Interaction
   ) {
@@ -180,7 +181,7 @@ actor class DataBucket(owner : Types.UserId) = this {
     };
   };
 
-  // Listing the comments is public for everyone - no checks on the user or caller
+  // Listing the comments is public - no checks on the user or caller
   public shared query func listComments(key : Text) : async [(Text, Interaction)] {
     interactionStore.entries(
       ?{
@@ -190,7 +191,7 @@ actor class DataBucket(owner : Types.UserId) = this {
     );
   };
 
-  // Getting the count of likes is public for everyone - no checks on the user or caller
+  // Getting the count of likes is public - no checks on the user or caller
   public shared query func countLikes(key : Text) : async Nat {
     let results : [(Text, Interaction)] = interactionStore.entries(
       ?{
@@ -203,16 +204,19 @@ actor class DataBucket(owner : Types.UserId) = this {
   };
 
   // Getting the count of all comments and likes is reserved to user (owner of the canister)
-  public shared query ({caller}) func countInteractions(keys : [Text]) : async [
-    (Text, {likes : Nat; comments : Nat})
+  public shared query ({caller}) func listInteractions(keys : [Text]) : async [
+    (Text, {countLikes : Nat; like : ?Interaction; countComments : Nat})
   ] {
     if (Utils.isPrincipalNotEqual(caller, user)) {
       throw Error.reject("User does not have the permission to count all interactions.");
     };
 
-    let results : Buffer.Buffer<(Text, {likes : Nat; comments : Nat})> = Buffer.Buffer(1);
+    let results : Buffer.Buffer<(Text, {countLikes : Nat; like : ?Interaction; countComments : Nat})> = Buffer.Buffer(
+      1
+    );
 
     for (key in keys.vals()) {
+      // Count of likes
       let likes : [(Text, Interaction)] = interactionStore.entries(
         ?{
           startsWith = ?(key # "/likes");
@@ -220,6 +224,7 @@ actor class DataBucket(owner : Types.UserId) = this {
         }
       );
 
+      // Count of comments
       let comments : [(Text, Interaction)] = interactionStore.entries(
         ?{
           startsWith = ?(key # "/comments");
@@ -227,7 +232,12 @@ actor class DataBucket(owner : Types.UserId) = this {
         }
       );
 
-      results.add((key, {likes = likes.size(); comments = comments.size()}));
+      // User has liked or disliked?
+      let like : ?Interaction = interactionStore.get(
+        key # "/likes/" # Principal.toText(caller)
+      );
+
+      results.add((key, {countLikes = likes.size(); like; countComments = comments.size()}));
     };
 
     return results.toArray();
