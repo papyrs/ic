@@ -135,20 +135,32 @@ export const setData = async <D>({
   };
 };
 
-const getDataActor = async (): Promise<DataBucketActor> => {
+export const getDataBucketActor = async (): Promise<BucketActor<DataBucketActor>> => {
   const identity: Identity | undefined = getIdentity();
 
   if (!identity) {
     throw new Error('No internet identity.');
   }
 
-  const {actor}: BucketActor<DataBucketActor> = await getDataBucket({
+  const result: BucketActor<DataBucketActor> = await getDataBucket({
     identity
   });
+
+  const {actor, bucketId} = result;
 
   if (!actor) {
     throw new Error('No actor initialized.');
   }
 
+  // That would be strange
+  if (!bucketId) {
+    throw new Error('No bucket principal defined');
+  }
+
+  return result;
+};
+
+const getDataActor = async (): Promise<DataBucketActor> => {
+  const {actor} = await getDataBucketActor();
   return actor;
 };
