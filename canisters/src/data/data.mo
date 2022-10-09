@@ -19,6 +19,8 @@ import WalletUtils "../utils/wallet.utils";
 import DataStore "./data.store";
 import InteractionStore "./interaction.store";
 
+import Env "../env";
+
 actor class DataBucket(owner : Types.UserId) = this {
 
   type UserId = Types.UserId;
@@ -125,13 +127,6 @@ actor class DataBucket(owner : Types.UserId) = this {
    * likes = /docs/{docId}/likes/{principalId}
    */
 
-  // Getting a comment is public - no checks on the user or caller
-  public shared query func getComment(key : Text, commentId : Text) : async (
-    ?Interaction
-  ) {
-    interactionStore.get(key # "/comments/" # commentId);
-  };
-
   // Getting a like is restricted. Only the author of the like can get it.
   public shared query ({caller}) func getLike(key : Text) : async (?Interaction) {
     let result : Result.Result<?Interaction, Text> = interactionStore.getProctected(
@@ -149,10 +144,24 @@ actor class DataBucket(owner : Types.UserId) = this {
     };
   };
 
-  // Puting a new interaction is public. Updating an interaction is restricted to its author or user (owner of the canister)
+  // Putting a new interaction is public but restricted to known user. Updating an interaction is restricted to its author or user (owner of the canister)
   public shared ({caller}) func putInteraction(key : Text, interaction : PutInteraction) : async (
     Interaction
   ) {
+    // Is the caller a user known by the manager - only known user can create or update interactions.
+    for (canisterId in Env.manager.vals()) {
+      let manager : actor {knownUser : shared query (userId : UserId, store : Text) -> async Bool} = actor (
+        canisterId
+      );
+
+      let knowUser : Bool = await manager.knownUser(caller, "data");
+
+      if (not knowUser) {
+        throw Error.reject("Unknown user.");
+      };
+    };
+
+    // Create or update the interaction
     let result : Result.Result<Interaction, Text> = interactionStore.put(
       key,
       interaction,
