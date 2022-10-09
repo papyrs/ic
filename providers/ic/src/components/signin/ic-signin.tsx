@@ -9,8 +9,8 @@ import {
   State
 } from '@stencil/core';
 import {signIn} from '../../providers/auth/auth.providers';
+import {SignInConfig} from '../../types/signin.types';
 import {IconDfinity} from '../icons/dfinity';
-import {SignInConfig} from "../../types/signin.types";
 
 @Component({
   tag: 'ic-signin',
