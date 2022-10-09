@@ -10,6 +10,7 @@ import {
 } from '@stencil/core';
 import {signIn} from '../../providers/auth/auth.providers';
 import {IconDfinity} from '../icons/dfinity';
+import {SignInConfig} from "../../types/signin.types";
 
 @Component({
   tag: 'ic-signin',
@@ -20,7 +21,7 @@ export class IcSignin implements ComponentInterface {
   i18n: Record<string, Record<string, string>>;
 
   @Prop()
-  config: Record<string, string>;
+  config: SignInConfig;
 
   @Prop()
   signIn: () => void;

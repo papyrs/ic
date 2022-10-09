@@ -5,8 +5,7 @@ import {
   delegationIdentityExpiration,
   internetIdentityMainnet
 } from '../../constants/auth.constants';
-import {EnvStore} from '../../stores/env.store';
-import {EnvironmentIC} from '../../types/env.types';
+import {SignInConfig} from '../../types/signin.types';
 import {
   AuthResponseFailure,
   InternetIdentityAuthRequest,
@@ -27,13 +26,16 @@ export class IcSigninProxy implements ComponentInterface {
   i18n: Record<string, Record<string, string>>;
 
   @Prop()
-  config: Record<string, string>;
+  config: SignInConfig;
 
   @State()
   private publicKey: ArrayBuffer | undefined = undefined;
 
   @State()
   private identityProviderUrl: URL | undefined;
+
+  @State()
+  private derivationOrigin: string | undefined;
 
   @State()
   private signInInProgress: boolean = false;
@@ -48,11 +50,13 @@ export class IcSigninProxy implements ComponentInterface {
   private closeTabInterval: NodeJS.Timer | undefined = undefined;
 
   componentWillLoad() {
-    EnvStore.getInstance().set(this.config as EnvironmentIC);
+    const {derivationOrigin, localIdentityCanisterId} = this.config;
+
+    this.derivationOrigin = derivationOrigin;
 
     this.identityProviderUrl = new URL(
-      EnvStore.getInstance().get().localIdentityCanisterId !== undefined
-        ? `http://${EnvStore.getInstance().get().localIdentityCanisterId}.localhost:8000`
+      localIdentityCanisterId !== undefined
+        ? `http://${localIdentityCanisterId}.localhost:8000`
         : internetIdentityMainnet
     );
     this.identityProviderUrl.hash = '#authorize';
@@ -177,7 +181,8 @@ export class IcSigninProxy implements ComponentInterface {
     const request: InternetIdentityAuthRequest = {
       kind: 'authorize-client',
       sessionPublicKey: new Uint8Array(this.publicKey),
-      maxTimeToLive: delegationIdentityExpiration
+      maxTimeToLive: delegationIdentityExpiration,
+      ...(this.derivationOrigin !== undefined && {derivationOrigin: this.derivationOrigin})
     };
 
     const {origin} = this.identityProviderUrl;
@@ -259,7 +264,7 @@ export class IcSigninProxy implements ComponentInterface {
   }
 
   private clearCloseTabInterval() {
-   clearInterval(this.closeTabInterval);
+    clearInterval(this.closeTabInterval);
   }
 
   private signInState(): 'initializing' | 'ready' | 'in-progress' {
