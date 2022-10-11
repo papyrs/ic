@@ -1,6 +1,11 @@
+import {EnvironmentIC} from './env.types';
+
 export interface SignInConfig {
   terms: string;
   privacy: string;
-  localIdentityCanisterId?: string;
-  derivationOrigin?: string;
 }
+
+export type ProxySignInConfig = SignInConfig &
+  Pick<EnvironmentIC, 'managerCanisterId' | 'localIdentityCanisterId'> & {
+    derivationOrigin?: string;
+  };

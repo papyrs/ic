@@ -5,7 +5,7 @@
  * It contains typing information for all components that exist in this project.
  */
 import { HTMLStencilElement, JSXBase } from "@stencil/core/internal";
-import { SignInConfig } from "./types/signin.types";
+import { ProxySignInConfig, SignInConfig } from "./types/signin.types";
 export namespace Components {
     interface IcSignin {
         "config": SignInConfig;
@@ -16,7 +16,7 @@ export namespace Components {
         "signInSuccess": () => void;
     }
     interface IcSigninProxy {
-        "config": SignInConfig;
+        "config": ProxySignInConfig;
         "i18n": Record<string, Record<string, string>>;
     }
     interface IcSigninSso {
@@ -69,7 +69,7 @@ declare namespace LocalJSX {
         "signInSuccess"?: () => void;
     }
     interface IcSigninProxy {
-        "config"?: SignInConfig;
+        "config"?: ProxySignInConfig;
         "i18n"?: Record<string, Record<string, string>>;
     }
     interface IcSigninSso {

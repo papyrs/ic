@@ -5,7 +5,9 @@ import {
   delegationIdentityExpiration,
   internetIdentityMainnet
 } from '../../constants/auth.constants';
-import {SignInConfig} from '../../types/signin.types';
+import {EnvStore} from '../../stores/env.store';
+import {EnvironmentIC} from '../../types/env.types';
+import {ProxySignInConfig} from '../../types/signin.types';
 import {
   AuthResponseFailure,
   InternetIdentityAuthRequest,
@@ -26,7 +28,7 @@ export class IcSigninProxy implements ComponentInterface {
   i18n: Record<string, Record<string, string>>;
 
   @Prop()
-  config: SignInConfig;
+  config: ProxySignInConfig;
 
   @State()
   private publicKey: ArrayBuffer | undefined = undefined;
@@ -50,13 +52,16 @@ export class IcSigninProxy implements ComponentInterface {
   private closeTabInterval: NodeJS.Timer | undefined = undefined;
 
   componentWillLoad() {
-    const {derivationOrigin, localIdentityCanisterId} = this.config;
+    const {derivationOrigin, managerCanisterId, localIdentityCanisterId} = this.config;
 
     this.derivationOrigin = derivationOrigin;
 
+    // We set only what we need in this use case
+    EnvStore.getInstance().set({managerCanisterId, localIdentityCanisterId} as EnvironmentIC);
+
     this.identityProviderUrl = new URL(
-      localIdentityCanisterId !== undefined
-        ? `http://${localIdentityCanisterId}.localhost:8000`
+      EnvStore.getInstance().get().localIdentityCanisterId !== undefined
+        ? `http://${EnvStore.getInstance().get().localIdentityCanisterId}.localhost:8000`
         : internetIdentityMainnet
     );
     this.identityProviderUrl.hash = '#authorize';
