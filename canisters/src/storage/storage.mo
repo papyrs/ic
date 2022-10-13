@@ -44,40 +44,60 @@ actor class StorageBucket(owner : Types.UserId) = this {
   let storageStore : StorageStore.StorageStore = StorageStore.StorageStore();
 
   /**
-     * HTTP
-     */
+    * HTTP
+  */
 
-  public shared query ({caller}) func http_request({method : Text; url : Text} : HttpRequest) : async HttpResponse {
-    try {
-      if (Text.notEqual(method, "GET")) {
-        return {
-          body = Blob.toArray(Text.encodeUtf8("Method Not Allowed."));
-          headers = [];
-          status_code = 405;
-          streaming_strategy = null;
-        };
-      };
-
-      let result : Result.Result<Asset, Text> = storageStore.getAssetForUrl(url);
-
-      switch (result) {
-        case (#ok {key : AssetKey; headers : [HeaderField]; encoding : AssetEncoding}) {
-          return {
-            body = encoding.contentChunks[0];
-            headers;
-            status_code = 200;
-            streaming_strategy = createStrategy(key, encoding, headers);
-          };
-        };
-        case (#err error) {};
-      };
-
+  private func httpRequest(
+    {method : Text; url : Text} : HttpRequest,
+    upgrade : ?Bool
+  ) : HttpResponse {
+    if (Text.notEqual(method, "GET")) {
       return {
-        body = Blob.toArray(Text.encodeUtf8("Permission denied. Could not perform this operation."));
+        body = Blob.toArray(Text.encodeUtf8("Method Not Allowed."));
         headers = [];
-        status_code = 403;
+        status_code = 405;
         streaming_strategy = null;
       };
+    };
+
+    let result : Result.Result<Asset, Text> = storageStore.getAssetForUrl(url);
+
+    switch (result) {
+      case (#ok {key : AssetKey; headers : [HeaderField]; encoding : AssetEncoding}) {
+        return {
+          body = encoding.contentChunks[0];
+          headers;
+          status_code = 200;
+          streaming_strategy = createStrategy(key, encoding, headers);
+        };
+      };
+      case (#err error) {};
+    };
+
+    return {
+      body = Blob.toArray(Text.encodeUtf8("Permission denied. Could not perform this operation."));
+      headers = [];
+      status_code = 403;
+      streaming_strategy = null;
+    };
+  };
+
+  public shared query func http_request(request : HttpRequest) : async HttpResponse {
+    try {
+      return httpRequest(request, ?true);
+    } catch (err) {
+      return {
+        body = Blob.toArray(Text.encodeUtf8("Unexpected error: " # Error.message(err)));
+        headers = [];
+        status_code = 500;
+        streaming_strategy = null;
+      };
+    };
+  };
+
+  public shared func http_request_update(request : HttpRequest) : async HttpResponse {
+    try {
+      return httpRequest(request, ?false);
     } catch (err) {
       return {
         body = Blob.toArray(Text.encodeUtf8("Unexpected error: " # Error.message(err)));
