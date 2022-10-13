@@ -21,11 +21,6 @@ module {
   public class DataStore() {
     private let store : Store.Store<Data> = Store.Store<Data>();
 
-    /// @deprecated The new put function checks the timestamp to avoid data to be overwritten
-    public func putNoChecks(key : Text, value : Data) {
-      store.put(key, value);
-    };
-
     public func put(key : Text, putData : PutData) : Result.Result<Data, Text> {
       let record : ?Data = get(key);
 
@@ -45,11 +40,7 @@ module {
 
       switch (updated_at) {
         case null {
-          // A data is provided but without current updated_at timestamp. This should throw an error.
-          // But, at the moment, as temporary backwards compatibility until all users have created a new post or loaded at least once one from their canister, it performs a set of the store anyway.
-          // TODO: to be removed at the same time as the deprecated functions.
-          let newData : Data = create(key, putData);
-          return #ok newData;
+          return #err "No timestamp provided to update the data";
         };
         case (?updated_at) {
           let timestamp : Result.Result<Text, Text> = checkTimestamp(record, id, updated_at);
@@ -94,11 +85,6 @@ module {
 
     public func get(key : Text) : ?Data {
       return store.get(key);
-    };
-
-    /// @deprecated The new del function checks the timestamp to avoid data to be overwritten
-    public func delNoChecks(key : Text) : ?Data {
-      return store.del(key);
     };
 
     public func del(key : Text, {id; updated_at} : DelData) : Result.Result<?Data, Text> {
