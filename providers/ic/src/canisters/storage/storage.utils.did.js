@@ -4,6 +4,10 @@ export const idlFactory = ({IDL}) => {
     chunkIds: IDL.Vec(IDL.Nat),
     batchId: IDL.Nat
   });
+  const Del = IDL.Record({
+    token: IDL.Opt(IDL.Text),
+    fullPath: IDL.Text
+  });
   const HttpRequest = IDL.Record({
     url: IDL.Text,
     method: IDL.Text,
@@ -48,6 +52,8 @@ export const idlFactory = ({IDL}) => {
   const UploadChunk = IDL.Record({chunkId: IDL.Nat});
   return IDL.Service({
     commitUpload: IDL.Func([CommitBatch], [], []),
+    cyclesBalance: IDL.Func([], [IDL.Nat], ['query']),
+    del: IDL.Func([Del], [], []),
     http_request: IDL.Func([HttpRequest], [HttpResponse], ['query']),
     http_request_streaming_callback: IDL.Func(
       [StreamingCallbackToken],
@@ -55,6 +61,7 @@ export const idlFactory = ({IDL}) => {
       ['query']
     ),
     initUpload: IDL.Func([AssetKey], [InitUpload], []),
+    list: IDL.Func([IDL.Opt(IDL.Text)], [IDL.Vec(AssetKey)], ['query']),
     transferFreezingThresholdCycles: IDL.Func([], [], []),
     uploadChunk: IDL.Func([Chunk], [UploadChunk], [])
   });

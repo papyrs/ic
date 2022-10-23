@@ -17,6 +17,10 @@ export interface CommitBatch {
   chunkIds: Array<bigint>;
   batchId: bigint;
 }
+export interface Del {
+  token: [] | [string];
+  fullPath: string;
+}
 export interface HttpRequest {
   url: string;
   method: string;
@@ -54,12 +58,15 @@ export interface UploadChunk {
 }
 export interface _SERVICE {
   commitUpload: ActorMethod<[CommitBatch], undefined>;
+  cyclesBalance: ActorMethod<[], bigint>;
+  del: ActorMethod<[Del], undefined>;
   http_request: ActorMethod<[HttpRequest], HttpResponse>;
   http_request_streaming_callback: ActorMethod<
     [StreamingCallbackToken],
     StreamingCallbackHttpResponse
   >;
   initUpload: ActorMethod<[AssetKey], InitUpload>;
+  list: ActorMethod<[[] | [string]], Array<AssetKey>>;
   transferFreezingThresholdCycles: ActorMethod<[], undefined>;
   uploadChunk: ActorMethod<[Chunk], UploadChunk>;
 }
