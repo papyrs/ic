@@ -235,8 +235,10 @@ async fn transferFreezingThresholdCycles() {
 
 #[allow(non_snake_case)]
 #[query]
-fn cyclesBalance() {
-    // TODO
+fn cyclesBalance() -> u128 {
+    // TODO: is caller === manager
+
+    canister_balance128()
 }
 
 // Generate did files
