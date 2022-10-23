@@ -187,6 +187,7 @@ fn commitUpload(commit: CommitBatch) {
 //
 
 #[allow(non_snake_case)]
+#[candid_method(query)]
 #[query]
 fn list(folder: Option<String>) -> Vec<AssetKey> {
     // TODO: is caller === user
@@ -195,6 +196,7 @@ fn list(folder: Option<String>) -> Vec<AssetKey> {
 }
 
 #[allow(non_snake_case)]
+#[candid_method(update)]
 #[update]
 fn del(param: Del) {
     // TODO: is caller === user
@@ -234,6 +236,7 @@ async fn transferFreezingThresholdCycles() {
 }
 
 #[allow(non_snake_case)]
+#[candid_method(query)]
 #[query]
 fn cyclesBalance() -> u128 {
     // TODO: is caller === manager

@@ -11,6 +11,7 @@ type CommitBatch = record {
   chunkIds : vec nat;
   batchId : nat;
 };
+type Del = record { token : opt text; fullPath : text };
 type HttpRequest = record {
   url : text;
   method : text;
@@ -44,11 +45,14 @@ type StreamingStrategy = variant {
 type UploadChunk = record { chunkId : nat };
 service : {
   commitUpload : (CommitBatch) -> ();
+  cyclesBalance : () -> (nat) query;
+  del : (Del) -> ();
   http_request : (HttpRequest) -> (HttpResponse) query;
   http_request_streaming_callback : (StreamingCallbackToken) -> (
       StreamingCallbackHttpResponse,
     ) query;
   initUpload : (AssetKey) -> (InitUpload);
+  list : (opt text) -> (vec AssetKey) query;
   transferFreezingThresholdCycles : () -> ();
   uploadChunk : (Chunk) -> (UploadChunk);
 }
