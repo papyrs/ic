@@ -183,6 +183,22 @@ fn commitUpload(commit: CommitBatch) {
 }
 
 //
+// List and delete
+//
+
+#[allow(non_snake_case)]
+#[query]
+fn list() {
+    // TODO
+}
+
+#[allow(non_snake_case)]
+#[update]
+fn del() {
+    // TODO
+}
+
+//
 // Canister mgmt
 //
 
@@ -206,6 +222,12 @@ async fn transferFreezingThresholdCycles() {
         let arg_deposit = CanisterIdRecord { canister_id: caller };
         deposit_cycles(arg_deposit, cycles).await.unwrap();
     }
+}
+
+#[allow(non_snake_case)]
+#[query]
+fn cyclesBalance() {
+    // TODO
 }
 
 // Generate did files
