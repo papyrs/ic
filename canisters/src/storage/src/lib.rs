@@ -10,8 +10,8 @@ use candid::{Principal};
 use std::cell::RefCell;
 use std::collections::HashMap;
 
-use crate::store::{commit_batch, create_batch, create_chunk, get_asset, get_asset_for_url, get_keys};
-use crate::types::{interface::{InitUpload, UploadChunk, CommitBatch}, storage::{AssetKey, State, Chunk, Asset, AssetEncoding, StableState, RuntimeState}, http::{HttpRequest, HttpResponse, HeaderField, StreamingStrategy, StreamingCallbackToken, StreamingCallbackHttpResponse}};
+use crate::store::{commit_batch, create_batch, create_chunk, delete_asset, get_asset, get_asset_for_url, get_keys};
+use crate::types::{interface::{InitUpload, UploadChunk, CommitBatch, Del}, storage::{AssetKey, State, Chunk, Asset, AssetEncoding, StableState, RuntimeState}, http::{HttpRequest, HttpResponse, HeaderField, StreamingStrategy, StreamingCallbackToken, StreamingCallbackHttpResponse}};
 
 // Rust on the IC introduction by Hamish Peebles:
 // https://medium.com/encode-club/encode-x-internet-computer-intro-to-building-on-the-ic-in-rust-video-slides-b496d6baad08
@@ -196,8 +196,15 @@ fn list(folder: Option<String>) -> Vec<AssetKey> {
 
 #[allow(non_snake_case)]
 #[update]
-fn del() {
-    // TODO
+fn del(param: Del) {
+    // TODO: is caller === user
+
+    let result = delete_asset(param);
+
+    match result {
+        Ok(_) => (),
+        Err(error) => trap(&*["Asset cannot be deleted: ", error].join(""))
+    }
 }
 
 //

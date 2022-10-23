@@ -4,7 +4,7 @@
 use ic_cdk::{api::{time}};
 
 use crate::{RuntimeState, StableState, STATE, types::storage::{AssetKey, Batch, State, Chunk}};
-use crate::types::interface::CommitBatch;
+use crate::types::interface::{CommitBatch, Del};
 use crate::types::storage::{Asset, AssetEncoding};
 
 //
@@ -37,6 +37,14 @@ pub fn get_asset(full_path: String, token: Option<String>) -> Result<Asset, &'st
     STATE.with(|state| get_asset_impl(full_path, token, &state.borrow().stable))
 }
 
+pub fn delete_asset(param: Del) -> Result<Asset, &'static str> {
+    STATE.with(|state| delete_asset_impl(param, &mut state.borrow_mut().stable))
+}
+
+pub fn get_keys(folder: Option<String>) -> Vec<AssetKey> {
+    STATE.with(|state| get_keys_impl(folder, &state.borrow().stable))
+}
+
 fn get_asset_impl(full_path: String, token: Option<String>, state: &StableState) -> Result<Asset, &'static str> {
     let asset = state.assets.get(&full_path);
 
@@ -64,10 +72,6 @@ fn get_protected_asset(asset: &Asset, assetToken: &String, token: Option<String>
     }
 }
 
-pub fn get_keys(folder: Option<String>) -> Vec<AssetKey> {
-    STATE.with(|state| get_keys_impl(folder, &state.borrow().stable))
-}
-
 fn get_keys_impl(folder: Option<String>, state: &StableState) -> Vec<AssetKey> {
     fn mapKey(asset: &Asset) -> AssetKey {
         asset.key.clone()
@@ -78,6 +82,18 @@ fn get_keys_impl(folder: Option<String>, state: &StableState) -> Vec<AssetKey> {
     match folder {
         None => all_keys.clone(),
         Some(folder) => all_keys.into_iter().filter(|key| key.folder == folder).collect()
+    }
+}
+
+fn delete_asset_impl(Del { fullPath, token }: Del, state: &mut StableState) -> Result<Asset, &'static str> {
+    let result = get_asset_impl(fullPath.clone(), token, state);
+
+    match result {
+        Err(err) => Err(err),
+        Ok(asset) => {
+            state.assets.remove(&*fullPath);
+            Ok(asset)
+        }
     }
 }
 

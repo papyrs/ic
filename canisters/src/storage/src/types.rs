@@ -96,6 +96,12 @@ pub mod interface {
         pub headers: Vec<HeaderField>,
         pub chunkIds: Vec<u128>,
     }
+
+    #[derive(CandidType, Deserialize)]
+    pub struct Del {
+        pub fullPath: String,
+        pub token: Option<String>,
+    }
 }
 
 pub mod http {
