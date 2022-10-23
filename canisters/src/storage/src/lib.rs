@@ -10,7 +10,7 @@ use candid::{Principal};
 use std::cell::RefCell;
 use std::collections::HashMap;
 
-use crate::store::{commit_batch, create_batch, create_chunk, get_asset, get_asset_for_url};
+use crate::store::{commit_batch, create_batch, create_chunk, get_asset, get_asset_for_url, get_keys};
 use crate::types::{interface::{InitUpload, UploadChunk, CommitBatch}, storage::{AssetKey, State, Chunk, Asset, AssetEncoding, StableState, RuntimeState}, http::{HttpRequest, HttpResponse, HeaderField, StreamingStrategy, StreamingCallbackToken, StreamingCallbackHttpResponse}};
 
 // Rust on the IC introduction by Hamish Peebles:
@@ -188,8 +188,10 @@ fn commitUpload(commit: CommitBatch) {
 
 #[allow(non_snake_case)]
 #[query]
-fn list() {
-    // TODO
+fn list(folder: Option<String>) -> Vec<AssetKey> {
+    // TODO: is caller === user
+
+    get_keys(folder)
 }
 
 #[allow(non_snake_case)]

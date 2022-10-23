@@ -64,6 +64,23 @@ fn get_protected_asset(asset: &Asset, assetToken: &String, token: Option<String>
     }
 }
 
+pub fn get_keys(folder: Option<String>) -> Vec<AssetKey> {
+    STATE.with(|state| get_keys_impl(folder, &state.borrow().stable))
+}
+
+fn get_keys_impl(folder: Option<String>, state: &StableState) -> Vec<AssetKey> {
+    fn mapKey(asset: &Asset) -> AssetKey {
+        asset.key.clone()
+    }
+
+    let all_keys: Vec<AssetKey> = state.assets.values().map(mapKey).collect();
+
+    match folder {
+        None => all_keys.clone(),
+        Some(folder) => all_keys.into_iter().filter(|key| key.folder == folder).collect()
+    }
+}
+
 //
 // Upload batch and chunks
 //
