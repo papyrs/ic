@@ -1,5 +1,7 @@
 mod types;
 mod store;
+mod env;
+mod utils;
 
 use ic_cdk::api::management_canister::main::{CanisterIdRecord, deposit_cycles};
 use ic_cdk_macros::{init, update, pre_upgrade, post_upgrade, query};
@@ -11,6 +13,7 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 
 use crate::store::{commit_batch, create_batch, create_chunk, delete_asset, get_asset, get_asset_for_url, get_keys};
+use crate::utils::{is_admin, is_manager};
 use crate::types::{interface::{InitUpload, UploadChunk, CommitBatch, Del}, storage::{AssetKey, State, Chunk, Asset, AssetEncoding, StableState, RuntimeState}, http::{HttpRequest, HttpResponse, HeaderField, StreamingStrategy, StreamingCallbackToken, StreamingCallbackHttpResponse}};
 
 // Rust on the IC introduction by Hamish Peebles:
@@ -148,7 +151,9 @@ fn create_token(key: AssetKey, chunk_index: usize, encoding: &AssetEncoding, hea
 #[candid_method(update)]
 #[update]
 fn initUpload(key: AssetKey) -> InitUpload {
-    // TODO: is caller === user
+    if !is_admin(caller()) {
+        trap("User does not have the permission to upload data.");
+    }
 
     let batchId: u128 = create_batch(key);
     return InitUpload { batchId };
@@ -158,7 +163,9 @@ fn initUpload(key: AssetKey) -> InitUpload {
 #[candid_method(update)]
 #[update]
 fn uploadChunk(chunk: Chunk) -> UploadChunk {
-    // TODO: is caller === user
+    if !is_admin(caller()) {
+        trap("User does not have the permission to a upload any chunks of content.");
+    }
 
     let result = create_chunk(chunk);
 
@@ -172,7 +179,9 @@ fn uploadChunk(chunk: Chunk) -> UploadChunk {
 #[candid_method(update)]
 #[update]
 fn commitUpload(commit: CommitBatch) {
-    // TODO: is caller === user
+    if !is_admin(caller()) {
+        trap("User does not have the permission to commit an upload.");
+    }
 
     let result = commit_batch(commit);
 
@@ -190,7 +199,9 @@ fn commitUpload(commit: CommitBatch) {
 #[candid_method(query)]
 #[query]
 fn list(folder: Option<String>) -> Vec<AssetKey> {
-    // TODO: is caller === user
+    if !is_admin(caller()) {
+        trap("User does not have the permission to list the assets.");
+    }
 
     get_keys(folder)
 }
@@ -199,7 +210,9 @@ fn list(folder: Option<String>) -> Vec<AssetKey> {
 #[candid_method(update)]
 #[update]
 fn del(param: Del) {
-    // TODO: is caller === user
+    if !is_admin(caller()) {
+        trap("User does not have the permission to delete an asset.");
+    }
 
     let result = delete_asset(param);
 
@@ -219,7 +232,9 @@ fn del(param: Del) {
 async fn transferFreezingThresholdCycles() {
     let caller = caller();
 
-    // TODO: is caller === manager
+    if !is_manager(caller) {
+        trap("Unauthorized access. Caller is not a manager.");
+    }
 
     // TODO: determine effective threshold - how few cycles should be retained before deleting the canister?
     // use freezing_threshold_in_cycles? - https://github.com/dfinity/interface-spec/pull/18/files
@@ -239,7 +254,9 @@ async fn transferFreezingThresholdCycles() {
 #[candid_method(query)]
 #[query]
 fn cyclesBalance() -> u128 {
-    // TODO: is caller === manager
+    if !is_manager(caller()) {
+        trap("No permission to read the balance of the cycles.");
+    }
 
     canister_balance128()
 }
