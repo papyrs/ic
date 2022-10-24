@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import {IDL} from '@dfinity/candid';
-import {managerActorIC} from './actors/manager.actors.mjs';
+import {managerActorLocal} from './actors/manager.actors.mjs';
 import {loadWasm} from './utils/code.utils.mjs';
 import {fromNullable} from './utils/utils.mjs';
 
@@ -28,7 +28,7 @@ const upgradeBucketData = async ({actor, owner, bucketId, wasmModule}) => {
   }
 
   try {
-    const actor = await managerActorIC();
+    const actor = await managerActorLocal();
 
     // data or storage
     const type =
@@ -63,7 +63,7 @@ const upgradeBucketData = async ({actor, owner, bucketId, wasmModule}) => {
     // bucketId[0] -> effective bucketId
     // console.log(bucketId[0].toText());
 
-    const wasmModule = loadWasm(type);
+    const wasmModule = await loadWasm(type);
 
     // Execute upgrade 10 canisters at a time - just in a preventive case to not charge too much the manager
     // 377 canisters upgraded in 5 minutes - Aug. 25 2022 08:35-08.40
