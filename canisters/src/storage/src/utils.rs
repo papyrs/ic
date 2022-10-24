@@ -2,6 +2,10 @@ use candid::{Principal};
 
 use crate::env::{ADMIN, MANAGER};
 
+pub fn principal_not_equal(x : Principal, y : Principal) -> bool {
+    x != y
+}
+
 pub fn is_admin(caller: Principal) -> bool {
     has_privilege(caller, ADMIN.to_vec())
 }

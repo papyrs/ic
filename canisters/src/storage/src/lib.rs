@@ -13,7 +13,7 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 
 use crate::store::{commit_batch, create_batch, create_chunk, delete_asset, get_asset, get_asset_for_url, get_keys};
-use crate::utils::{is_admin, is_manager};
+use crate::utils::{principal_not_equal, is_manager};
 use crate::types::{interface::{InitUpload, UploadChunk, CommitBatch, Del}, storage::{AssetKey, State, Chunk, Asset, AssetEncoding, StableState, RuntimeState}, http::{HttpRequest, HttpResponse, HeaderField, StreamingStrategy, StreamingCallbackToken, StreamingCallbackHttpResponse}};
 
 // Rust on the IC introduction by Hamish Peebles:
@@ -151,7 +151,9 @@ fn create_token(key: AssetKey, chunk_index: usize, encoding: &AssetEncoding, hea
 #[candid_method(update)]
 #[update]
 fn initUpload(key: AssetKey) -> InitUpload {
-    if !is_admin(caller()) {
+    let user: Principal = STATE.with(|state| state.borrow().stable.user).unwrap();
+
+    if principal_not_equal(caller(), user) {
         trap("User does not have the permission to upload data.");
     }
 
@@ -163,7 +165,9 @@ fn initUpload(key: AssetKey) -> InitUpload {
 #[candid_method(update)]
 #[update]
 fn uploadChunk(chunk: Chunk) -> UploadChunk {
-    if !is_admin(caller()) {
+    let user: Principal = STATE.with(|state| state.borrow().stable.user).unwrap();
+
+    if principal_not_equal(caller(), user) {
         trap("User does not have the permission to a upload any chunks of content.");
     }
 
@@ -179,7 +183,9 @@ fn uploadChunk(chunk: Chunk) -> UploadChunk {
 #[candid_method(update)]
 #[update]
 fn commitUpload(commit: CommitBatch) {
-    if !is_admin(caller()) {
+    let user: Principal = STATE.with(|state| state.borrow().stable.user).unwrap();
+
+    if principal_not_equal(caller(), user) {
         trap("User does not have the permission to commit an upload.");
     }
 
@@ -199,7 +205,9 @@ fn commitUpload(commit: CommitBatch) {
 #[candid_method(query)]
 #[query]
 fn list(folder: Option<String>) -> Vec<AssetKey> {
-    if !is_admin(caller()) {
+    let user: Principal = STATE.with(|state| state.borrow().stable.user).unwrap();
+
+    if principal_not_equal(caller(), user) {
         trap("User does not have the permission to list the assets.");
     }
 
@@ -210,7 +218,9 @@ fn list(folder: Option<String>) -> Vec<AssetKey> {
 #[candid_method(update)]
 #[update]
 fn del(param: Del) {
-    if !is_admin(caller()) {
+    let user: Principal = STATE.with(|state| state.borrow().stable.user).unwrap();
+
+    if principal_not_equal(caller(), user) {
         trap("User does not have the permission to delete an asset.");
     }
 
@@ -254,7 +264,10 @@ async fn transferFreezingThresholdCycles() {
 #[candid_method(query)]
 #[query]
 fn cyclesBalance() -> u128 {
-    if !is_manager(caller()) {
+    let caller = caller();
+    let user: Principal = STATE.with(|state| state.borrow().stable.user).unwrap();
+
+    if !is_manager(caller) && principal_not_equal(caller, user) {
         trap("No permission to read the balance of the cycles.");
     }
 
