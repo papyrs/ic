@@ -1,10 +1,11 @@
 #!/usr/bin/env node
 
 import {IDL} from '@dfinity/candid';
-import {readFileSync} from 'fs';
 import {managerActorIC} from './actors/manager.actors.mjs';
+import {loadWasm} from './utils/code.utils.mjs';
 import {fromNullable} from './utils/utils.mjs';
 
+// TODO: this works until the wasm gets to big, then I'll need to chunk upload
 const upgradeBucketData = async ({actor, owner, bucketId, wasmModule}) => {
   console.log(`Upgrading: ${bucketId.toText()}`);
 
@@ -13,11 +14,6 @@ const upgradeBucketData = async ({actor, owner, bucketId, wasmModule}) => {
   await actor.installCode(bucketId, [...arg], wasmModule);
 
   console.log(`Done: ${bucketId.toText()}`);
-};
-
-const loadWasm = (type) => {
-  const buffer = readFileSync(`${process.cwd()}/.dfx/local/canisters/${type}/${type}.wasm`);
-  return [...new Uint8Array(buffer)];
 };
 
 (async () => {

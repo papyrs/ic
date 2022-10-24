@@ -7,8 +7,9 @@
   "scripts": {
     "ic:admin": "node ./scripts/ic.admin.mjs",
     "ic:install": "node ./scripts/ic.installcode.mjs",
+    "ic:wasm": "node ./scripts/ic.installwasm.mjs",
     "ic:transfer": "node ./scripts/ic.transfer.mjs",
-    "ic:types": "node ./scripts/ic.types.js",
+    "ic:types": "node ./scripts/ic.types.js && npm run format",
     "feed:list": "node ./scripts/ic.feed.mjs --list-proposals=open",
     "build": "npm run ic:types && cd providers/ic && npm run build",
     "postbuild": "npm run format",

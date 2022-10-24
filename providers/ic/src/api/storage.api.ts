@@ -1,10 +1,10 @@
 import {Identity} from '@dfinity/agent';
 import {_SERVICE as StorageBucketActor} from '../canisters/storage/storage.did';
 import {getIdentity} from '../providers/auth/auth.providers';
+import {HeaderField} from '../types/storage.types';
 import {LogWindow} from '../types/sync.window';
 import {toNullable} from '../utils/did.utils';
 import {BucketActor, getStorageBucket} from '../utils/manager.utils';
-import {HeaderField} from "../types/storage.types";
 
 export const upload = async ({
   data,

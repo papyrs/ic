@@ -1,15 +1,12 @@
 import {log, Meta} from '@deckdeckgo/editor';
 import {getStorageActor, upload} from '../api/storage.api';
-import {
-  AssetKey,
-  _SERVICE as StorageBucketActor
-} from '../canisters/storage/storage.did';
+import {AssetKey, _SERVICE as StorageBucketActor} from '../canisters/storage/storage.did';
 import {EnvStore} from '../stores/env.store';
+import {HeaderField} from '../types/storage.types';
+import {digestMessage} from '../utils/crypto.utils';
 import {fromNullable, toNullable} from '../utils/did.utils';
 import {BucketActor} from '../utils/manager.utils';
 import {getAuthor} from './common.publish';
-import {digestMessage} from '../utils/crypto.utils';
-import {HeaderField} from "../types/storage.types";
 
 type KitMimeType = 'text/javascript' | 'text/plain' | 'application/manifest+json' | 'text/css';
 
