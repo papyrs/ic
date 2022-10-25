@@ -149,3 +149,16 @@ pub mod http {
         pub token: Option<StreamingCallbackToken>,
     }
 }
+
+// TODO: delete after migration from Motoko to Rust
+
+pub mod migration {
+    use candid::{CandidType, Deserialize, Principal};
+    use crate::types::storage::Asset;
+
+    #[derive(CandidType, Deserialize)]
+    pub struct UpgradeState {
+        pub user: Option<Principal>,
+        pub entries: Option<Vec<(String, Asset)>>,
+    }
+}

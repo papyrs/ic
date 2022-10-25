@@ -7,14 +7,16 @@ use ic_cdk::api::management_canister::main::{CanisterIdRecord, deposit_cycles};
 use ic_cdk_macros::{init, update, pre_upgrade, post_upgrade, query};
 use ic_cdk::api::{canister_balance128, caller, trap};
 use ic_cdk::export::candid::{candid_method, export_service};
-use ic_cdk::{storage, id};
-use candid::{Principal};
+use ic_cdk::{storage, id, api};
+use candid::{decode_args, Principal};
 use std::cell::RefCell;
 use std::collections::HashMap;
 
 use crate::store::{commit_batch, create_batch, create_chunk, delete_asset, get_asset, get_asset_for_url, get_keys};
 use crate::utils::{principal_not_equal, is_manager};
 use crate::types::{interface::{InitUpload, UploadChunk, CommitBatch, Del}, storage::{AssetKey, State, Chunk, Asset, AssetEncoding, StableState, RuntimeState}, http::{HttpRequest, HttpResponse, HeaderField, StreamingStrategy, StreamingCallbackToken, StreamingCallbackHttpResponse}};
+use crate::types::{storage::{Assets}, migration::{UpgradeState}};
+
 
 // Rust on the IC introduction by Hamish Peebles:
 // https://medium.com/encode-club/encode-x-internet-computer-intro-to-building-on-the-ic-in-rust-video-slides-b496d6baad08
@@ -50,7 +52,29 @@ fn pre_upgrade() {
 
 #[post_upgrade]
 fn post_upgrade() {
-    let (stable, ): (StableState, ) = ic_cdk::storage::stable_restore().unwrap();
+    // TODO: uncomment after migration from Motoko to Rust
+    // let (stable, ): (StableState, ) = ic_cdk::storage::stable_restore().unwrap();
+
+    // TODO: delete after migration from Motoko to Rust
+    // By senior.joinu - not all heroes wear capes
+    let mut stable_length_buf = [0u8; std::mem::size_of::<u32>()];
+    api::stable::stable_read(0, &mut stable_length_buf);
+    let stable_length = u32::from_le_bytes(stable_length_buf); // maybe use from_be_bytes, I don't remember what endianess is candid
+
+    let mut buf = vec![0u8; stable_length as usize];
+    api::stable::stable_read(std::mem::size_of::<u32>() as u32, &mut buf);
+
+    let (upgrade_state, ): (UpgradeState, ) = decode_args(&buf).unwrap();
+
+    let user: Option<Principal> = upgrade_state.user.clone();
+    let assets: Assets = upgrade_assets(upgrade_state);
+
+    let stable: StableState = StableState {
+        user,
+        assets,
+    };
+
+    // Populate state
     STATE.with(|state| *state.borrow_mut() = State {
         stable,
         runtime: RuntimeState {
@@ -58,6 +82,13 @@ fn post_upgrade() {
             batches: HashMap::new(),
         },
     });
+}
+
+fn upgrade_assets(UpgradeState {entries, user: _}: UpgradeState) -> Assets {
+    match entries {
+        None => HashMap::new(),
+        Some(e) => e.into_iter().collect()
+    }
 }
 
 //

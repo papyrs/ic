@@ -1,19 +1,28 @@
 #!/usr/bin/env node
 
 import {IDL} from '@dfinity/candid';
+import {writeFileSync} from 'fs';
 import {managerActorLocal} from './actors/manager.actors.mjs';
 import {loadWasm} from './utils/code.utils.mjs';
 import {fromNullable} from './utils/utils.mjs';
 
 // TODO: this works until the wasm gets to big, then I'll need to chunk upload
 const upgradeBucketData = async ({actor, owner, bucketId, wasmModule}) => {
-  console.log(`Upgrading: ${bucketId.toText()}`);
+  try {
+    console.log(`Upgrading: ${bucketId.toText()}`);
 
-  const arg = IDL.encode([IDL.Principal], [owner]);
+    const arg = IDL.encode([IDL.Principal], [owner]);
 
-  await actor.installCode(bucketId, [...arg], wasmModule);
+    await actor.installCode(bucketId, [...arg], wasmModule);
 
-  console.log(`Done: ${bucketId.toText()}`);
+    console.log(`Done: ${bucketId.toText()}`);
+
+    return {bucketId, install: 'ok'};
+  } catch (err) {
+    console.log(err);
+    console.log(`Error: ${bucketId.toText()}`);
+    return {bucketId, install: 'error'};
+  }
 };
 
 (async () => {
@@ -74,7 +83,16 @@ const upgradeBucketData = async ({actor, owner, bucketId, wasmModule}) => {
       const promises = chunk.map(({owner, bucketId}) =>
         upgradeBucketData({actor, wasmModule, bucketId: fromNullable(bucketId), owner})
       );
-      await Promise.all(promises);
+      const results = await Promise.all(promises);
+
+      const filterResults = (type) =>
+        results.filter(({install}) => install === type).map(({bucketId}) => bucketId.toText());
+
+      const ok = filterResults('ok');
+      const error = filterResults('error');
+
+      writeFileSync(`ok.txt`, ok.join('\n'), { flag: "a+" });
+      writeFileSync(`error.txt`, error.join('\n'), { flag: "a+" });
     }
   } catch (e) {
     console.error(e);
