@@ -25,6 +25,23 @@ const upgradeBucketData = async ({actor, owner, bucketId, wasmModule}) => {
   }
 };
 
+const saveResults = (results) => {
+  const filterResults = (type) =>
+    results.filter(({install}) => install === type).map(({bucketId}) => bucketId.toText());
+
+  const writeLogs = process.argv.find((arg) => arg.indexOf('--save') > -1) !== undefined;
+
+  if (!writeLogs) {
+    return;
+  }
+
+  const ok = filterResults('ok');
+  const error = filterResults('error');
+
+  writeFileSync(`installcode.ok.txt`, ok.join('\n'), {flag: 'a+'});
+  writeFileSync(`installcode.error.txt`, error.join('\n'), {flag: 'a+'});
+};
+
 (async () => {
   const help = process.argv.find((arg) => arg.indexOf('--help') > -1);
 
@@ -33,6 +50,7 @@ const upgradeBucketData = async ({actor, owner, bucketId, wasmModule}) => {
     console.log('--type=data|storage');
     console.log('--list-only');
     console.log('--filter=canister_ids (comma separated list)');
+    console.log('--save');
     return;
   }
 
@@ -85,14 +103,7 @@ const upgradeBucketData = async ({actor, owner, bucketId, wasmModule}) => {
       );
       const results = await Promise.all(promises);
 
-      const filterResults = (type) =>
-        results.filter(({install}) => install === type).map(({bucketId}) => bucketId.toText());
-
-      const ok = filterResults('ok');
-      const error = filterResults('error');
-
-      writeFileSync(`ok.txt`, ok.join('\n'), { flag: "a+" });
-      writeFileSync(`error.txt`, error.join('\n'), { flag: "a+" });
+      saveResults(results);
     }
   } catch (e) {
     console.error(e);
