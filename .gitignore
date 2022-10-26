@@ -38,3 +38,6 @@ www/
 .stencil/
 
 target/
+
+installcode.ok.txt
+installcode.error.txt
