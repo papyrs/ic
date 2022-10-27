@@ -319,20 +319,21 @@ checksum = "7f24254aa9a54b5c858eaee2f5bccdb46aaf0e486a595ed5fd8f86ba55232a70"
 
 [[package]]
 name = "ic-cdk"
-version = "0.6.1"
+version = "0.6.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2ebcbfc8818378990e9a79ee61a2de5d372c97db24a0c27c5f47b08c93786250"
+checksum = "985ddda647dc2f77229220b2ca90b08d74a2654d7725a1c9fa1b452cc59f1940"
 dependencies = [
  "candid",
  "cfg-if",
+ "ic0",
  "serde",
 ]
 
 [[package]]
 name = "ic-cdk-macros"
-version = "0.6.1"
+version = "0.6.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "feb7c9d8c91637e09b56c8c413b1892958cb15a6a5a1001870de658962bbf917"
+checksum = "f6faf61670aa29b857098e751d49cd7ad6bc379ee834dc7ae7e639e59a0addbc"
 dependencies = [
  "candid",
  "ic-cdk",
@@ -342,6 +343,12 @@ dependencies = [
  "serde_tokenstream",
  "syn",
 ]
+
+[[package]]
+name = "ic0"
+version = "0.18.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "98ab1f6b3f5d42461777721a8afc7297a72e64e224202ed1a36cb44ef0f3af31"
 
 [[package]]
 name = "indexmap"
@@ -408,9 +415,9 @@ checksum = "884e2677b40cc8c339eaefcb701c32ef1fd2493d71118dc0ca4b6a736c93bd67"
 
 [[package]]
 name = "libc"
-version = "0.2.135"
+version = "0.2.137"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "68783febc7782c6c5cb401fbda4de5a9898be1762314da0bb2c10ced61f18b0c"
+checksum = "fc7fcc620a3bff7cdd7a365be3376c97191aeaccc2a603e600951e452615bf89"
 
 [[package]]
 name = "lock_api"
