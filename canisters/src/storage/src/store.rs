@@ -2,6 +2,7 @@
 #![allow(non_snake_case)]
 
 use ic_cdk::{api::{time}};
+use candid::{Int};
 
 use crate::{RuntimeState, StableState, STATE, types::storage::{AssetKey, Batch, State, Chunk}};
 use crate::types::interface::{CommitBatch, Del};
@@ -225,7 +226,7 @@ fn commit_chunks(
         key,
         headers,
         encoding: AssetEncoding {
-            modified: time(),
+            modified: Int::from(time()),
             contentChunks: content_chunks,
             totalLength: total_length,
         },

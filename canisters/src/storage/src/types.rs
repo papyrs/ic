@@ -3,7 +3,7 @@
 
 pub mod storage {
     use std::collections::HashMap;
-    use candid::{Principal, CandidType};
+    use candid::{Principal, CandidType, Int};
     use serde::Deserialize;
     use std::clone::Clone;
     use crate::types::http::HeaderField;
@@ -42,7 +42,7 @@ pub mod storage {
 
     #[derive(CandidType, Deserialize, Clone)]
     pub struct AssetEncoding {
-        pub modified: u64,
+        pub modified: Int,
         pub contentChunks: Vec<Vec<u8>>,
         pub totalLength: u128,
     }
