@@ -36,3 +36,8 @@ UserInterfaceState.xcuserstate
 dist/
 www/
 .stencil/
+
+installcode.ok.txt
+installcode.error.txt
+
+target/
