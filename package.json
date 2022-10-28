@@ -9,7 +9,7 @@
     "ic:install": "node ./scripts/ic.installcode.mjs",
     "ic:wasm": "node ./scripts/ic.installwasm.mjs",
     "ic:transfer": "node ./scripts/ic.transfer.mjs",
-    "ic:types": "node ./scripts/ic.types.js && npm run format",
+    "ic:types": "cargo test save_candid && node ./scripts/ic.types.js && npm run format",
     "ic:mjs": "cp /Users/daviddalbusco/projects/papyrs/ic/.dfx/local/canisters/manager/manager.did.js /Users/daviddalbusco/projects/papyrs/ic/.dfx/local/canisters/manager/manager.did.mjs && cp /Users/daviddalbusco/projects/papyrs/ic/.dfx/local/canisters/feed/feed.did.js /Users/daviddalbusco/projects/papyrs/ic/.dfx/local/canisters/feed/feed.did.mjs",
     "feed:list": "node ./scripts/ic.feed.mjs --list-proposals=open",
     "build": "npm run ic:types && cd providers/ic && npm run build",
