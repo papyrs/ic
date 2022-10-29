@@ -15,8 +15,8 @@ use std::collections::HashMap;
 use crate::store::{commit_batch, create_batch, create_chunk, delete_asset, get_asset, get_asset_for_url, get_keys};
 use crate::utils::{principal_not_equal, is_manager};
 use crate::types::interface::{InitUpload, UploadChunk, CommitBatch, Del};
-use crate::types::store::{State, StableState, RuntimeState, Assets};
-use crate::types::storage::{AssetKey, Chunk, Asset, AssetEncoding};
+use crate::types::state::{State, StableState, RuntimeState, Assets};
+use crate::types::store::{AssetKey, Chunk, Asset, AssetEncoding};
 use crate::types::http::{HttpRequest, HttpResponse, HeaderField, StreamingStrategy, StreamingCallbackToken, StreamingCallbackHttpResponse};
 use crate::types::migration::{UpgradeState};
 

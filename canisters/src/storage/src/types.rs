@@ -1,10 +1,10 @@
 // Non snake case for backwards compatibility
 #![allow(non_snake_case)]
 
-pub mod store {
+pub mod state {
     use std::collections::HashMap;
     use candid::{CandidType, Deserialize, Principal};
-    use crate::types::storage::{Asset, Batch, Chunk};
+    use crate::types::store::{Asset, Batch, Chunk};
 
     pub type Batches = HashMap<u128, Batch>;
     pub type Chunks = HashMap<u128, Chunk>;
@@ -29,7 +29,7 @@ pub mod store {
     }
 }
 
-pub mod storage {
+pub mod store {
     use candid::{CandidType, Int};
     use serde::Deserialize;
     use std::clone::Clone;
@@ -155,7 +155,7 @@ pub mod http {
 
 pub mod migration {
     use candid::{CandidType, Deserialize, Principal};
-    use crate::types::storage::Asset;
+    use crate::types::store::Asset;
 
     #[derive(CandidType, Deserialize)]
     pub struct UpgradeState {
