@@ -1,20 +1,16 @@
 // Non snake case for backwards compatibility
 #![allow(non_snake_case)]
 
-pub mod storage {
+pub mod store {
     use std::collections::HashMap;
-    use candid::{Principal, CandidType, Int};
-    use serde::Deserialize;
-    use std::clone::Clone;
-    use crate::types::http::HeaderField;
-
-    // Internal types
+    use candid::{CandidType, Deserialize, Principal};
+    use crate::types::storage::{Asset, Batch, Chunk};
 
     pub type Batches = HashMap<u128, Batch>;
     pub type Chunks = HashMap<u128, Chunk>;
     pub type Assets = HashMap<String, Asset>;
 
-    #[derive(Default, CandidType, Deserialize, Clone)]
+    #[derive(Default, Clone)]
     pub struct State {
         pub stable: StableState,
         pub runtime: RuntimeState,
@@ -26,13 +22,18 @@ pub mod storage {
         pub assets: Assets,
     }
 
-    #[derive(Default, CandidType, Deserialize, Clone)]
+    #[derive(Default, Clone)]
     pub struct RuntimeState {
         pub chunks: Chunks,
         pub batches: Batches,
     }
+}
 
-    // Exposed types
+pub mod storage {
+    use candid::{CandidType, Int};
+    use serde::Deserialize;
+    use std::clone::Clone;
+    use crate::types::http::HeaderField;
 
     #[derive(CandidType, Deserialize, Clone)]
     pub struct Chunk {

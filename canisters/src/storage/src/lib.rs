@@ -4,8 +4,8 @@ mod env;
 mod utils;
 
 use ic_cdk::api::management_canister::main::{CanisterIdRecord, deposit_cycles};
-use ic_cdk_macros::{init, update, pre_upgrade, post_upgrade, query};
 use ic_cdk::api::{canister_balance128, caller, trap};
+use ic_cdk_macros::{init, update, pre_upgrade, post_upgrade, query};
 use ic_cdk::export::candid::{candid_method, export_service};
 use ic_cdk::{storage, id, api};
 use candid::{decode_args, Principal};
@@ -14,8 +14,11 @@ use std::collections::HashMap;
 
 use crate::store::{commit_batch, create_batch, create_chunk, delete_asset, get_asset, get_asset_for_url, get_keys};
 use crate::utils::{principal_not_equal, is_manager};
-use crate::types::{interface::{InitUpload, UploadChunk, CommitBatch, Del}, storage::{AssetKey, State, Chunk, Asset, AssetEncoding, StableState, RuntimeState}, http::{HttpRequest, HttpResponse, HeaderField, StreamingStrategy, StreamingCallbackToken, StreamingCallbackHttpResponse}};
-use crate::types::{storage::{Assets}, migration::{UpgradeState}};
+use crate::types::interface::{InitUpload, UploadChunk, CommitBatch, Del};
+use crate::types::store::{State, StableState, RuntimeState, Assets};
+use crate::types::storage::{AssetKey, Chunk, Asset, AssetEncoding};
+use crate::types::http::{HttpRequest, HttpResponse, HeaderField, StreamingStrategy, StreamingCallbackToken, StreamingCallbackHttpResponse};
+use crate::types::migration::{UpgradeState};
 
 thread_local! {
     static STATE: RefCell<State> = RefCell::default();

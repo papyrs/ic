@@ -4,9 +4,10 @@
 use ic_cdk::{api::{time}};
 use candid::{Int};
 
-use crate::{RuntimeState, StableState, STATE, types::storage::{AssetKey, Batch, State, Chunk}};
+use crate::{STATE};
+use crate::types::store:: {State, RuntimeState, StableState};
+use crate::types::storage::{Asset, AssetEncoding, AssetKey, Batch, Chunk};
 use crate::types::interface::{CommitBatch, Del};
-use crate::types::storage::{Asset, AssetEncoding};
 
 //
 // Getter, list and delete
