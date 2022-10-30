@@ -7,7 +7,7 @@ use crate::types::http::{HeaderField, StreamingCallbackToken, StreamingStrategy}
 use crate::types::state::{RuntimeState};
 use crate::types::store::{Asset, AssetEncoding, AssetKey};
 
-pub fn streaming_strategy(key: AssetKey, encoding: &AssetEncoding, headers: &Vec<HeaderField>) -> Option<StreamingStrategy> {
+pub fn streaming_strategy(key: &AssetKey, encoding: &AssetEncoding, headers: &Vec<HeaderField>) -> Option<StreamingStrategy> {
     let streaming_token: Option<StreamingCallbackToken> = create_token(key, 0, encoding, headers);
 
     match streaming_token {
@@ -22,14 +22,14 @@ pub fn streaming_strategy(key: AssetKey, encoding: &AssetEncoding, headers: &Vec
     }
 }
 
-pub fn create_token(key: AssetKey, chunk_index: usize, encoding: &AssetEncoding, headers: &Vec<HeaderField>) -> Option<StreamingCallbackToken> {
+pub fn create_token(key: &AssetKey, chunk_index: usize, encoding: &AssetEncoding, headers: &Vec<HeaderField>) -> Option<StreamingCallbackToken> {
     if chunk_index + 1 >= encoding.content_chunks.len() {
         return None;
     }
 
     Some(StreamingCallbackToken {
-        full_path: key.full_path,
-        token: key.token,
+        full_path: key.full_path.clone(),
+        token: key.token.clone(),
         headers: headers.clone(),
         index: chunk_index + 1,
         sha256: Some(ByteBuf::from(encoding.sha256)),

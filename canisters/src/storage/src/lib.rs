@@ -133,7 +133,7 @@ fn http_request(HttpRequest { method, url, headers: _, body: _ }: HttpRequest) -
                     body: encoding.content_chunks[0].clone(),
                     headers: headers.clone(),
                     status_code: 200,
-                    streaming_strategy: streaming_strategy(key, &encoding, &headers),
+                    streaming_strategy: streaming_strategy(&key, &encoding, &headers),
                 },
                 Err(err) => HttpResponse {
                     body: ["Permission denied. Invalid headers. ", err].join("").as_bytes().to_vec(),
@@ -164,7 +164,7 @@ fn http_request_streaming_callback(StreamingCallbackToken { token, headers, inde
             let encoding = &asset.encodings.get(ASSET_ENCODING_KEY_RAW).unwrap();
 
             return StreamingCallbackHttpResponse {
-                token: create_token(asset.key, index, &encoding, &headers),
+                token: create_token(&asset.key, index, &encoding, &headers),
                 body: encoding.content_chunks[index].clone(),
             };
         }
