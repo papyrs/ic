@@ -1,1 +1,1 @@
-pub const ASSET_ENCODING_KEY_RAW: &str = "raw";
+pub static ASSET_ENCODING_KEY_RAW: &str = "raw";

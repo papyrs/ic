@@ -1,6 +1,7 @@
 pub mod state {
     use std::collections::HashMap;
     use candid::{CandidType, Deserialize, Principal};
+    use crate::types::assets::AssetHashes;
     use crate::types::store::{Asset, Batch, Chunk};
 
     pub type Batches = HashMap<u128, Batch>;
@@ -23,6 +24,17 @@ pub mod state {
     pub struct RuntimeState {
         pub chunks: Chunks,
         pub batches: Batches,
+        pub asset_hashes: AssetHashes,
+    }
+}
+
+pub mod assets {
+    use std::clone::Clone;
+    use ic_certified_map::{Hash, RbTree};
+
+    #[derive(Default, Clone)]
+    pub struct AssetHashes {
+        pub tree: RbTree<String, Hash>,
     }
 }
 
@@ -32,6 +44,7 @@ pub mod store {
     use std::clone::Clone;
     use std::collections::HashMap;
     use crate::types::http::HeaderField;
+    use ic_certified_map::{Hash};
 
     #[derive(CandidType, Deserialize, Clone)]
     pub struct Chunk {
@@ -44,7 +57,7 @@ pub mod store {
         pub modified: u64,
         pub content_chunks: Vec<Vec<u8>>,
         pub total_length: u128,
-        // TODO sha256
+        pub sha256: Hash,
     }
 
     #[derive(CandidType, Deserialize, Clone)]
@@ -109,9 +122,10 @@ pub mod interface {
 
 pub mod http {
     use candid::{CandidType, Deserialize, Func};
+    use serde_bytes::ByteBuf;
 
     #[derive(CandidType, Deserialize, Clone)]
-    pub struct HeaderField(String, String);
+    pub struct HeaderField(pub String, pub String);
 
     #[derive(CandidType, Deserialize, Clone)]
     pub struct HttpRequest {
@@ -142,7 +156,7 @@ pub mod http {
         pub full_path: String,
         pub token: Option<String>,
         pub headers: Vec<HeaderField>,
-        pub sha256: Option<Vec<u8>>,
+        pub sha256: Option<ByteBuf>,
         pub index: usize,
     }
 
