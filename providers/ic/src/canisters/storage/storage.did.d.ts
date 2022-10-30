@@ -5,21 +5,21 @@ export interface AssetKey {
   token: [] | [string];
   sha256: [] | [Array<number>];
   name: string;
-  fullPath: string;
+  full_path: string;
   folder: string;
 }
 export interface Chunk {
   content: Array<number>;
-  batchId: bigint;
+  batch_id: bigint;
 }
 export interface CommitBatch {
+  batch_id: bigint;
   headers: Array<[string, string]>;
-  chunkIds: Array<bigint>;
-  batchId: bigint;
+  chunk_ids: Array<bigint>;
 }
 export interface Del {
   token: [] | [string];
-  fullPath: string;
+  full_path: string;
 }
 export interface HttpRequest {
   url: string;
@@ -34,7 +34,7 @@ export interface HttpResponse {
   status_code: number;
 }
 export interface InitUpload {
-  batchId: bigint;
+  batch_id: bigint;
 }
 export interface StreamingCallbackHttpResponse {
   token: [] | [StreamingCallbackToken];
@@ -43,9 +43,9 @@ export interface StreamingCallbackHttpResponse {
 export interface StreamingCallbackToken {
   token: [] | [string];
   sha256: [] | [Array<number>];
-  fullPath: string;
   headers: Array<[string, string]>;
   index: bigint;
+  full_path: string;
 }
 export type StreamingStrategy = {
   Callback: {
@@ -54,7 +54,7 @@ export type StreamingStrategy = {
   };
 };
 export interface UploadChunk {
-  chunkId: bigint;
+  chunk_id: bigint;
 }
 export interface _SERVICE {
   commitUpload: ActorMethod<[CommitBatch], undefined>;

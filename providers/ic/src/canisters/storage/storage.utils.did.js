@@ -1,12 +1,12 @@
 export const idlFactory = ({IDL}) => {
   const CommitBatch = IDL.Record({
+    batch_id: IDL.Nat,
     headers: IDL.Vec(IDL.Tuple(IDL.Text, IDL.Text)),
-    chunkIds: IDL.Vec(IDL.Nat),
-    batchId: IDL.Nat
+    chunk_ids: IDL.Vec(IDL.Nat)
   });
   const Del = IDL.Record({
     token: IDL.Opt(IDL.Text),
-    fullPath: IDL.Text
+    full_path: IDL.Text
   });
   const HttpRequest = IDL.Record({
     url: IDL.Text,
@@ -17,9 +17,9 @@ export const idlFactory = ({IDL}) => {
   const StreamingCallbackToken = IDL.Record({
     token: IDL.Opt(IDL.Text),
     sha256: IDL.Opt(IDL.Vec(IDL.Nat8)),
-    fullPath: IDL.Text,
     headers: IDL.Vec(IDL.Tuple(IDL.Text, IDL.Text)),
-    index: IDL.Nat64
+    index: IDL.Nat64,
+    full_path: IDL.Text
   });
   const StreamingStrategy = IDL.Variant({
     Callback: IDL.Record({
@@ -41,15 +41,15 @@ export const idlFactory = ({IDL}) => {
     token: IDL.Opt(IDL.Text),
     sha256: IDL.Opt(IDL.Vec(IDL.Nat8)),
     name: IDL.Text,
-    fullPath: IDL.Text,
+    full_path: IDL.Text,
     folder: IDL.Text
   });
-  const InitUpload = IDL.Record({batchId: IDL.Nat});
+  const InitUpload = IDL.Record({batch_id: IDL.Nat});
   const Chunk = IDL.Record({
     content: IDL.Vec(IDL.Nat8),
-    batchId: IDL.Nat
+    batch_id: IDL.Nat
   });
-  const UploadChunk = IDL.Record({chunkId: IDL.Nat});
+  const UploadChunk = IDL.Record({chunk_id: IDL.Nat});
   return IDL.Service({
     commitUpload: IDL.Func([CommitBatch], [], []),
     cyclesBalance: IDL.Func([], [IDL.Nat], ['query']),

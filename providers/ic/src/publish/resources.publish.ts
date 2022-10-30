@@ -49,7 +49,7 @@ const updatedResource = ({
 }): boolean => {
   const kitFullPath: string = src.replace(getKitPath(), '');
 
-  const key: AssetKey | undefined = assetKeys.find(({fullPath}) => kitFullPath === fullPath);
+  const key: AssetKey | undefined = assetKeys.find(({full_path}) => kitFullPath === full_path);
 
   const assetSha256: string = sha256ToBase64String(new Uint8Array(fromNullable(key?.sha256) ?? []));
 
