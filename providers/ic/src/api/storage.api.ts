@@ -32,9 +32,9 @@ export const upload = async ({
 
   const fullPath: string = storagePath || `/${folder}/${filename}`;
 
-  const {batchId} = await storageActor.initUpload({
+  const {batch_id: batchId} = await storageActor.initUpload({
     name: filename,
-    fullPath,
+    full_path: fullPath,
     token: toNullable<string>(token),
     folder,
     sha256: toNullable(sha256)
@@ -62,14 +62,14 @@ export const upload = async ({
     );
   }
 
-  const chunkIds: {chunkId: bigint}[] = await Promise.all(promises);
+  const chunkIds: {chunk_id: bigint}[] = await Promise.all(promises);
 
   const t2 = performance.now();
   log({msg: `[upload][chunks] ${filename}`, duration: t2 - t1, level: 'info'});
 
   await storageActor.commitUpload({
-    batchId,
-    chunkIds: chunkIds.map(({chunkId}: {chunkId: bigint}) => chunkId),
+    batch_id: batchId,
+    chunk_ids: chunkIds.map(({chunk_id}: {chunk_id: bigint}) => chunk_id),
     headers: [['Content-Type', data.type], ['accept-ranges', 'bytes'], ...headers]
   });
 
@@ -92,9 +92,9 @@ const uploadChunk = async ({
   batchId: bigint;
   chunk: Blob;
   storageActor: StorageBucketActor;
-}): Promise<{chunkId: bigint}> =>
+}): Promise<{chunk_id: bigint}> =>
   storageActor.uploadChunk({
-    batchId,
+    batch_id: batchId,
     content: [...new Uint8Array(await chunk.arrayBuffer())]
   });
 

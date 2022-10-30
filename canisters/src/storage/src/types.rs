@@ -1,20 +1,13 @@
-// Non snake case for backwards compatibility
-#![allow(non_snake_case)]
-
-pub mod storage {
+pub mod state {
     use std::collections::HashMap;
-    use candid::{Principal, CandidType, Int};
-    use serde::Deserialize;
-    use std::clone::Clone;
-    use crate::types::http::HeaderField;
-
-    // Internal types
+    use candid::{CandidType, Deserialize, Principal};
+    use crate::types::store::{Asset, Batch, Chunk};
 
     pub type Batches = HashMap<u128, Batch>;
     pub type Chunks = HashMap<u128, Chunk>;
     pub type Assets = HashMap<String, Asset>;
 
-    #[derive(Default, CandidType, Deserialize, Clone)]
+    #[derive(Default, Clone)]
     pub struct State {
         pub stable: StableState,
         pub runtime: RuntimeState,
@@ -26,25 +19,32 @@ pub mod storage {
         pub assets: Assets,
     }
 
-    #[derive(Default, CandidType, Deserialize, Clone)]
+    #[derive(Default, Clone)]
     pub struct RuntimeState {
         pub chunks: Chunks,
         pub batches: Batches,
     }
+}
 
-    // Exposed types
+pub mod store {
+    use candid::{CandidType};
+    use serde::Deserialize;
+    use std::clone::Clone;
+    use std::collections::HashMap;
+    use crate::types::http::HeaderField;
 
     #[derive(CandidType, Deserialize, Clone)]
     pub struct Chunk {
-        pub batchId: u128,
+        pub batch_id: u128,
         pub content: Vec<u8>,
     }
 
     #[derive(CandidType, Deserialize, Clone)]
     pub struct AssetEncoding {
-        pub modified: Int,
-        pub contentChunks: Vec<Vec<u8>>,
-        pub totalLength: u128,
+        pub modified: u64,
+        pub content_chunks: Vec<Vec<u8>>,
+        pub total_length: u128,
+        // TODO sha256
     }
 
     #[derive(CandidType, Deserialize, Clone)]
@@ -54,10 +54,11 @@ pub mod storage {
         // images
         pub folder: String,
         // /images/myimage.jpg
-        pub fullPath: String,
+        pub full_path: String,
         // ?token=1223-3345-5564-3333
         pub token: Option<String>,
-        // The sha256 representation of the content
+        // A sha256 representation of the raw content calculated on the frontend side.
+        // This is used to easily detects - without the need to download all the chunks - if a resource of the kit should be updated or not when publishing.
         pub sha256: Option<Vec<u8>>,
     }
 
@@ -65,13 +66,15 @@ pub mod storage {
     pub struct Asset {
         pub key: AssetKey,
         pub headers: Vec<HeaderField>,
-        pub encoding: AssetEncoding,
+        // Currently we use only raw data but we might use encoded chunks (gzip, compress) in the future to improve performance.
+        // At the same time we want to avoid to have to map the state on post-upgrade when we will do so. Therefore we use a convenient HashMap instead of a struct.
+        pub encodings: HashMap<String, AssetEncoding>,
     }
 
     #[derive(CandidType, Deserialize, Clone)]
     pub struct Batch {
         pub key: AssetKey,
-        pub expiresAt: u64,
+        pub expires_at: u64,
     }
 }
 
@@ -82,24 +85,24 @@ pub mod interface {
 
     #[derive(CandidType)]
     pub struct InitUpload {
-        pub batchId: u128,
+        pub batch_id: u128,
     }
 
     #[derive(CandidType)]
     pub struct UploadChunk {
-        pub chunkId: u128,
+        pub chunk_id: u128,
     }
 
     #[derive(CandidType, Deserialize)]
     pub struct CommitBatch {
-        pub batchId: u128,
+        pub batch_id: u128,
         pub headers: Vec<HeaderField>,
-        pub chunkIds: Vec<u128>,
+        pub chunk_ids: Vec<u128>,
     }
 
     #[derive(CandidType, Deserialize)]
     pub struct Del {
-        pub fullPath: String,
+        pub full_path: String,
         pub token: Option<String>,
     }
 }
@@ -136,7 +139,7 @@ pub mod http {
 
     #[derive(CandidType, Deserialize, Clone)]
     pub struct StreamingCallbackToken {
-        pub fullPath: String,
+        pub full_path: String,
         pub token: Option<String>,
         pub headers: Vec<HeaderField>,
         pub sha256: Option<Vec<u8>>,
@@ -147,18 +150,5 @@ pub mod http {
     pub struct StreamingCallbackHttpResponse {
         pub body: Vec<u8>,
         pub token: Option<StreamingCallbackToken>,
-    }
-}
-
-// TODO: delete after migration from Motoko to Rust
-
-pub mod migration {
-    use candid::{CandidType, Deserialize, Principal};
-    use crate::types::storage::Asset;
-
-    #[derive(CandidType, Deserialize)]
-    pub struct UpgradeState {
-        pub user: Option<Principal>,
-        pub entries: Option<Vec<(String, Asset)>>,
     }
 }
