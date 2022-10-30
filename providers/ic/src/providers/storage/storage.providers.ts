@@ -94,9 +94,9 @@ export const getFiles: GetFiles = async ({
   const host: string = `https://${bucketId.toText()}.raw.ic0.app`;
 
   return {
-    items: assets.map(({name, fullPath, token}: AssetKey) => ({
-      downloadUrl: `${host}${fullPath}?token=${token}`,
-      fullPath,
+    items: assets.map(({name, full_path, token}: AssetKey) => ({
+      downloadUrl: `${host}${full_path}?token=${token}`,
+      fullPath: full_path,
       name
     })),
     nextPageToken: null
@@ -117,7 +117,7 @@ export const deleteFile: DeleteFile = async ({
   }
 
   return actor.del({
-    fullPath,
+    full_path: fullPath,
     token: toNullable<string>(token ? token : undefined)
   });
 };
