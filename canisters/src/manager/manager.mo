@@ -6,8 +6,11 @@ import Option "mo:base/Option";
 import Principal "mo:base/Principal";
 import Text "mo:base/Text";
 import Result "mo:base/Result";
+import Array "mo:base/Array";
+import Blob "mo:base/Blob";
 
 import Types "../types/types";
+import IC "../types/ic.types";
 
 import CanisterUtils "../utils/canister.utils";
 import WalletUtils "../utils/wallet.utils";
@@ -16,7 +19,6 @@ import BucketTypes "./bucket.types";
 import BucketStore "./bucket.store";
 
 import DataBucket "../data/data";
-import StorageBucket "../storage/storage";
 
 import Utils "../utils/utils";
 
@@ -24,7 +26,6 @@ actor Manager {
   private type UserId = Types.UserId;
 
   private type DataBucket = DataBucket.DataBucket;
-  private type StorageBucket = StorageBucket.StorageBucket;
 
   private type Bucket = BucketTypes.Bucket;
   private type BucketId = BucketTypes.BucketId;
@@ -38,6 +39,10 @@ actor Manager {
   // Preserve the application state on upgrades
   private stable var data : [(Principal, BucketTypes.Bucket)] = [];
   private stable var storages : [(Principal, BucketTypes.Bucket)] = [];
+
+  private let ic : IC.Self = actor "aaaaa-aa";
+
+  private stable var storageWasm : [Nat8] = [];
 
   /**
      * Data
@@ -94,13 +99,23 @@ actor Manager {
 
   private func initNewStorageBucket(manager : Principal, user : UserId) : async (Principal) {
     Cycles.add(1_000_000_000_000);
-    let b : StorageBucket = await StorageBucket.StorageBucket(user);
 
-    let canisterId : Principal = Principal.fromActor(b);
+    let {canister_id} = await ic.create_canister({settings = null});
 
-    await canisterUtils.updateSettings(canisterId, manager);
+    await canisterUtils.updateSettings(canister_id, manager);
 
-    return canisterId;
+    let arg : Blob = to_candid (user);
+
+    await ic.install_code(
+      {
+        arg;
+        wasm_module = Blob.fromArray(storageWasm);
+        mode = #install;
+        canister_id;
+      }
+    );
+
+    return canister_id;
   };
 
   public shared query ({caller}) func getStorage() : async ?Bucket {
@@ -267,6 +282,7 @@ actor Manager {
     await canisterUtils.installCode(canisterId, owner, wasmModule);
   };
 
+  /// @deprecated anyone can transfer cycles to any canister on the IC
   public shared ({caller}) func transferCycles(canisterId : Principal, amount : Nat) : async () {
     if (not Utils.isAdmin(caller)) {
       throw Error.reject("Unauthorized access. Caller is not an admin. " # Principal.toText(caller));
@@ -281,6 +297,38 @@ actor Manager {
     };
 
     return walletUtils.cyclesBalance();
+  };
+
+  // Source:
+  // https://github.com/ORIGYN-SA/large_canister_deployer_internal
+  // https://forum.dfinity.org/t/read-local-file-at-build-time-with-motoko/15945/2
+
+  public shared ({caller}) func storageResetWasm() : async () {
+    if (not Utils.isAdmin(caller)) {
+      throw Error.reject("Unauthorized access. Caller is not an admin. " # Principal.toText(caller));
+    };
+
+    storageWasm := [];
+  };
+
+  public shared ({caller}) func storageLoadWasm(blob : [Nat8]) : async ({total : Nat; chunks : Nat}) {
+    if (not Utils.isAdmin(caller)) {
+      throw Error.reject("Unauthorized access. Caller is not an admin. " # Principal.toText(caller));
+    };
+
+    // Issue: https://forum.dfinity.org/t/array-to-buffer-in-motoko/15880/15
+    // let buffer: Buffer.Buffer<Nat8> = Buffer.fromArray<Nat8>(storageWasm);
+    // let chunks: Buffer.Buffer<Nat8> = Buffer.fromArray<Nat8>(blob);
+    // buffer.append(chunks);
+    // storageWasm := buffer.toArray();
+
+    storageWasm := Array.append<Nat8>(storageWasm, blob);
+
+    // return total wasm sizes
+    return {
+      total = storageWasm.size();
+      chunks = blob.size();
+    };
   };
 
   /**

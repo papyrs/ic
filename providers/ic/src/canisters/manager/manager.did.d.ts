@@ -18,5 +18,7 @@ export interface _SERVICE {
   installCode: ActorMethod<[Principal, Array<number>, Array<number>], undefined>;
   knownBucket: ActorMethod<[string, string], boolean>;
   list: ActorMethod<[string], Array<Bucket>>;
+  storageLoadWasm: ActorMethod<[Array<number>], {total: bigint; chunks: bigint}>;
+  storageResetWasm: ActorMethod<[], undefined>;
   transferCycles: ActorMethod<[Principal, bigint], undefined>;
 }

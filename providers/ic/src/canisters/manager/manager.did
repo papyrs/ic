@@ -15,5 +15,12 @@ service : {
   installCode : (principal, blob, blob) -> ();
   knownBucket : (text, text) -> (bool);
   list : (text) -> (vec Bucket) query;
+  storageLoadWasm : (vec nat8) -> (
+    record {
+      chunks : nat;
+      total : nat;
+    }
+  );
+  storageResetWasm : () -> ();
   transferCycles : (principal, nat) -> ();
 };
