@@ -1,12 +1,9 @@
 import {log, Meta} from '@deckdeckgo/editor';
 import {getStorageActor, upload} from '../api/storage.api';
-import {
-  AssetKey,
-  _SERVICE as StorageBucketActor
-} from '../canisters/storage/storage.did';
-import {HeaderField} from '../types/storage.types';
+import {AssetKey, _SERVICE as StorageBucketActor} from '../canisters/storage/storage.did';
 import {EnvStore} from '../stores/env.store';
 import {PublishHoistedData} from '../types/publish.types';
+import {HeaderField} from '../types/storage.types';
 import {digestMessage} from '../utils/crypto.utils';
 import {fromNullable, toNullable} from '../utils/did.utils';
 import {BucketActor} from '../utils/manager.utils';
