@@ -239,7 +239,7 @@ fn commit_chunks(
         encodings,
     });
 
-    clear_batch(batchId, chunkIds, &mut state.runtime);
+    clear_batch(batch_id, chunk_ids, &mut state.runtime);
 
     return Ok("Batch committed.");
 }
@@ -271,10 +271,10 @@ fn clear_expired_batches(state: &mut RuntimeState) {
     }
 }
 
-fn clear_batch(batchId: u128, chunkIds: Vec<u128>, state: &mut RuntimeState) {
-    for chunk_id in chunkIds.iter() {
+fn clear_batch(batch_id: u128, chunk_ids: Vec<u128>, state: &mut RuntimeState) {
+    for chunk_id in chunk_ids.iter() {
         state.chunks.remove(chunk_id);
     }
 
-    state.batches.remove(&batchId);
+    state.batches.remove(&batch_id);
 }
