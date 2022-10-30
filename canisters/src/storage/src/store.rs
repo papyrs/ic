@@ -5,6 +5,7 @@ use std::collections::HashMap;
 use ic_cdk::{api::{time}};
 
 use crate::{STATE};
+use crate::cert::{update_certified_data};
 use crate::constants::ASSET_ENCODING_KEY_RAW;
 use crate::types::state:: {State, RuntimeState, StableState};
 use crate::types::store::{Asset, AssetEncoding, AssetKey, Batch, Chunk};
@@ -41,7 +42,7 @@ pub fn get_asset(full_path: String, token: Option<String>) -> Result<Asset, &'st
 }
 
 pub fn delete_asset(param: Del) -> Result<Asset, &'static str> {
-    STATE.with(|state| delete_asset_impl(param, &mut state.borrow_mut().stable))
+    STATE.with(|state| delete_asset_impl(param, &mut state.borrow_mut()))
 }
 
 pub fn get_keys(folder: Option<String>) -> Vec<AssetKey> {
@@ -88,13 +89,14 @@ fn get_keys_impl(folder: Option<String>, state: &StableState) -> Vec<AssetKey> {
     }
 }
 
-fn delete_asset_impl(Del { full_path, token }: Del, state: &mut StableState) -> Result<Asset, &'static str> {
-    let result = get_asset_impl(full_path.clone(), token, state);
+fn delete_asset_impl(Del { full_path, token }: Del, state: &mut State) -> Result<Asset, &'static str> {
+    let result = get_asset_impl(full_path.clone(), token, &state.stable);
 
     match result {
         Err(err) => Err(err),
         Ok(asset) => {
-            state.assets.remove(&*full_path);
+            state.stable.assets.remove(&*full_path);
+            delete_certified_asset(state, &full_path);
             Ok(asset)
         }
     }
@@ -177,7 +179,16 @@ fn commit_batch_impl(
 
     match batch {
         None => Err("No batch to commit."),
-        Some(b) => commit_chunks(commit_batch, b, state),
+        Some(b) => {
+            let asset = commit_chunks(commit_batch, b, state);
+            match asset {
+                Err(err) => Err(err),
+                Ok(asset) => {
+                    update_certified_asset(state, &asset);
+                    Ok("Batch committed and certified assets updated.")
+                }
+            }
+        },
     }
 }
 
@@ -185,7 +196,7 @@ fn commit_chunks(
     CommitBatch { chunk_ids, batch_id, headers }: CommitBatch,
     batch: &Batch,
     state: &mut State,
-) -> Result<&'static str, &'static str> {
+) -> Result<Asset, &'static str> {
     let now = time();
 
     if now > batch.expires_at {
@@ -216,32 +227,23 @@ fn commit_chunks(
         return Err("No chunk to commit.");
     }
 
-    let mut total_length: u128 = 0;
-
-    for chunk in content_chunks.iter() {
-        total_length += u128::try_from(chunk.len()).unwrap();
-    }
-
     let key = batch.clone().key;
 
     // We only use raw at the moment
     let mut encodings = HashMap::new();
+    encodings.insert(ASSET_ENCODING_KEY_RAW.to_string(), AssetEncoding::from(&content_chunks));
 
-    encodings.insert(ASSET_ENCODING_KEY_RAW.to_string(), AssetEncoding {
-        modified: time(),
-        content_chunks,
-        total_length,
-    });
-
-    state.stable.assets.insert(batch.clone().key.full_path, Asset {
+    let asset: Asset = Asset {
         key,
         headers,
         encodings,
-    });
+    };
+
+    state.stable.assets.insert(batch.clone().key.full_path, asset.clone());
 
     clear_batch(batch_id, chunk_ids, &mut state.runtime);
 
-    return Ok("Batch committed.");
+    return Ok(asset);
 }
 
 fn clear_expired_batches(state: &mut RuntimeState) {
@@ -277,4 +279,20 @@ fn clear_batch(batch_id: u128, chunk_ids: Vec<u128>, state: &mut RuntimeState) {
     }
 
     state.batches.remove(&batch_id);
+}
+
+fn update_certified_asset(state: &mut State, asset: &Asset) {
+    // 1. Replace or insert the new asset in tree
+    state.runtime.asset_hashes.insert(&asset);
+
+    // 2. Update the root hash and the canister certified data
+    update_certified_data(&state.runtime.asset_hashes);
+}
+
+fn delete_certified_asset(state: &mut State, full_path: &String) {
+    // 1. Remove the asset in tree
+    state.runtime.asset_hashes.delete(full_path);
+
+    // 2. Update the root hash and the canister certified data
+    update_certified_data(&state.runtime.asset_hashes);
 }
