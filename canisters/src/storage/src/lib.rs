@@ -28,6 +28,7 @@ use crate::types::store::{AssetKey, Chunk, Asset};
 use crate::types::http::{HttpRequest, HttpResponse, StreamingCallbackToken, StreamingCallbackHttpResponse};
 use crate::types_mo::mo::state::MoState;
 use crate::cert::{update_certified_data};
+use crate::env::MIGRATE_MOTOKO_STATE;
 use crate::http::{build_headers, create_token, streaming_strategy};
 
 thread_local! {
@@ -58,27 +59,7 @@ fn pre_upgrade() {
 
 #[post_upgrade]
 fn post_upgrade() {
-    // TODO: uncomment after migration from Motoko to Rust
-    // let (stable, ): (StableState, ) = ic_cdk::storage::stable_restore().unwrap();
-
-    // TODO: delete after migration from Motoko to Rust
-    // By senior.joinu - not all heroes wear capes
-    let mut stable_length_buf = [0u8; std::mem::size_of::<u32>()];
-    api::stable::stable_read(0, &mut stable_length_buf);
-    let stable_length = u32::from_le_bytes(stable_length_buf); // maybe use from_be_bytes, I don't remember what endianess is candid
-
-    let mut buf = vec![0u8; stable_length as usize];
-    api::stable::stable_read(std::mem::size_of::<u32>() as u32, &mut buf);
-
-    let (mo_state, ): (MoState, ) = decode_args(&buf).unwrap();
-
-    let user: Option<Principal> = mo_state.user.clone();
-    let assets: Assets = migrate_assets(mo_state);
-
-    let stable: StableState = StableState {
-        user,
-        assets,
-    };
+    let stable = stable_state_to_upgrade();
 
     let asset_hashes = AssetHashes::from(&stable.assets);
 
@@ -95,11 +76,38 @@ fn post_upgrade() {
     update_certified_data(&asset_hashes);
 }
 
-fn migrate_assets(MoState { entries, user: _ }: MoState) -> Assets {
-    match entries {
-        None => HashMap::new(),
-        Some(e) => e.iter().map(|(key, mo_asset)| (key.clone(), Asset::from(mo_asset))).collect()
+fn stable_state_to_upgrade() -> StableState {
+    if MIGRATE_MOTOKO_STATE {
+        // TODO: delete after migration from Motoko to Rust
+        // By senior.joinu - not all heroes wear capes
+        let mut stable_length_buf = [0u8; std::mem::size_of::<u32>()];
+        api::stable::stable_read(0, &mut stable_length_buf);
+        let stable_length = u32::from_le_bytes(stable_length_buf); // maybe use from_be_bytes, I don't remember what endianess is candid
+
+        let mut buf = vec![0u8; stable_length as usize];
+        api::stable::stable_read(std::mem::size_of::<u32>() as u32, &mut buf);
+
+        let (mo_state, ): (MoState, ) = decode_args(&buf).unwrap();
+
+        let user: Option<Principal> = mo_state.user.clone();
+
+        fn migrate_assets(MoState { entries, user: _ }: MoState) -> Assets {
+            match entries {
+                None => HashMap::new(),
+                Some(e) => e.iter().map(|(key, mo_asset)| (key.clone(), Asset::from(mo_asset))).collect()
+            }
+        }
+
+        let assets: Assets = migrate_assets(mo_state);
+
+        return StableState {
+            user,
+            assets,
+        };
     }
+
+    let (stable, ): (StableState, ) = storage::stable_restore().unwrap();
+    stable
 }
 
 //
