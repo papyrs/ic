@@ -2,6 +2,9 @@ mod types;
 mod store;
 mod env;
 mod utils;
+mod impls_mo;
+mod types_mo;
+mod constants;
 
 use ic_cdk::api::management_canister::main::{CanisterIdRecord, deposit_cycles};
 use ic_cdk::api::{canister_balance128, caller, trap};
@@ -12,13 +15,14 @@ use candid::{decode_args, Principal};
 use std::cell::RefCell;
 use std::collections::HashMap;
 
+use crate::constants::ASSET_ENCODING_KEY_RAW;
 use crate::store::{commit_batch, create_batch, create_chunk, delete_asset, get_asset, get_asset_for_url, get_keys};
 use crate::utils::{principal_not_equal, is_manager};
 use crate::types::interface::{InitUpload, UploadChunk, CommitBatch, Del};
 use crate::types::state::{State, StableState, RuntimeState, Assets};
 use crate::types::store::{AssetKey, Chunk, Asset, AssetEncoding};
 use crate::types::http::{HttpRequest, HttpResponse, HeaderField, StreamingStrategy, StreamingCallbackToken, StreamingCallbackHttpResponse};
-use crate::types::migration::{UpgradeState};
+use crate::types_mo::mo::state::MoState;
 
 thread_local! {
     static STATE: RefCell<State> = RefCell::default();
@@ -59,10 +63,10 @@ fn post_upgrade() {
     let mut buf = vec![0u8; stable_length as usize];
     api::stable::stable_read(std::mem::size_of::<u32>() as u32, &mut buf);
 
-    let (upgrade_state, ): (UpgradeState, ) = decode_args(&buf).unwrap();
+    let (mo_state, ): (MoState, ) = decode_args(&buf).unwrap();
 
-    let user: Option<Principal> = upgrade_state.user.clone();
-    let assets: Assets = upgrade_assets(upgrade_state);
+    let user: Option<Principal> = mo_state.user.clone();
+    let assets: Assets = migrate_assets(mo_state);
 
     let stable: StableState = StableState {
         user,
@@ -79,10 +83,10 @@ fn post_upgrade() {
     });
 }
 
-fn upgrade_assets(UpgradeState {entries, user: _}: UpgradeState) -> Assets {
+fn migrate_assets(MoState {entries, user: _}: MoState) -> Assets {
     match entries {
         None => HashMap::new(),
-        Some(e) => e.into_iter().collect()
+        Some(e) => e.iter().map(|(key, mo_asset)|(key.clone(), Asset::from(mo_asset))).collect()
     }
 }
 
@@ -105,9 +109,12 @@ fn http_request(HttpRequest { method, url, headers: _, body: _ }: HttpRequest) -
     let result = get_asset_for_url(url);
 
     match result {
-        Ok(Asset { key, headers, encoding }) => {
+        Ok(Asset { key, headers, encodings }) => {
+            // We only use raw at the moment and it cannot be None
+            let encoding = encodings.get(ASSET_ENCODING_KEY_RAW).unwrap();
+
             return HttpResponse {
-                body: encoding.contentChunks[0].clone(),
+                body: encoding.content_chunks[0].clone(),
                 headers: headers.clone(),
                 status_code: 200,
                 streaming_strategy: streaming_strategy(key, &encoding, &headers),
@@ -126,15 +133,18 @@ fn http_request(HttpRequest { method, url, headers: _, body: _ }: HttpRequest) -
 
 #[query]
 #[candid_method(query)]
-fn http_request_streaming_callback(StreamingCallbackToken { token, headers, index, sha256: _, fullPath }: StreamingCallbackToken) -> StreamingCallbackHttpResponse {
-    let result = get_asset(fullPath, token);
+fn http_request_streaming_callback(StreamingCallbackToken { token, headers, index, sha256: _, full_path }: StreamingCallbackToken) -> StreamingCallbackHttpResponse {
+    let result = get_asset(full_path, token);
 
     match result {
         Err(err) => trap(&*["Streamed asset not found: ", err].join("")),
         Ok(asset) => {
+            // We only use raw at the moment and it cannot be None
+            let encoding = &asset.encodings.get(ASSET_ENCODING_KEY_RAW).unwrap();
+
             return StreamingCallbackHttpResponse {
-                token: create_token(asset.key, index, &asset.encoding, &headers),
-                body: asset.encoding.contentChunks[index].clone(),
+                token: create_token(asset.key, index, &encoding, &headers),
+                body: encoding.content_chunks[index].clone(),
             };
         }
     }
@@ -156,16 +166,17 @@ fn streaming_strategy(key: AssetKey, encoding: &AssetEncoding, headers: &Vec<Hea
 }
 
 fn create_token(key: AssetKey, chunk_index: usize, encoding: &AssetEncoding, headers: &Vec<HeaderField>) -> Option<StreamingCallbackToken> {
-    if chunk_index + 1 >= encoding.contentChunks.len() {
+    if chunk_index + 1 >= encoding.content_chunks.len() {
         return None;
     }
 
     Some(StreamingCallbackToken {
-        fullPath: key.fullPath,
+        full_path: key.full_path,
         token: key.token,
         headers: headers.clone(),
         index: chunk_index + 1,
-        sha256: key.sha256,
+        // TODO: sha256
+        sha256: None,
     })
 }
 
@@ -183,8 +194,8 @@ fn initUpload(key: AssetKey) -> InitUpload {
         trap("User does not have the permission to upload data.");
     }
 
-    let batchId: u128 = create_batch(key);
-    return InitUpload { batchId };
+    let batch_id: u128 = create_batch(key);
+    return InitUpload { batch_id };
 }
 
 #[allow(non_snake_case)]
@@ -200,7 +211,7 @@ fn uploadChunk(chunk: Chunk) -> UploadChunk {
     let result = create_chunk(chunk);
 
     match result {
-        Ok(chunk_id) => { UploadChunk { chunkId: chunk_id } }
+        Ok(chunk_id) => { UploadChunk { chunk_id } }
         Err(error) => trap(error)
     }
 }

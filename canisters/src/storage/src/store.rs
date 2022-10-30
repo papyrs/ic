@@ -1,10 +1,11 @@
 // Non snake case for backwards compatibility
 #![allow(non_snake_case)]
 
+use std::collections::HashMap;
 use ic_cdk::{api::{time}};
-use candid::{Int};
 
 use crate::{STATE};
+use crate::constants::ASSET_ENCODING_KEY_RAW;
 use crate::types::state:: {State, RuntimeState, StableState};
 use crate::types::store::{Asset, AssetEncoding, AssetKey, Batch, Chunk};
 use crate::types::interface::{CommitBatch, Del};
@@ -87,13 +88,13 @@ fn get_keys_impl(folder: Option<String>, state: &StableState) -> Vec<AssetKey> {
     }
 }
 
-fn delete_asset_impl(Del { fullPath, token }: Del, state: &mut StableState) -> Result<Asset, &'static str> {
-    let result = get_asset_impl(fullPath.clone(), token, state);
+fn delete_asset_impl(Del { full_path, token }: Del, state: &mut StableState) -> Result<Asset, &'static str> {
+    let result = get_asset_impl(full_path.clone(), token, state);
 
     match result {
         Err(err) => Err(err),
         Ok(asset) => {
-            state.assets.remove(&*fullPath);
+            state.assets.remove(&*full_path);
             Ok(asset)
         }
     }
@@ -130,7 +131,7 @@ fn create_batch_impl(key: AssetKey, state: &mut RuntimeState) -> u128 {
 
         state.batches.insert(NEXT_BACK_ID, Batch {
             key,
-            expiresAt: now + BATCH_EXPIRY_NANOS,
+            expires_at: now + BATCH_EXPIRY_NANOS,
         });
 
         NEXT_BACK_ID
@@ -138,26 +139,26 @@ fn create_batch_impl(key: AssetKey, state: &mut RuntimeState) -> u128 {
 }
 
 fn create_chunk_impl(
-    Chunk { batchId, content }: Chunk,
+    Chunk { batch_id, content }: Chunk,
     state: &mut RuntimeState,
 ) -> Result<u128, &'static str> {
-    let batch = state.batches.get(&batchId);
+    let batch = state.batches.get(&batch_id);
 
     match batch {
         None => Err("Batch not found."),
         Some(b) => {
             let now = time();
 
-            state.batches.insert(batchId, Batch {
+            state.batches.insert(batch_id, Batch {
                 key: b.key.clone(),
-                expiresAt: now + BATCH_EXPIRY_NANOS,
+                expires_at: now + BATCH_EXPIRY_NANOS,
             });
 
             unsafe {
                 NEXT_CHUNK_ID = NEXT_CHUNK_ID + 1;
 
                 state.chunks.insert(NEXT_CHUNK_ID, Chunk {
-                    batchId,
+                    batch_id,
                     content,
                 });
 
@@ -172,7 +173,7 @@ fn commit_batch_impl(
     state: &mut State,
 ) -> Result<&'static str, &'static str> {
     let batches = state.runtime.batches.clone();
-    let batch = batches.get(&commitBatch.batchId);
+    let batch = batches.get(&commitBatch.batch_id);
 
     match batch {
         None => Err("No batch to commit."),
@@ -181,20 +182,20 @@ fn commit_batch_impl(
 }
 
 fn commit_chunks(
-    CommitBatch { chunkIds, batchId, headers }: CommitBatch,
+    CommitBatch { chunk_ids, batch_id, headers }: CommitBatch,
     batch: &Batch,
     state: &mut State,
 ) -> Result<&'static str, &'static str> {
     let now = time();
 
-    if now > batch.expiresAt {
+    if now > batch.expires_at {
         clear_expired_batches(&mut state.runtime);
         return Err("Batch did not complete in time. Chunks cannot be committed.");
     }
 
     let mut content_chunks: Vec<Vec<u8>> = vec!();
 
-    for chunk_id in chunkIds.iter() {
+    for chunk_id in chunk_ids.iter() {
         let chunk = state.runtime.chunks.get(&chunk_id);
 
         match chunk {
@@ -202,7 +203,7 @@ fn commit_chunks(
                 return Err("Chunk does not exist.");
             }
             Some(c) => {
-                if batchId != c.batchId {
+                if batch_id != c.batch_id {
                     return Err("Chunk not included in the provided batch.");
                 }
 
@@ -223,14 +224,19 @@ fn commit_chunks(
 
     let key = batch.clone().key;
 
-    state.stable.assets.insert(batch.clone().key.fullPath, Asset {
+    // We only use raw at the moment
+    let mut encodings = HashMap::new();
+
+    encodings.insert(ASSET_ENCODING_KEY_RAW.to_string(), AssetEncoding {
+        modified: time(),
+        content_chunks,
+        total_length,
+    });
+
+    state.stable.assets.insert(batch.clone().key.full_path, Asset {
         key,
         headers,
-        encoding: AssetEncoding {
-            modified: Int::from(time()),
-            contentChunks: content_chunks,
-            totalLength: total_length,
-        },
+        encodings,
     });
 
     clear_batch(batchId, chunkIds, &mut state.runtime);
@@ -246,7 +252,7 @@ fn clear_expired_batches(state: &mut RuntimeState) {
     let batches = state.batches.clone();
 
     for (batch_id, batch) in batches.iter() {
-        if now > batch.expiresAt {
+        if now > batch.expires_at {
             state.batches.remove(batch_id);
         }
     }
@@ -256,7 +262,7 @@ fn clear_expired_batches(state: &mut RuntimeState) {
     let chunks = state.chunks.clone();
 
     for (chunk_id, chunk) in chunks.iter() {
-        match state.batches.get(&chunk.batchId) {
+        match state.batches.get(&chunk.batch_id) {
             None => {
                 state.chunks.remove(chunk_id);
             }

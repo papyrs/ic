@@ -1,0 +1,1 @@
+pub const ASSET_ENCODING_KEY_RAW: &str = "raw";
