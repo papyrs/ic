@@ -20,12 +20,9 @@ impl From<&Assets> for AssetHashes {
 
 impl AssetHashes {
     pub(crate) fn insert(&mut self, asset: &Asset) {
-        // We only use raw at the moment and it cannot be None
-        let encoding = &asset.encodings.get(ASSET_ENCODING_KEY_RAW).unwrap();
-
         self
             .tree
-            .insert(asset.key.full_path.clone(), encoding.sha256);
+            .insert(asset.key.full_path.clone(), asset.encoding_raw().sha256);
     }
 
     pub(crate) fn delete(&mut self, full_path: &String) {
@@ -55,5 +52,13 @@ impl From<&Vec<Vec<u8>>> for AssetEncoding {
             total_length,
             sha256
         }
+    }
+}
+
+
+impl Asset {
+    pub(crate) fn encoding_raw(&self) -> &AssetEncoding {
+        // We only use raw at the moment and it cannot be None
+        self.encodings.get(ASSET_ENCODING_KEY_RAW).unwrap()
     }
 }

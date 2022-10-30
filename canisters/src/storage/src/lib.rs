@@ -123,10 +123,9 @@ fn http_request(HttpRequest { method, url, headers: _, body: _ }: HttpRequest) -
     match result {
         Ok(asset) => {
             let headers = build_certified_headers(&asset);
-            let Asset { key, headers: _, encodings } = asset;
 
-            // We only use raw at the moment and it cannot be None
-            let encoding = encodings.get(ASSET_ENCODING_KEY_RAW).unwrap();
+            let encoding = asset.encoding_raw();
+            let Asset { key, headers: _, encodings: _ } = &asset;
 
             match headers {
                 Ok(headers) => HttpResponse {
@@ -160,8 +159,7 @@ fn http_request_streaming_callback(StreamingCallbackToken { token, headers, inde
     match result {
         Err(err) => trap(&*["Streamed asset not found: ", err].join("")),
         Ok(asset) => {
-            // We only use raw at the moment and it cannot be None
-            let encoding = &asset.encodings.get(ASSET_ENCODING_KEY_RAW).unwrap();
+            let encoding = asset.encoding_raw();
 
             return StreamingCallbackHttpResponse {
                 token: create_token(&asset.key, index, &encoding, &headers),
