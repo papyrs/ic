@@ -36,21 +36,41 @@ pub fn create_token(key: &AssetKey, chunk_index: usize, encoding: &AssetEncoding
     })
 }
 
+pub fn build_headers(asset: &Asset) -> Result<Vec<HeaderField>, &'static str> {
+    let certified_header = build_certified_headers(asset);
 
-pub fn build_certified_headers(asset: &Asset) -> Result<Vec<HeaderField>, &'static str> {
+    match certified_header {
+        Err(err) => Err(err),
+        Ok(certified_header) => {
+            let mut headers = asset.headers.clone();
+            headers.push(certified_header);
+            Ok([headers, security_headers()].concat())
+        }
+    }
+}
+
+fn build_certified_headers(asset: &Asset) -> Result<HeaderField, &'static str> {
     STATE.with(|state| build_certified_headers_impl(asset, &state.borrow().runtime))
 }
 
-fn build_certified_headers_impl(Asset { key, headers, encodings: _ }: &Asset, state: &RuntimeState) -> Result<Vec<HeaderField>, &'static str> {
-    let mut certified_headers = headers.clone();
+fn build_certified_headers_impl(Asset { key, headers: _, encodings: _ }: &Asset, state: &RuntimeState) -> Result<HeaderField, &'static str> {
+    build_asset_certificate_header(&state.asset_hashes, key.full_path.clone())
+}
 
-    let certificate_header = build_asset_certificate_header(&state.asset_hashes, key.full_path.clone());
-
-    match certificate_header {
-        Err(err) => Err(err),
-        Ok(certificate_header) => {
-            certified_headers.push(certificate_header);
-            Ok(certified_headers)
-        }
-    }
+// Source: NNS-dapp
+/// List of recommended security headers as per https://owasp.org/www-project-secure-headers/
+/// These headers enable browser security features (like limit access to platform apis and set
+/// iFrame policies, etc.).
+fn security_headers() -> Vec<HeaderField> {
+    vec![
+        HeaderField("X-Frame-Options".to_string(), "DENY".to_string()),
+        HeaderField("X-Content-Type-Options".to_string(), "nosniff".to_string()),
+        HeaderField(
+            "Strict-Transport-Security".to_string(),
+            "max-age=31536000 ; includeSubDomains".to_string(),
+        ),
+        // "Referrer-Policy: no-referrer" would be more strict, but breaks local dev deployment
+        // same-origin is still ok from a security perspective
+        HeaderField("Referrer-Policy".to_string(), "same-origin".to_string()),
+    ]
 }

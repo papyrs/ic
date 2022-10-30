@@ -28,7 +28,7 @@ use crate::types::store::{AssetKey, Chunk, Asset};
 use crate::types::http::{HttpRequest, HttpResponse, StreamingCallbackToken, StreamingCallbackHttpResponse};
 use crate::types_mo::mo::state::MoState;
 use crate::cert::{update_certified_data};
-use crate::http::{build_certified_headers, create_token, streaming_strategy};
+use crate::http::{build_headers, create_token, streaming_strategy};
 
 thread_local! {
     static STATE: RefCell<State> = RefCell::default();
@@ -122,7 +122,7 @@ fn http_request(HttpRequest { method, url, headers: _, body: _ }: HttpRequest) -
 
     match result {
         Ok(asset) => {
-            let headers = build_certified_headers(&asset);
+            let headers = build_headers(&asset);
 
             let encoding = asset.encoding_raw();
             let Asset { key, headers: _, encodings: _ } = &asset;
