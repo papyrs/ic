@@ -1,28 +1,34 @@
+mod constants;
 mod types;
+mod impls;
 mod store;
 mod env;
 mod utils;
+mod cert;
+mod http;
 mod impls_mo;
 mod types_mo;
-mod constants;
 
 use ic_cdk::api::management_canister::main::{CanisterIdRecord, deposit_cycles};
 use ic_cdk::api::{canister_balance128, caller, trap};
 use ic_cdk_macros::{init, update, pre_upgrade, post_upgrade, query};
 use ic_cdk::export::candid::{candid_method, export_service};
-use ic_cdk::{storage, id, api};
+use ic_cdk::{storage, api};
 use candid::{decode_args, Principal};
 use std::cell::RefCell;
 use std::collections::HashMap;
 
 use crate::constants::ASSET_ENCODING_KEY_RAW;
 use crate::store::{commit_batch, create_batch, create_chunk, delete_asset, get_asset, get_asset_for_url, get_keys};
+use crate::types::assets::{AssetHashes};
 use crate::utils::{principal_not_equal, is_manager};
 use crate::types::interface::{InitUpload, UploadChunk, CommitBatch, Del};
 use crate::types::state::{State, StableState, RuntimeState, Assets};
-use crate::types::store::{AssetKey, Chunk, Asset, AssetEncoding};
-use crate::types::http::{HttpRequest, HttpResponse, HeaderField, StreamingStrategy, StreamingCallbackToken, StreamingCallbackHttpResponse};
+use crate::types::store::{AssetKey, Chunk, Asset};
+use crate::types::http::{HttpRequest, HttpResponse, StreamingCallbackToken, StreamingCallbackHttpResponse};
 use crate::types_mo::mo::state::MoState;
+use crate::cert::{update_certified_data};
+use crate::http::{build_certified_headers, create_token, streaming_strategy};
 
 thread_local! {
     static STATE: RefCell<State> = RefCell::default();
@@ -39,6 +45,7 @@ fn init(user: Principal) {
             runtime: RuntimeState {
                 chunks: HashMap::new(),
                 batches: HashMap::new(),
+                asset_hashes: AssetHashes::default(),
             },
         };
     });
@@ -73,20 +80,25 @@ fn post_upgrade() {
         assets,
     };
 
+    let asset_hashes = AssetHashes::from(&stable.assets);
+
     // Populate state
     STATE.with(|state| *state.borrow_mut() = State {
         stable,
         runtime: RuntimeState {
             chunks: HashMap::new(),
             batches: HashMap::new(),
+            asset_hashes: asset_hashes.clone(),
         },
     });
+
+    update_certified_data(&asset_hashes);
 }
 
-fn migrate_assets(MoState {entries, user: _}: MoState) -> Assets {
+fn migrate_assets(MoState { entries, user: _ }: MoState) -> Assets {
     match entries {
         None => HashMap::new(),
-        Some(e) => e.iter().map(|(key, mo_asset)|(key.clone(), Asset::from(mo_asset))).collect()
+        Some(e) => e.iter().map(|(key, mo_asset)| (key.clone(), Asset::from(mo_asset))).collect()
     }
 }
 
@@ -109,26 +121,34 @@ fn http_request(HttpRequest { method, url, headers: _, body: _ }: HttpRequest) -
     let result = get_asset_for_url(url);
 
     match result {
-        Ok(Asset { key, headers, encodings }) => {
-            // We only use raw at the moment and it cannot be None
-            let encoding = encodings.get(ASSET_ENCODING_KEY_RAW).unwrap();
+        Ok(asset) => {
+            let headers = build_certified_headers(&asset);
 
-            return HttpResponse {
-                body: encoding.content_chunks[0].clone(),
-                headers: headers.clone(),
-                status_code: 200,
-                streaming_strategy: streaming_strategy(key, &encoding, &headers),
-            };
+            let encoding = asset.encoding_raw();
+            let Asset { key, headers: _, encodings: _ } = &asset;
+
+            match headers {
+                Ok(headers) => HttpResponse {
+                    body: encoding.content_chunks[0].clone(),
+                    headers: headers.clone(),
+                    status_code: 200,
+                    streaming_strategy: streaming_strategy(&key, &encoding, &headers),
+                },
+                Err(err) => HttpResponse {
+                    body: ["Permission denied. Invalid headers. ", err].join("").as_bytes().to_vec(),
+                    headers: Vec::new(),
+                    status_code: 405,
+                    streaming_strategy: None,
+                }
+            }
         }
-        Err(_) => ()
+        Err(err) => HttpResponse {
+            body: ["Permission denied. Could not perform this operation. ", err].join("").as_bytes().to_vec(),
+            headers: Vec::new(),
+            status_code: 405,
+            streaming_strategy: None,
+        }
     }
-
-    return HttpResponse {
-        body: "Permission denied. Could not perform this operation.".as_bytes().to_vec(),
-        headers: Vec::new(),
-        status_code: 405,
-        streaming_strategy: None,
-    };
 }
 
 #[query]
@@ -139,45 +159,14 @@ fn http_request_streaming_callback(StreamingCallbackToken { token, headers, inde
     match result {
         Err(err) => trap(&*["Streamed asset not found: ", err].join("")),
         Ok(asset) => {
-            // We only use raw at the moment and it cannot be None
-            let encoding = &asset.encodings.get(ASSET_ENCODING_KEY_RAW).unwrap();
+            let encoding = asset.encoding_raw();
 
             return StreamingCallbackHttpResponse {
-                token: create_token(asset.key, index, &encoding, &headers),
+                token: create_token(&asset.key, index, &encoding, &headers),
                 body: encoding.content_chunks[index].clone(),
             };
         }
     }
-}
-
-fn streaming_strategy(key: AssetKey, encoding: &AssetEncoding, headers: &Vec<HeaderField>) -> Option<StreamingStrategy> {
-    let streaming_token: Option<StreamingCallbackToken> = create_token(key, 0, encoding, headers);
-
-    match streaming_token {
-        None => None,
-        Some(streaming_token) => Some(StreamingStrategy::Callback {
-            callback: candid::Func {
-                method: "http_request_streaming_callback".to_string(),
-                principal: id(),
-            },
-            token: streaming_token,
-        })
-    }
-}
-
-fn create_token(key: AssetKey, chunk_index: usize, encoding: &AssetEncoding, headers: &Vec<HeaderField>) -> Option<StreamingCallbackToken> {
-    if chunk_index + 1 >= encoding.content_chunks.len() {
-        return None;
-    }
-
-    Some(StreamingCallbackToken {
-        full_path: key.full_path,
-        token: key.token,
-        headers: headers.clone(),
-        index: chunk_index + 1,
-        // TODO: sha256
-        sha256: None,
-    })
 }
 
 //
