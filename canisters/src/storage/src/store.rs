@@ -117,8 +117,8 @@ pub fn create_chunk(chunk: Chunk) -> Result<u128, &'static str> {
     STATE.with(|state| create_chunk_impl(chunk, &mut state.borrow_mut().runtime))
 }
 
-pub fn commit_batch(commitBatch: CommitBatch) -> Result<&'static str, &'static str> {
-    STATE.with(|state| commit_batch_impl(commitBatch, &mut state.borrow_mut()))
+pub fn commit_batch(commit_batch: CommitBatch) -> Result<&'static str, &'static str> {
+    STATE.with(|state| commit_batch_impl(commit_batch, &mut state.borrow_mut()))
 }
 
 fn create_batch_impl(key: AssetKey, state: &mut RuntimeState) -> u128 {
@@ -169,15 +169,15 @@ fn create_chunk_impl(
 }
 
 fn commit_batch_impl(
-    commitBatch: CommitBatch,
+    commit_batch: CommitBatch,
     state: &mut State,
 ) -> Result<&'static str, &'static str> {
     let batches = state.runtime.batches.clone();
-    let batch = batches.get(&commitBatch.batch_id);
+    let batch = batches.get(&commit_batch.batch_id);
 
     match batch {
         None => Err("No batch to commit."),
-        Some(b) => commit_chunks(commitBatch, b, state),
+        Some(b) => commit_chunks(commit_batch, b, state),
     }
 }
 
