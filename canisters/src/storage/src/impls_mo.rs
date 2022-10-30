@@ -26,7 +26,8 @@ impl From<&MoAsset> for Asset {
                name: mo_key.name.clone(),
                folder: mo_key.folder.clone(),
                full_path: mo_key.fullPath.clone(),
-               token: mo_key.token.clone()
+               token: mo_key.token.clone(),
+               sha256: mo_key.sha256.clone()
            },
            headers: mo_headers.clone(),
            encodings

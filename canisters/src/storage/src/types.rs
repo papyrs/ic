@@ -57,6 +57,9 @@ pub mod store {
         pub full_path: String,
         // ?token=1223-3345-5564-3333
         pub token: Option<String>,
+        // A sha256 representation of the raw content calculated on the frontend side.
+        // This is used to easily detects - without the need to download all the chunks - if a resource of the kit should be updated or not when publishing.
+        pub sha256: Option<Vec<u8>>,
     }
 
     #[derive(CandidType, Deserialize, Clone)]
