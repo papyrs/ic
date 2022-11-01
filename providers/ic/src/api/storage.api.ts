@@ -43,9 +43,9 @@ export const upload = async ({
   const t1 = performance.now();
   log({msg: `[upload][create batch] ${filename}`, duration: t1 - t0, level: 'info'});
 
-  const promises = [];
-
   const chunkSize = 700000;
+
+  const chunkIds: {chunk_id: bigint}[] = [];
 
   // Prevent transforming chunk to arrayBuffer error: The requested file could not be read, typically due to permission problems that have occurred after a reference to a file was acquired.
   const clone: Blob = new Blob([await data.arrayBuffer()]);
@@ -53,16 +53,14 @@ export const upload = async ({
   for (let start = 0; start < clone.size; start += chunkSize) {
     const chunk: Blob = clone.slice(start, start + chunkSize);
 
-    promises.push(
-      uploadChunk({
+    chunkIds.push(
+      await uploadChunk({
         batchId,
         chunk,
         storageActor
       })
     );
   }
-
-  const chunkIds: {chunk_id: bigint}[] = await Promise.all(promises);
 
   const t2 = performance.now();
   log({msg: `[upload][chunks] ${filename}`, duration: t2 - t1, level: 'info'});
