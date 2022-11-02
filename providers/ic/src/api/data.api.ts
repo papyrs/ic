@@ -67,16 +67,11 @@ export const deleteData = async ({
 }: {
   key: string;
   actor?: DataBucketActor;
-  data?: DelData;
+  data: DelData;
 }): Promise<void> => {
   const dataActor: DataBucketActor = actor || (await getDataActor());
 
-  // TODO: deprecated - backwards compatibility - to be removed
-  if (!data) {
-    await dataActor.del(key);
-  } else {
-    await dataActor.delete(key, data);
-  }
+  await dataActor.delete(key, data);
 };
 
 export const getData = async <D>({

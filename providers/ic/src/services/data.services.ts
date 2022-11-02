@@ -1,5 +1,5 @@
 import type {DataRecord} from '@deckdeckgo/editor';
-import {del, update} from 'idb-keyval';
+import {update} from 'idb-keyval';
 import {deleteData as deleteDataApi, setData as setDataApi} from '../api/data.api';
 import {DelData, _SERVICE as DataBucketActor} from '../canisters/data/data.did';
 import {LogWindow} from '../types/sync.window';
@@ -50,7 +50,7 @@ export const deleteData = async ({
   log?: LogWindow;
   data?: DelData;
 }): Promise<void> => {
-  if (!key) {
+  if (!key || !data) {
     // Should never happen but, you never know
     return;
   }
@@ -59,12 +59,6 @@ export const deleteData = async ({
   const t0 = performance.now();
 
   await deleteDataApi({key, actor, data});
-
-  // TODO: remove once deprecated code will be removed too
-  if (data !== undefined) {
-    // Paragraph has been deleted in the cloud, we can delete the local record
-    await del(key);
-  }
 
   const t1 = performance.now();
   log?.({msg: `[delete][done] ${key}`, duration: t1 - t0, level: 'info'});

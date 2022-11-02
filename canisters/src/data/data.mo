@@ -68,15 +68,6 @@ actor class DataBucket(owner : Types.UserId) = this {
     return results;
   };
 
-  /// @deprecated Backwards compatibility - function will be removed few weeks after the dapp has been updated to avoid issue with caches
-  public shared ({caller}) func set(key : Text, data : Data) : async () {
-    if (Utils.isPrincipalNotEqual(caller, user)) {
-      throw Error.reject("User does not have the permission to set data.");
-    };
-
-    dataStore.putNoChecks(key, data);
-  };
-
   public shared ({caller}) func put(key : Text, data : PutData) : async (Data) {
     if (Utils.isPrincipalNotEqual(caller, user)) {
       throw Error.reject("User does not have the permission to set data.");
@@ -92,15 +83,6 @@ actor class DataBucket(owner : Types.UserId) = this {
         return resultData;
       };
     };
-  };
-
-  /// @deprecated Backwards compatibility - function will be removed few weeks after the dapp has been updated to avoid issue with caches
-  public shared ({caller}) func del(key : Text) : async () {
-    if (Utils.isPrincipalNotEqual(caller, user)) {
-      throw Error.reject("User does not have the permission to delete the data.");
-    };
-
-    let entry : ?Data = dataStore.delNoChecks(key);
   };
 
   public shared ({caller}) func delete(key : Text, data : DelData) : async () {
