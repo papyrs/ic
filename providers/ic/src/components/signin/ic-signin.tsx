@@ -9,6 +9,7 @@ import {
   State
 } from '@stencil/core';
 import {signIn} from '../../providers/auth/auth.providers';
+import {SignInConfig} from '../../types/signin.types';
 import {IconDfinity} from '../icons/dfinity';
 
 @Component({
@@ -20,7 +21,7 @@ export class IcSignin implements ComponentInterface {
   i18n: Record<string, Record<string, string>>;
 
   @Prop()
-  config: Record<string, string>;
+  config: SignInConfig;
 
   @Prop()
   signIn: () => void;

@@ -1,4 +1,4 @@
-import {PublishMeta} from '../types/publish.metas';
+import {PublishMeta} from '../types/publish.types';
 
 const siteMapTemplate = (urls: string): string => `<?xml version="1.0" encoding="UTF-8" ?>
   <urlset

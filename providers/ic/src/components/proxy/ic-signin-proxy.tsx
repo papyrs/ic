@@ -7,6 +7,7 @@ import {
 } from '../../constants/auth.constants';
 import {EnvStore} from '../../stores/env.store';
 import {EnvironmentIC} from '../../types/env.types';
+import {ProxySignInConfig} from '../../types/signin.types';
 import {
   AuthResponseFailure,
   InternetIdentityAuthRequest,
@@ -27,13 +28,16 @@ export class IcSigninProxy implements ComponentInterface {
   i18n: Record<string, Record<string, string>>;
 
   @Prop()
-  config: Record<string, string>;
+  config: ProxySignInConfig;
 
   @State()
   private publicKey: ArrayBuffer | undefined = undefined;
 
   @State()
   private identityProviderUrl: URL | undefined;
+
+  @State()
+  private derivationOrigin: string | undefined;
 
   @State()
   private signInInProgress: boolean = false;
@@ -45,8 +49,15 @@ export class IcSigninProxy implements ComponentInterface {
 
   private trustedOrigin: boolean | undefined = undefined;
 
+  private closeTabInterval: NodeJS.Timer | undefined = undefined;
+
   componentWillLoad() {
-    EnvStore.getInstance().set(this.config as EnvironmentIC);
+    const {derivationOrigin, managerCanisterId, localIdentityCanisterId} = this.config;
+
+    this.derivationOrigin = derivationOrigin;
+
+    // We set only what we need in this use case
+    EnvStore.getInstance().set({managerCanisterId, localIdentityCanisterId} as EnvironmentIC);
 
     this.identityProviderUrl = new URL(
       EnvStore.getInstance().get().localIdentityCanisterId !== undefined
@@ -59,6 +70,10 @@ export class IcSigninProxy implements ComponentInterface {
   componentDidLoad() {
     // We broadcast the message because there is no caller yet. This is safe since it does not include any data exchange.
     parent.postMessage({kind: 'papyrs-signin-ready'}, '*');
+  }
+
+  disconnectedCallback() {
+    this.clearCloseTabInterval();
   }
 
   @Listen('message', {target: 'window'})
@@ -162,7 +177,7 @@ export class IcSigninProxy implements ComponentInterface {
    */
   private onInternetIdentityReady() {
     if (!this.tab || this.signInState() !== 'ready') {
-      this.error('Authentication not ready.');
+      this.throwError('Authentication not ready.');
       return;
     }
 
@@ -171,7 +186,8 @@ export class IcSigninProxy implements ComponentInterface {
     const request: InternetIdentityAuthRequest = {
       kind: 'authorize-client',
       sessionPublicKey: new Uint8Array(this.publicKey),
-      maxTimeToLive: delegationIdentityExpiration
+      maxTimeToLive: delegationIdentityExpiration,
+      ...(this.derivationOrigin !== undefined && {derivationOrigin: this.derivationOrigin})
     };
 
     const {origin} = this.identityProviderUrl;
@@ -186,12 +202,12 @@ export class IcSigninProxy implements ComponentInterface {
   private onInternetIdentityFailure({text}: AuthResponseFailure) {
     this.tab?.close();
 
-    this.error(text);
+    this.throwError(text);
 
     this.cleanUp();
   }
 
-  private error(text: string) {
+  private throwError(text: string) {
     this.parentPostMessage({
       kind: 'papyrs-signin-error',
       text
@@ -214,6 +230,8 @@ export class IcSigninProxy implements ComponentInterface {
     delegations,
     userPublicKey
   }: InternetIdentityAuthResponseSuccess) {
+    this.clearCloseTabInterval();
+
     this.parentPostMessage({
       kind: 'papyrs-signin-success',
       delegations,
@@ -234,7 +252,25 @@ export class IcSigninProxy implements ComponentInterface {
 
   private onSignIn = () => {
     this.tab = window.open(this.identityProviderUrl.toString(), 'idpWindow');
+
+    this.observeCloseTab();
   };
+
+  private observeCloseTab() {
+    this.closeTabInterval = setInterval(() => {
+      if (!this.tab?.closed) {
+        return;
+      }
+
+      this.clearCloseTabInterval();
+
+      this.throwError('User interrupted sign in.');
+    }, 500);
+  }
+
+  private clearCloseTabInterval() {
+    clearInterval(this.closeTabInterval);
+  }
 
   private signInState(): 'initializing' | 'ready' | 'in-progress' {
     if (

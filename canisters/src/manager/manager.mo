@@ -182,8 +182,8 @@ actor Manager {
   };
 
   /**
-     * Utilities
-     */
+    * Utilities
+  */
 
   // is a canister id known by the manager?
   public shared func knownBucket(bucketId : Text, store : Text) : async (Bool) {
@@ -193,6 +193,62 @@ actor Manager {
 
     if (Text.equal(store, "storage")) {
       return storagesStore.exists(Principal.fromText(bucketId));
+    };
+
+    throw Error.reject("Type of store not supported");
+  };
+
+  public shared ({caller}) func knownUser(userId : UserId, store : Text) : async (Bool) {
+    if (Text.equal(store, "data")) {
+      let exists : Bool = dataStore.exists(caller);
+
+      if (not exists) {
+        throw Error.reject("Caller is not a known data bucket.");
+      };
+
+      let result : Result.Result<?Bucket, Text> = dataStore.getBucket(userId);
+
+      switch (result) {
+        case (#err error) {
+          throw Error.reject(error);
+        };
+        case (#ok bucket) {
+          switch (bucket) {
+            case (?bucket) {
+              return true;
+            };
+            case null {
+              return false;
+            };
+          };
+        };
+      };
+    };
+
+    if (Text.equal(store, "storage")) {
+      let exists : Bool = storagesStore.exists(caller);
+
+      if (not exists) {
+        throw Error.reject("Caller is not a known storage bucket.");
+      };
+
+      let result : Result.Result<?Bucket, Text> = storagesStore.getBucket(userId);
+
+      switch (result) {
+        case (#err error) {
+          throw Error.reject(error);
+        };
+        case (#ok bucket) {
+          switch (bucket) {
+            case (?bucket) {
+              return true;
+            };
+            case null {
+              return false;
+            };
+          };
+        };
+      };
     };
 
     throw Error.reject("Type of store not supported");

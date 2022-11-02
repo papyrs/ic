@@ -1,5 +1,5 @@
 import {toDate} from '@deckdeckgo/editor';
-import {PublishMeta} from '../types/publish.metas';
+import {PublishMeta} from '../types/publish.types';
 
 const siteRSS = ({
   items,

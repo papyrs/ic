@@ -1,6 +1,6 @@
 import type {DataRecord} from '@deckdeckgo/editor';
 import {Identity} from '@dfinity/agent';
-import {Data, DataFilter, DelData, _SERVICE as DataBucketActor} from '../canisters/data/data.did';
+import {Data, DelData, RecordFilter, _SERVICE as DataBucketActor} from '../canisters/data/data.did';
 import {getIdentity} from '../providers/auth/auth.providers';
 import {fromArray, fromNullable, toArray, toNullable} from '../utils/did.utils';
 import {BucketActor, getDataBucket} from '../utils/manager.utils';
@@ -27,7 +27,7 @@ export const entries = async <D>({
   }
 
   const data: [string, Data][] = await actor.list(
-    toNullable<DataFilter>({
+    toNullable<RecordFilter>({
       startsWith: toNullable<string>(startsWith),
       notContains: toNullable<string>(notContains)
     })
@@ -135,20 +135,32 @@ export const setData = async <D>({
   };
 };
 
-const getDataActor = async (): Promise<DataBucketActor> => {
+export const getDataBucketActor = async (): Promise<BucketActor<DataBucketActor>> => {
   const identity: Identity | undefined = getIdentity();
 
   if (!identity) {
     throw new Error('No internet identity.');
   }
 
-  const {actor}: BucketActor<DataBucketActor> = await getDataBucket({
+  const result: BucketActor<DataBucketActor> = await getDataBucket({
     identity
   });
+
+  const {actor, bucketId} = result;
 
   if (!actor) {
     throw new Error('No actor initialized.');
   }
 
+  // That would be strange
+  if (!bucketId) {
+    throw new Error('No bucket principal defined');
+  }
+
+  return result;
+};
+
+const getDataActor = async (): Promise<DataBucketActor> => {
+  const {actor} = await getDataBucketActor();
   return actor;
 };
