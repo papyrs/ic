@@ -149,16 +149,10 @@ actor class DataBucket(owner : Types.UserId) = this {
     Interaction
   ) {
     // Is the caller a user known by the manager - only known user can create or update interactions.
-    for (canisterId in Env.manager.vals()) {
-      let manager : actor {knownUser : shared query (userId : UserId, store : Text) -> async Bool} = actor (
-        canisterId
-      );
+    let knowUser : Bool = await isKnownUser(caller);
 
-      let knowUser : Bool = await manager.knownUser(caller, "data");
-
-      if (not knowUser) {
-        throw Error.reject("Unknown user.");
-      };
+    if (not knowUser) {
+      throw Error.reject("Unknown user.");
     };
 
     // Create or update the interaction
@@ -176,6 +170,23 @@ actor class DataBucket(owner : Types.UserId) = this {
         return resultData;
       };
     };
+  };
+
+  // Is the caller a known user by at least one manager?
+  private func isKnownUser(caller: UserId): async (Bool) {
+    for (canisterId in Env.manager.vals()) {
+      let manager : actor {knownUser : shared query (userId : UserId, store : Text) -> async Bool} = actor (
+        canisterId
+      );
+
+      let knowUser : Bool = await manager.knownUser(caller, "data");
+
+      if (knowUser) {
+        return true;
+      };
+    };
+
+    return false;
   };
 
   // Deleting an interaction is restricted to its author or user (owner of the canister)
