@@ -59,7 +59,9 @@ export const initAuth: InitAuth = async ({
     document.dispatchEvent($event);
   };
 
-  await startIdleTime(onSignOut);
+  startIdleTime(onSignOut).then(() => {
+    // async await blocked with Astro
+  });
 };
 
 // If first sign-in, initializing the canister can take a while therefore we already emit a not fully authenticated user

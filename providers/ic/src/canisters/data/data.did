@@ -1,31 +1,70 @@
 type UserId = principal;
 type Time = int;
+type RecordFilter = record {
+  notContains : opt text;
+  startsWith : opt text;
+};
+type PutInteraction = record {
+  author : UserId;
+  created_at : opt Time;
+  data : blob;
+  id : text;
+  updated_at : opt Time;
+};
 type PutData = record {
   created_at : opt Time;
   data : blob;
   id : text;
   updated_at : opt Time;
 };
+type Interaction = record {
+  author : UserId;
+  created_at : Time;
+  data : blob;
+  id : text;
+  updated_at : Time;
+};
+type DelInteraction = record {
+  id : text;
+  updated_at : Time;
+};
 type DelData = record {
   id : text;
   updated_at : Time;
 };
-type DataFilter = record {
-  notContains : opt text;
-  startsWith : opt text;
-};
 type DataBucket = service {
+  countLikes : (text) -> (nat) query;
   cyclesBalance : () -> (nat) query;
   del : (text) -> ();
   delete : (text, DelData) -> ();
+  deleteInteraction : (text, DelInteraction) -> ();
   get : (text) -> (opt Data) query;
-  list : (opt DataFilter) -> (
+  getComment : (text, text) -> (opt Interaction) query;
+  getLike : (text) -> (opt Interaction) query;
+  list : (opt RecordFilter) -> (
     vec record {
       text;
       Data;
     }
   ) query;
+  listComments : (text) -> (
+    vec record {
+      text;
+      Interaction;
+    }
+  ) query;
+  listInteractions : (vec text) -> (
+    vec record {
+      text;
+      record {
+        countComments : nat;
+        countLikes : nat;
+        like : opt Interaction;
+      };
+    }
+  ) query;
   put : (text, PutData) -> (Data);
+  putInteraction : (text, PutInteraction) -> (Interaction);
   set : (text, Data) -> ();
   transferFreezingThresholdCycles : () -> ();
 };

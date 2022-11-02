@@ -4,7 +4,7 @@ import {getStorageActor, upload} from '../api/storage.api';
 import {_SERVICE as StorageBucketActor} from '../canisters/storage/storage.did';
 import {deckEntries} from '../providers/data/deck.providers';
 import {docEntries} from '../providers/data/doc.providers';
-import {PublishMeta} from '../types/publish.metas';
+import {PublishMeta} from '../types/publish.types';
 import {BucketActor} from '../utils/manager.utils';
 import {getAuthor, StorageUpload} from './common.publish';
 import {prepareIndexHtml, updateIndexHtmlPosts} from './index-html.publish';

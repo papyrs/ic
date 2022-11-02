@@ -10,8 +10,6 @@ const installWasm = async ({actor, type, wasmModule}) => {
 
   const chunkSize = 700000;
 
-  const promises = [];
-
   const upload = async (chunks) => {
     const result = await actor.storageLoadWasm(chunks);
     console.log('Chunks:', result);
@@ -19,10 +17,8 @@ const installWasm = async ({actor, type, wasmModule}) => {
 
   for (let start = 0; start < wasmModule.length; start += chunkSize) {
     const chunks = wasmModule.slice(start, start + chunkSize);
-    promises.push(upload(chunks));
+    await upload(chunks);
   }
-
-  await Promise.all(promises);
 
   console.log(`Installation ${type} done.`);
 };

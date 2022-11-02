@@ -1,5 +1,6 @@
 import {Deck, DeckPublish, Doc, DocPublish, PublishUrl, UpdateLanding} from '@deckdeckgo/editor';
 import {Identity} from '@dfinity/agent';
+import {getDataBucketActor} from '../../api/data.api';
 import {getStorageActor} from '../../api/storage.api';
 import {_SERVICE as StorageBucketActor} from '../../canisters/storage/storage.did';
 import {emitDeckPublished, publishDeck} from '../../publish/deck.publish';
@@ -16,7 +17,15 @@ export const deckPublish: DeckPublish = async ({
   deck: Deck;
   config: Record<string, string>;
 }): Promise<Deck> => {
-  await uploadResources({meta: deck.data.meta});
+  const {bucketId} = await getDataBucketActor();
+
+  await uploadResources({
+    meta: deck.data.meta,
+    hoisted: {
+      data_canister_id: bucketId.toText(),
+      data_id: deck.id
+    }
+  });
 
   const {storageUpload, publishData, deck: updatedDeck} = await publishDeck({deck});
 
@@ -38,7 +47,15 @@ export const docPublish: DocPublish = async ({
   doc: Doc;
   config: Record<string, string>;
 }): Promise<Doc> => {
-  await uploadResources({meta: doc.data.meta});
+  const {bucketId} = await getDataBucketActor();
+
+  await uploadResources({
+    meta: doc.data.meta,
+    hoisted: {
+      data_canister_id: bucketId.toText(),
+      data_id: doc.id
+    }
+  });
 
   const {storageUpload, publishData, doc: updatedDoc} = await publishDoc({doc, config});
 

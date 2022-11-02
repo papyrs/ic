@@ -2,6 +2,7 @@ import {log, Meta} from '@deckdeckgo/editor';
 import {getStorageActor, upload} from '../api/storage.api';
 import {AssetKey, _SERVICE as StorageBucketActor} from '../canisters/storage/storage.did';
 import {EnvStore} from '../stores/env.store';
+import {PublishHoistedData} from '../types/publish.types';
 import {HeaderField} from '../types/storage.types';
 import {digestMessage} from '../utils/crypto.utils';
 import {fromNullable, toNullable} from '../utils/did.utils';
@@ -10,13 +11,19 @@ import {getAuthor} from './common.publish';
 
 type KitMimeType = 'text/javascript' | 'text/plain' | 'application/manifest+json' | 'text/css';
 
+interface KitUpdateContent {
+  meta: Meta | undefined;
+  hoisted: PublishHoistedData;
+  content: string;
+}
+
 interface Kit {
   src: string;
   filename: string;
   mimeType: KitMimeType;
   sha256: string | undefined;
   headers: HeaderField[];
-  updateContent?: ({content, meta}: {meta: Meta | undefined; content: string}) => string;
+  updateContent?: (params: KitUpdateContent) => string;
 }
 
 const getKitPath = (): string => EnvStore.getInstance().get().kitPath;
@@ -24,7 +31,13 @@ const getKitPath = (): string => EnvStore.getInstance().get().kitPath;
 const sha256ToBase64String = (sha256: Iterable<number>): string =>
   btoa([...sha256].map((c) => String.fromCharCode(c)).join(''));
 
-export const uploadResources = async ({meta}: {meta: Meta | undefined}) => {
+export const uploadResources = async ({
+  meta,
+  hoisted
+}: {
+  meta: Meta | undefined;
+  hoisted: PublishHoistedData;
+}) => {
   // 1. Get actor
   const {actor}: BucketActor<StorageBucketActor> = await getStorageActor();
 
@@ -34,7 +47,9 @@ export const uploadResources = async ({meta}: {meta: Meta | undefined}) => {
   // 3. Get list of resources - i.e. the kit
   const kit: Kit[] = await getKit();
 
-  const promises: Promise<void>[] = kit.map((kit: Kit) => addKitIC({kit, actor, meta, assetKeys}));
+  const promises: Promise<void>[] = kit.map((kit: Kit) =>
+    addKitIC({kit, actor, meta, hoisted, assetKeys})
+  );
   await Promise.all(promises);
 };
 
@@ -60,17 +75,19 @@ const addDynamicKitIC = async ({
   kit,
   actor,
   meta,
+  hoisted,
   assetKeys
 }: {
   kit: Kit;
   actor: StorageBucketActor;
   meta: Meta | undefined;
+  hoisted: PublishHoistedData;
   assetKeys: AssetKey[];
 }) => {
   const {src, filename, mimeType, updateContent, headers} = kit;
 
   const content: string = await downloadKit(src);
-  const updatedContent: string = updateContent({content, meta});
+  const updatedContent: string = updateContent({content, meta, hoisted});
   const sha256: string = sha256ToBase64String(new Uint8Array(await digestMessage(updatedContent)));
 
   if (!updatedResource({src, sha256, assetKeys})) {
@@ -91,11 +108,13 @@ const addKitIC = async ({
   kit,
   actor,
   meta,
+  hoisted,
   assetKeys
 }: {
   kit: Kit;
   actor: StorageBucketActor;
   meta: Meta | undefined;
+  hoisted: PublishHoistedData;
   assetKeys: AssetKey[];
 }) => {
   const {updateContent} = kit;
@@ -103,7 +122,7 @@ const addKitIC = async ({
   // If updateContent is defined we have to compare the sha256 value of the content that will be updated first
   // e.g. avoiding uploading the manifest at each publish
   if (updateContent !== undefined) {
-    await addDynamicKitIC({kit, actor, meta, assetKeys});
+    await addDynamicKitIC({kit, actor, meta, hoisted, assetKeys});
 
     return;
   }
@@ -116,7 +135,7 @@ const addKitIC = async ({
 
   const content: string = await downloadKit(src);
 
-  const updatedContent: string = updateContent ? updateContent({content, meta}) : content;
+  const updatedContent: string = updateContent ? updateContent({content, meta, hoisted}) : content;
 
   await uploadKit({
     filename,
@@ -177,6 +196,18 @@ const getKit = async (): Promise<Kit[]> => {
       typeof resource === 'string' ? `${kitPath}/${resource}` : `${kitPath}/${resource.fullPath}`;
     const sha256: string | undefined = typeof resource === 'string' ? undefined : resource.sha256;
 
+    if (src.includes('hoisted.js')) {
+      return {
+        src,
+        mimeType: 'text/javascript',
+        sha256,
+        updateContent: ({content, hoisted: {data_canister_id, data_id}}: KitUpdateContent) =>
+          content
+            .replace('{{DECKDECKGO_DATA_CANISTER_ID}}', data_canister_id)
+            .replace('{{DECKDECKGO_DATA_ID}}', data_id)
+      };
+    }
+
     if (src.includes('.js')) {
       return {
         src,
@@ -198,7 +229,7 @@ const getKit = async (): Promise<Kit[]> => {
         src,
         mimeType: 'application/manifest+json',
         sha256,
-        updateContent: ({content, meta}: {meta: Meta | undefined; content: string}) =>
+        updateContent: ({content, meta}: KitUpdateContent) =>
           content.replace('{{DECKDECKGO_AUTHOR}}', meta?.author?.name || getAuthor())
       };
     }

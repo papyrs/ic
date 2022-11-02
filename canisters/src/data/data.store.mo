@@ -1,18 +1,18 @@
 import Text "mo:base/Text";
 import HashMap "mo:base/HashMap";
-import Iter "mo:base/Iter";
-import Array "mo:base/Array";
 import Result "mo:base/Result";
 import Time "mo:base/Time";
 import Int "mo:base/Int";
 
 import Store "../stores/store";
 
-import Filter "./data.filter";
+import Filter "./record.filter";
 import DataTypes "./data.types";
 
+import RecordUtils "./record.utils";
+
 module {
-  type DataFilter = Filter.DataFilter;
+  type RecordFilter = Filter.RecordFilter;
 
   type Data = DataTypes.Data;
   type PutData = DataTypes.PutData;
@@ -43,7 +43,11 @@ module {
           return #err "No timestamp provided to update the data";
         };
         case (?updated_at) {
-          let timestamp : Result.Result<Text, Text> = checkTimestamp(record, id, updated_at);
+          let timestamp : Result.Result<Text, Text> = RecordUtils.checkTimestamp(
+            record,
+            id,
+            updated_at
+          );
 
           switch (timestamp) {
             case (#err error) {
@@ -96,7 +100,11 @@ module {
           return #ok null;
         };
         case (?record) {
-          let timestamp : Result.Result<Text, Text> = checkTimestamp(record, id, updated_at);
+          let timestamp : Result.Result<Text, Text> = RecordUtils.checkTimestamp(
+            record,
+            id,
+            updated_at
+          );
 
           switch (timestamp) {
             case (#err error) {
@@ -111,49 +119,8 @@ module {
       };
     };
 
-    private func checkTimestamp(record : Data, id : Text, updated_at : Time.Time) : Result.Result<Text, Text> {
-      if (record.updated_at != updated_at) {
-        return #err(
-          "Data timestamp is outdated or in the future - updated_at does not match most recent timesteamp. " # Int.toText(
-            record.updated_at
-          ) # " - " # Int.toText(updated_at)
-        );
-      };
-
-      // Should never happens since keys are in sync with ids
-      if (record.id != id) {
-        return #err("Data ids do not match. " # record.id # " - " # id);
-      };
-
-      return #ok "Timestamps are matching.";
-    };
-
-    public func entries(filter : ?DataFilter) : [(Text, Data)] {
-      let entries : Iter.Iter<(Text, Data)> = store.entries();
-
-      switch (filter) {
-        case null {
-          return Iter.toArray(entries);
-        };
-        case (?filter) {
-          let keyValues : [(Text, Data)] = Iter.toArray(entries);
-
-          let {startsWith; notContains} = filter;
-
-          let values : [(Text, Data)] = Array.mapFilter<(Text, Data), (Text, Data)>(
-            keyValues,
-            func((key : Text, value : Data)) : ?(Text, Data) {
-              if (Filter.startsWith(key, startsWith) and Filter.notContains(key, notContains)) {
-                return ?(key, value);
-              };
-
-              return null;
-            }
-          );
-
-          return values;
-        };
-      };
+    public func entries(filter : ?RecordFilter) : [(Text, Data)] {
+      return Filter.entries<Data>(store.entries(), filter);
     };
 
     public func preupgrade() : HashMap.HashMap<Text, Data> {

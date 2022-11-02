@@ -5,9 +5,10 @@
  * It contains typing information for all components that exist in this project.
  */
 import { HTMLStencilElement, JSXBase } from "@stencil/core/internal";
+import { ProxySignInConfig, SignInConfig } from "./types/signin.types";
 export namespace Components {
     interface IcSignin {
-        "config": Record<string, string>;
+        "config": SignInConfig;
         "externalSignInState": 'initializing' | 'ready' | 'in-progress' | undefined;
         "i18n": Record<string, Record<string, string>>;
         "signIn": () => void;
@@ -15,7 +16,7 @@ export namespace Components {
         "signInSuccess": () => void;
     }
     interface IcSigninProxy {
-        "config": Record<string, string>;
+        "config": ProxySignInConfig;
         "i18n": Record<string, Record<string, string>>;
     }
     interface IcSigninSso {
@@ -57,7 +58,7 @@ declare global {
 }
 declare namespace LocalJSX {
     interface IcSignin {
-        "config"?: Record<string, string>;
+        "config"?: SignInConfig;
         "externalSignInState"?: 'initializing' | 'ready' | 'in-progress' | undefined;
         "i18n"?: Record<string, Record<string, string>>;
         "onDdgSignInError"?: (event: IcSigninCustomEvent<string | undefined>) => void;
@@ -68,11 +69,12 @@ declare namespace LocalJSX {
         "signInSuccess"?: () => void;
     }
     interface IcSigninProxy {
-        "config"?: Record<string, string>;
+        "config"?: ProxySignInConfig;
         "i18n"?: Record<string, Record<string, string>>;
     }
     interface IcSigninSso {
         "onSignInError"?: (event: IcSigninSsoCustomEvent<string | undefined>) => void;
+        "onSignInSuccess"?: (event: IcSigninSsoCustomEvent<void>) => void;
         "signInProxyUrl": string;
     }
     interface IntrinsicElements {
