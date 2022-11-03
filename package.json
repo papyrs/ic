@@ -6,6 +6,7 @@
   "private": true,
   "scripts": {
     "ic:admin": "node ./scripts/ic.admin.mjs",
+    "ic:local:topup": "dfx wallet send rrkah-fqaaa-aaaaa-aaaaq-cai 20000000000000",
     "ic:install:bucket": "node ./scripts/ic.install-bucket.mjs",
     "ic:install:storage": "node ./scripts/ic.install-storage.mjs",
     "ic:transfer": "node ./scripts/ic.transfer.mjs",
