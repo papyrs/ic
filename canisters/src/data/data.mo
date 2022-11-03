@@ -43,7 +43,7 @@ actor class DataBucket(owner : Types.UserId) = this {
   private let interactionStore : InteractionStore.InteractionStore = InteractionStore.InteractionStore();
 
   // Preserve the application state on upgrades
-  private stable var dataEntries : [(Text, Data)] = [];
+  private stable var entries : [(Text, Data)] = [];
   private stable var interactionEntries : [(Text, Interaction)] = [];
 
   /**
@@ -266,13 +266,13 @@ actor class DataBucket(owner : Types.UserId) = this {
   };
 
   system func preupgrade() {
-    dataEntries := Iter.toArray(dataStore.preupgrade().entries());
+    entries := Iter.toArray(dataStore.preupgrade().entries());
     interactionEntries := Iter.toArray(interactionStore.preupgrade().entries());
   };
 
   system func postupgrade() {
-    dataStore.postupgrade(dataEntries);
-    dataEntries := [];
+    dataStore.postupgrade(entries);
+    entries := [];
 
     interactionStore.postupgrade(interactionEntries);
     interactionEntries := [];
