@@ -18,7 +18,6 @@ use candid::{decode_args, Principal};
 use std::cell::RefCell;
 use std::collections::HashMap;
 
-use crate::constants::ASSET_ENCODING_KEY_RAW;
 use crate::store::{commit_batch, create_batch, create_chunk, delete_asset, get_asset, get_asset_for_url, get_keys};
 use crate::types::assets::{AssetHashes};
 use crate::utils::{principal_not_equal, is_manager};
