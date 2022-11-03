@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import {IDL} from '@dfinity/candid';
-import {writeFileSync} from 'fs';
+import {readFileSync, writeFileSync} from 'fs';
 import {managerActorLocal} from './actors/manager.actors.mjs';
 import {loadWasm} from './utils/code.utils.mjs';
 import {fromNullable} from './utils/utils.mjs';
@@ -38,8 +38,18 @@ const saveResults = (results) => {
   const ok = filterResults('ok');
   const error = filterResults('error');
 
-  writeFileSync(`installcode.ok.txt`, ok.join('\n'), {flag: 'a+'});
-  writeFileSync(`installcode.error.txt`, error.join('\n'), {flag: 'a+'});
+  writeFileSync(`install.ok.txt`, ok.join('\n'), {flag: 'a+'});
+  writeFileSync(`install.error.txt`, error.join('\n'), {flag: 'a+'});
+};
+
+const ignoreCanisters = () => {
+  const filter = process.argv.find((arg) => arg.indexOf('--ignore') > -1) !== undefined;
+
+  if (!filter) {
+    return [];
+  }
+
+  return readFileSync('install.ignore.txt', 'utf8').split('\n');
 };
 
 (async () => {
@@ -49,7 +59,8 @@ const saveResults = (results) => {
     console.log('Options:');
     console.log('--type=data|storage');
     console.log('--list-only');
-    console.log('--filter=canister_ids (comma separated list)');
+    console.log('--filter=<canister_ids> (comma separated list)');
+    console.log('--ignore (list of canister_ids to ignore provided in install.ignore.txt)');
     console.log('--save');
     return;
   }
@@ -67,12 +78,15 @@ const saveResults = (results) => {
         ?.replace('--filter=', '')
         .split(',') ?? [];
 
+    const ignore = ignoreCanisters();
+
     const list = await actor.list(type);
 
     // bucketId is optional in our backend
     const filterList = list
       .filter(({bucketId}) => fromNullable(bucketId) !== undefined)
-      .filter(({bucketId}) => filter.length === 0 || filter.includes(bucketId[0].toText()));
+      .filter(({bucketId}) => filter.length === 0 || filter.includes(bucketId[0].toText()))
+      .filter(({bucketId}) => !ignore.includes(bucketId[0].toText()));
 
     if (filterList.length <= 0) {
       console.log('No buckets found.');

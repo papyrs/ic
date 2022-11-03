@@ -37,7 +37,8 @@ dist/
 www/
 .stencil/
 
-installcode.ok.txt
-installcode.error.txt
+install.ok.txt
+install.error.txt
+install.ignore.txt
 
 target/
