@@ -10,6 +10,6 @@ export interface PublishCanisterIds {
   storage_canister_id: string;
 }
 
-export interface PublishHoistedData extends PublishCanisterIds {
+export interface PublishIds extends PublishCanisterIds {
   data_id: string;
 }

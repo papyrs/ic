@@ -22,7 +22,7 @@ export const deckPublish: DeckPublish = async ({
 
   await uploadResources({
     meta: deck.data.meta,
-    hoisted: {
+    ids: {
       ...canisterIds,
       data_id: deck.id
     }
@@ -53,7 +53,7 @@ export const docPublish: DocPublish = async ({
 
   await uploadResources({
     meta: doc.data.meta,
-    hoisted: {
+    ids: {
       ...canisterIds,
       data_id: doc.id
     }

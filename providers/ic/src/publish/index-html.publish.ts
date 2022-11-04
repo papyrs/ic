@@ -18,7 +18,7 @@ export const prepareIndexHtml = async ({
 
   const {photo_url, ...data} = publishData;
 
-  let html: string = updateTemplate({template, data, canisterIds});
+  let html: string = await updateTemplate({template, data, ids: canisterIds});
   html = updatePhotoUrl({html, photo_url});
 
   html = updatePostsList({
