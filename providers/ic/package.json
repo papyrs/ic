@@ -25,7 +25,7 @@
     "format": "prettier . --write"
   },
   "devDependencies": {
-    "@deckdeckgo/lazy-img": "^3.4.0",
+    "@deckdeckgo/lazy-img": "^3.5.0",
     "@deckdeckgo/slide-chart": "^2.5.0",
     "rollup-plugin-node-polyfills": "^0.2.1"
   },
@@ -48,12 +48,12 @@
   ],
   "dependencies": {
     "@deckdeckgo/editor": "^8.4.0",
-    "@dfinity/agent": "^1.0.0-beta.0",
-    "@dfinity/auth-client": "^1.0.0-beta.0",
-    "@dfinity/authentication": "^1.0.0-beta.0",
-    "@dfinity/candid": "^1.0.0-beta.0",
-    "@dfinity/identity": "^1.0.0-beta.0",
-    "@dfinity/principal": "^1.0.0-beta.0",
+    "@dfinity/agent": "^0.14.0",
+    "@dfinity/auth-client": "^0.14.0",
+    "@dfinity/authentication": "^0.14.0",
+    "@dfinity/candid": "^0.14.0",
+    "@dfinity/identity": "^0.14.0",
+    "@dfinity/principal": "^0.14.0",
     "idb-keyval": "^6.2.0",
     "nanoid": "^4.0.0"
   }

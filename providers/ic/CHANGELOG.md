@@ -6,6 +6,10 @@
 - preserve chunks order in upload
 - support for comments and likes on blogspaces
 
+### Build
+
+- bump dependencies including `agent-js` v0.14.0
+
 # Chore
 
 - remove deprecated none timestamp code and functions
