@@ -1,3 +1,15 @@
+# 0.1.0 (2022-11-04)
+
+### Features
+
+- update for `storage` API rewritten in Rust
+- preserve chunks order in upload
+- support for comments and likes on blogspaces
+
+# Chore
+
+- remove deprecated none timestamp code and functions
+
 # 0.0.24-1 / 0.0.24-2 (2022-09-20)
 
 ### Fix
