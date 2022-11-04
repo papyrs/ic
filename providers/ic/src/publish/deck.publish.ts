@@ -102,7 +102,10 @@ const initDeckIndexHTML = async ({
 
   const {html}: {html: string} = await initIndexHTML({
     publishData,
-    canisterIds,
+    ids: {
+      ...canisterIds,
+      data_id: deck.id
+    },
     updateTemplateContent,
     sourceFolder: 'p'
   });

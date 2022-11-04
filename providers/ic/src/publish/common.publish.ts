@@ -2,7 +2,8 @@ import {log, Meta, PublishData} from '@deckdeckgo/editor';
 import {encodeFilename, getStorageActor, upload} from '../api/storage.api';
 import {_SERVICE as StorageBucketActor} from '../canisters/storage/storage.did';
 import {EnvStore} from '../stores/env.store';
-import {PublishCanisterIds} from '../types/publish.types';
+import {PublishCanisterIds, PublishIds} from '../types/publish.types';
+import {digestMessage, sha256ToBase64String} from '../utils/crypto.utils';
 import {BucketActor} from '../utils/manager.utils';
 import {updateTemplateSocialImage} from './social.publish';
 
@@ -16,16 +17,17 @@ export interface StorageUpload {
   folder: 'p' | 'd';
 }
 
-export const updateTemplate = ({
+export const updateTemplate = async ({
   template,
   data,
-  canisterIds
+  ids
 }: {
   template: string;
   data: Partial<PublishData>;
-  canisterIds: PublishCanisterIds;
-}): string =>
-  [...Object.entries(data), ...Object.entries(canisterIds)].reduce(
+  ids: PublishIds | PublishCanisterIds;
+}): Promise<string> => {
+  // 1. Replace all keys
+  const updatedTemplate: string = [...Object.entries(data), ...Object.entries(ids)].reduce(
     (acc: string, [key, value]: [string, string]) =>
       acc
         .replaceAll(`{{DECKDECKGO_${key.toUpperCase()}}}`, value || '')
@@ -33,6 +35,24 @@ export const updateTemplate = ({
         .replaceAll(`<!-- DECKDECKGO_${key.toUpperCase()} -->`, value || ''),
     template
   );
+
+  // 2. Build a script that injects canisters and data ids
+  const {data_canister_id, storage_canister_id} = ids;
+  const {data_id} = ids as PublishIds;
+
+  const idsScript: string = `window.data_canister_id = "${data_canister_id}";window.storage_canister_id = "${storage_canister_id}";window.data_id = "${data_id ?? ''}";`;
+
+  const templateWithScript: string = updatedTemplate.replaceAll(
+    '<!-- DECKDECKGO_IDS_SCRIPT -->',
+    `<script>${idsScript}</script>`
+  );
+
+  // 3. Calculate a sha256 for the above script and parse it in the CSP
+  const sha256: string = sha256ToBase64String(new Uint8Array(await digestMessage(idsScript)));
+  const templateWithCSP: string = templateWithScript.replaceAll('{{DECKDECKGO_IDS_SHAS}}', `'sha256-${sha256}'`);
+
+  return templateWithCSP;
+};
 
 export const initUpload = async ({
   indexHTML,
@@ -110,21 +130,21 @@ const uploadPaths = ({
 
 export const initIndexHTML = async ({
   publishData,
-  canisterIds,
+  ids,
   updateTemplateContent,
   sourceFolder
 }: {
   publishData: PublishData;
-  canisterIds: PublishCanisterIds;
+  ids: PublishIds;
   updateTemplateContent: ({attr, template}: {attr: string | undefined; template: string}) => string;
   sourceFolder: 'p' | 'd';
 }): Promise<{html: string}> => {
   const template: string = await htmlTemplate(sourceFolder);
 
-  const updatedTemplate: string = updateTemplate({
+  const updatedTemplate: string = await updateTemplate({
     template,
     data: publishData,
-    canisterIds
+    ids
   });
 
   const {attributes} = publishData;

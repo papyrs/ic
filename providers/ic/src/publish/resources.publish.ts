@@ -2,9 +2,9 @@ import {log, Meta} from '@deckdeckgo/editor';
 import {getStorageActor, upload} from '../api/storage.api';
 import {AssetKey, _SERVICE as StorageBucketActor} from '../canisters/storage/storage.did';
 import {EnvStore} from '../stores/env.store';
-import {PublishHoistedData} from '../types/publish.types';
+import {PublishIds} from '../types/publish.types';
 import {HeaderField} from '../types/storage.types';
-import {digestMessage} from '../utils/crypto.utils';
+import {digestMessage, sha256ToBase64String} from '../utils/crypto.utils';
 import {fromNullable, toNullable} from '../utils/did.utils';
 import {BucketActor} from '../utils/manager.utils';
 import {getAuthor} from './common.publish';
@@ -13,7 +13,7 @@ type KitMimeType = 'text/javascript' | 'text/plain' | 'application/manifest+json
 
 interface KitUpdateContent {
   meta: Meta | undefined;
-  hoisted: PublishHoistedData;
+  ids: PublishIds;
   content: string;
 }
 
@@ -28,16 +28,7 @@ interface Kit {
 
 const getKitPath = (): string => EnvStore.getInstance().get().kitPath;
 
-const sha256ToBase64String = (sha256: Iterable<number>): string =>
-  btoa([...sha256].map((c) => String.fromCharCode(c)).join(''));
-
-export const uploadResources = async ({
-  meta,
-  hoisted
-}: {
-  meta: Meta | undefined;
-  hoisted: PublishHoistedData;
-}) => {
+export const uploadResources = async ({meta, ids}: {meta: Meta | undefined; ids: PublishIds}) => {
   // 1. Get actor
   const {actor}: BucketActor<StorageBucketActor> = await getStorageActor();
 
@@ -48,7 +39,7 @@ export const uploadResources = async ({
   const kit: Kit[] = await getKit();
 
   const promises: Promise<void>[] = kit.map((kit: Kit) =>
-    addKitIC({kit, actor, meta, hoisted, assetKeys})
+    addKitIC({kit, actor, meta, ids, assetKeys})
   );
   await Promise.all(promises);
 };
@@ -75,19 +66,19 @@ const addDynamicKitIC = async ({
   kit,
   actor,
   meta,
-  hoisted,
+  ids,
   assetKeys
 }: {
   kit: Kit;
   actor: StorageBucketActor;
   meta: Meta | undefined;
-  hoisted: PublishHoistedData;
+  ids: PublishIds;
   assetKeys: AssetKey[];
 }) => {
   const {src, filename, mimeType, updateContent, headers} = kit;
 
   const content: string = await downloadKit(src);
-  const updatedContent: string = updateContent({content, meta, hoisted});
+  const updatedContent: string = updateContent({content, meta, ids: ids});
   const sha256: string = sha256ToBase64String(new Uint8Array(await digestMessage(updatedContent)));
 
   if (!updatedResource({src, sha256, assetKeys})) {
@@ -108,13 +99,13 @@ const addKitIC = async ({
   kit,
   actor,
   meta,
-  hoisted,
+  ids,
   assetKeys
 }: {
   kit: Kit;
   actor: StorageBucketActor;
   meta: Meta | undefined;
-  hoisted: PublishHoistedData;
+  ids: PublishIds;
   assetKeys: AssetKey[];
 }) => {
   const {updateContent} = kit;
@@ -122,7 +113,7 @@ const addKitIC = async ({
   // If updateContent is defined we have to compare the sha256 value of the content that will be updated first
   // e.g. avoiding uploading the manifest at each publish
   if (updateContent !== undefined) {
-    await addDynamicKitIC({kit, actor, meta, hoisted, assetKeys});
+    await addDynamicKitIC({kit, actor, meta, ids, assetKeys});
 
     return;
   }
@@ -135,7 +126,7 @@ const addKitIC = async ({
 
   const content: string = await downloadKit(src);
 
-  const updatedContent: string = updateContent ? updateContent({content, meta, hoisted}) : content;
+  const updatedContent: string = updateContent ? updateContent({content, meta, ids: ids}) : content;
 
   await uploadKit({
     filename,
@@ -201,9 +192,13 @@ const getKit = async (): Promise<Kit[]> => {
         src,
         mimeType: 'text/javascript',
         sha256,
-        updateContent: ({content, hoisted: {data_canister_id, data_id}}: KitUpdateContent) =>
+        updateContent: ({
+          content,
+          ids: {data_canister_id, data_id, storage_canister_id}
+        }: KitUpdateContent) =>
           content
             .replace('{{DECKDECKGO_DATA_CANISTER_ID}}', data_canister_id)
+            .replace('{{DECKDECKGO_STORAGE_CANISTER_ID}}', storage_canister_id)
             .replace('{{DECKDECKGO_DATA_ID}}', data_id)
       };
     }
