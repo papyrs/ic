@@ -1,3 +1,9 @@
+# 0.1.2 (2022-11-04)
+
+### Build
+
+- bump version number to force publish new lib on cdn
+
 # 0.1.1 (2022-11-04)
 
 ### Features
