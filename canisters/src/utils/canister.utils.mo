@@ -36,33 +36,27 @@ module {
     public func updateSettings(canisterId : Principal, manager : Principal) : async () {
       let controllers : ?[Principal] = ?[canisterId, manager];
 
-      await ic.update_settings(
-        (
-          {
-            canister_id = canisterId;
-            settings = {
-              controllers = controllers;
-              freezing_threshold = null;
-              memory_allocation = null;
-              compute_allocation = null;
-            };
-          }
-        )
-      );
+      await ic.update_settings(({
+        canister_id = canisterId;
+        settings = {
+          controllers = controllers;
+          freezing_threshold = null;
+          memory_allocation = null;
+          compute_allocation = null;
+        };
+      }));
     };
 
     /**
          * owner: the owner as Principal encoded in Candid arguments. see actor Data and Storage, the Principal is the argument to create the canisters
          */
     public func installCode(canisterId : Principal, owner : Blob, wasmModule : Blob) : async () {
-      await ic.install_code(
-        {
-          arg = owner;
-          wasm_module = wasmModule;
-          mode = #upgrade;
-          canister_id = canisterId;
-        }
-      );
+      await ic.install_code({
+        arg = owner;
+        wasm_module = wasmModule;
+        mode = #upgrade;
+        canister_id = canisterId;
+      });
     };
 
     public func canisterStatus(canisterId : ?CanisterId) : async (CanisterStatus) {

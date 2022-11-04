@@ -155,7 +155,7 @@ actor class DataBucket(owner : Types.UserId) = this {
   };
 
   // Is the caller a known user by at least one manager?
-  private func isKnownUser(caller: UserId): async (Bool) {
+  private func isKnownUser(caller : UserId) : async (Bool) {
     for (canisterId in Env.manager.vals()) {
       let manager : actor {knownUser : shared query (userId : UserId, store : Text) -> async Bool} = actor (
         canisterId
@@ -206,9 +206,7 @@ actor class DataBucket(owner : Types.UserId) = this {
   };
 
   // Getting the count of all comments and likes is reserved to user (owner of the canister)
-  public shared query ({caller}) func listInteractions(keys : [Text]) : async [
-    (Text, {countLikes : Nat; like : ?Interaction; countComments : Nat})
-  ] {
+  public shared query ({caller}) func listInteractions(keys : [Text]) : async [(Text, {countLikes : Nat; like : ?Interaction; countComments : Nat})] {
     if (Utils.isPrincipalNotEqual(caller, user)) {
       throw Error.reject("User does not have the permission to count all interactions.");
     };

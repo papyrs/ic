@@ -50,9 +50,7 @@ actor class Feed(secret : Text) {
      * Admin: restricted for admin
      */
 
-  public shared query ({caller}) func listProposals(filter : ?ProposalFilter) : async [
-    (Text, ProposalEntry)
-  ] {
+  public shared query ({caller}) func listProposals(filter : ?ProposalFilter) : async [(Text, ProposalEntry)] {
     if (not Utils.isAdmin(caller)) {
       throw Error.reject("Unauthorized access. Caller is not an admin. " # Principal.toText(caller));
     };

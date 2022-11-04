@@ -106,14 +106,12 @@ actor Manager {
 
     let arg : Blob = to_candid (user);
 
-    await ic.install_code(
-      {
-        arg;
-        wasm_module = Blob.fromArray(storageWasm);
-        mode = #install;
-        canister_id;
-      }
-    );
+    await ic.install_code({
+      arg;
+      wasm_module = Blob.fromArray(storageWasm);
+      mode = #install;
+      canister_id;
+    });
 
     return canister_id;
   };
