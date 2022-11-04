@@ -4,7 +4,7 @@ import {getStorageActor, upload} from '../api/storage.api';
 import {_SERVICE as StorageBucketActor} from '../canisters/storage/storage.did';
 import {deckEntries} from '../providers/data/deck.providers';
 import {docEntries} from '../providers/data/doc.providers';
-import {PublishMeta} from '../types/publish.types';
+import {PublishCanisterIds, PublishMeta} from '../types/publish.types';
 import {BucketActor} from '../utils/manager.utils';
 import {getAuthor, StorageUpload} from './common.publish';
 import {prepareIndexHtml, updateIndexHtmlPosts} from './index-html.publish';
@@ -14,11 +14,13 @@ import {prepareSitemap} from './sitemap.publish';
 export const publishDeckMetas = async ({
   owner_id,
   storageUpload,
-  publishData
+  publishData,
+  canisterIds
 }: {
   owner_id: string;
   storageUpload: StorageUpload;
   publishData: PublishData;
+  canisterIds: PublishCanisterIds;
 }): Promise<void> => {
   log({msg: '[list][start] decks', level: 'info'});
 
@@ -26,17 +28,19 @@ export const publishDeckMetas = async ({
 
   log({msg: '[list][start] end', level: 'info'});
 
-  await publishMetas({storageUpload, publishData, entries: decks});
+  await publishMetas({storageUpload, publishData, entries: decks, canisterIds});
 };
 
 export const publishDocMetas = async ({
   owner_id,
   storageUpload,
-  publishData
+  publishData,
+  canisterIds
 }: {
   owner_id: string;
   storageUpload: StorageUpload;
   publishData: PublishData;
+  canisterIds: PublishCanisterIds;
 }): Promise<void> => {
   log({msg: '[list][start] docs', level: 'info'});
 
@@ -44,7 +48,7 @@ export const publishDocMetas = async ({
 
   log({msg: '[list][end] docs', level: 'info'});
 
-  await publishMetas({storageUpload, publishData, entries: docs});
+  await publishMetas({storageUpload, publishData, entries: docs, canisterIds});
 };
 
 export const sortPublishMetaEntries = (entries: (Doc | Deck)[]): PublishMeta[] =>
@@ -72,16 +76,18 @@ export const sortPublishMetaEntries = (entries: (Doc | Deck)[]): PublishMeta[] =
 const publishMetas = async ({
   storageUpload,
   publishData,
-  entries
+  entries,
+  canisterIds
 }: {
   storageUpload: StorageUpload;
   publishData: PublishData;
   entries: (Doc | Deck)[];
+  canisterIds: PublishCanisterIds;
 }): Promise<void> => {
   const metas: PublishMeta[] = sortPublishMetaEntries(entries);
 
   const promises: Promise<void>[] = [
-    publishIndexHtml({storageUpload, publishData, metas}),
+    publishIndexHtml({storageUpload, publishData, metas, canisterIds}),
     publishSitemap({storageUpload, metas}),
     publishRSS({storageUpload, metas, publishData})
   ];
@@ -124,15 +130,17 @@ export const publishSitemap = async ({
 const publishIndexHtml = async ({
   storageUpload,
   publishData,
-  metas
+  metas,
+  canisterIds
 }: {
   storageUpload: StorageUpload;
   publishData: PublishData;
   metas: PublishMeta[];
+  canisterIds: PublishCanisterIds;
 }): Promise<void> => {
   const {bucketUrl, actor} = storageUpload;
 
-  const html: string = await prepareIndexHtml({bucketUrl, publishData, metas});
+  const html: string = await prepareIndexHtml({bucketUrl, publishData, metas, canisterIds});
 
   await uploadIndexHtmlIC({html, actor});
 };

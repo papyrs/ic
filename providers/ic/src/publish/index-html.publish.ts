@@ -1,22 +1,24 @@
 import {Meta, PublishData, toDate} from '@deckdeckgo/editor';
 import {EnvStore} from '../stores/env.store';
-import {PublishMeta} from '../types/publish.types';
+import {PublishCanisterIds, PublishMeta} from '../types/publish.types';
 import {updateTemplate} from './common.publish';
 
 export const prepareIndexHtml = async ({
   bucketUrl,
   publishData,
-  metas
+  metas,
+  canisterIds
 }: {
   bucketUrl: string;
   publishData: PublishData;
   metas: PublishMeta[];
+  canisterIds: PublishCanisterIds;
 }): Promise<string> => {
   const template: string = await htmlTemplate();
 
   const {photo_url, ...data} = publishData;
 
-  let html: string = updateTemplate({template, data});
+  let html: string = updateTemplate({template, data, canisterIds});
   html = updatePhotoUrl({html, photo_url});
 
   html = updatePostsList({

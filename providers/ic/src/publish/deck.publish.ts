@@ -2,6 +2,7 @@ import {Deck, DeckData, DeckPublishData, deckPublishData, PublishData} from '@de
 import {get, update} from 'idb-keyval';
 import {setData} from '../services/data.services';
 import {EnvStore} from '../stores/env.store';
+import {PublishCanisterIds} from '../types/publish.types';
 import {
   initIndexHTML,
   initUpload,
@@ -12,9 +13,11 @@ import {
 import {uploadSocialImage} from './social.publish';
 
 export const publishDeck = async ({
-  deck: deckSource
+  deck: deckSource,
+  canisterIds
 }: {
   deck: Deck;
+  canisterIds: PublishCanisterIds;
 }): Promise<{
   deck: Deck;
   storageUpload: StorageUpload;
@@ -25,7 +28,8 @@ export const publishDeck = async ({
 
   // 1. Init and fill HTML
   const indexHTML: {html: string; publishData: DeckPublishData} = await initDeckIndexHTML({
-    deck: deckSource
+    deck: deckSource,
+    canisterIds
   });
   const {storageUpload, publishData} = await initUpload({
     indexHTML,
@@ -71,9 +75,11 @@ export const publishDeck = async ({
 };
 
 const initDeckIndexHTML = async ({
-  deck
+  deck,
+  canisterIds
 }: {
   deck: Deck;
+  canisterIds: PublishCanisterIds;
 }): Promise<{html: string; publishData: DeckPublishData}> => {
   const publishData: DeckPublishData = await deckPublishData({
     deck,
@@ -96,6 +102,7 @@ const initDeckIndexHTML = async ({
 
   const {html}: {html: string} = await initIndexHTML({
     publishData,
+    canisterIds,
     updateTemplateContent,
     sourceFolder: 'p'
   });

@@ -2,6 +2,7 @@ import {log, Meta, PublishData} from '@deckdeckgo/editor';
 import {encodeFilename, getStorageActor, upload} from '../api/storage.api';
 import {_SERVICE as StorageBucketActor} from '../canisters/storage/storage.did';
 import {EnvStore} from '../stores/env.store';
+import {PublishCanisterIds} from '../types/publish.types';
 import {BucketActor} from '../utils/manager.utils';
 import {updateTemplateSocialImage} from './social.publish';
 
@@ -17,12 +18,14 @@ export interface StorageUpload {
 
 export const updateTemplate = ({
   template,
-  data
+  data,
+  canisterIds
 }: {
   template: string;
   data: Partial<PublishData>;
+  canisterIds: PublishCanisterIds;
 }): string =>
-  Object.entries(data).reduce(
+  [...Object.entries(data), ...Object.entries(canisterIds)].reduce(
     (acc: string, [key, value]: [string, string]) =>
       acc
         .replaceAll(`{{DECKDECKGO_${key.toUpperCase()}}}`, value || '')
@@ -107,10 +110,12 @@ const uploadPaths = ({
 
 export const initIndexHTML = async ({
   publishData,
+  canisterIds,
   updateTemplateContent,
   sourceFolder
 }: {
   publishData: PublishData;
+  canisterIds: PublishCanisterIds;
   updateTemplateContent: ({attr, template}: {attr: string | undefined; template: string}) => string;
   sourceFolder: 'p' | 'd';
 }): Promise<{html: string}> => {
@@ -118,7 +123,8 @@ export const initIndexHTML = async ({
 
   const updatedTemplate: string = updateTemplate({
     template,
-    data: publishData
+    data: publishData,
+    canisterIds
   });
 
   const {attributes} = publishData;
