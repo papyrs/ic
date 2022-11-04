@@ -3,23 +3,20 @@ mod constants;
 mod env;
 mod http;
 mod impls;
-mod impls_mo;
 mod store;
 mod types;
-mod types_mo;
 mod utils;
 
-use candid::{decode_args, Principal};
+use candid::Principal;
 use ic_cdk::api::management_canister::main::{deposit_cycles, CanisterIdRecord};
 use ic_cdk::api::{caller, canister_balance128, trap};
 use ic_cdk::export::candid::{candid_method, export_service};
-use ic_cdk::{api, storage};
+use ic_cdk::storage;
 use ic_cdk_macros::{init, post_upgrade, pre_upgrade, query, update};
 use std::cell::RefCell;
 use std::collections::HashMap;
 
 use crate::cert::update_certified_data;
-use crate::env::MIGRATE_MOTOKO_STATE;
 use crate::http::{build_headers, create_token, streaming_strategy};
 use crate::store::{
     commit_batch, create_batch, create_chunk, delete_asset, get_asset, get_asset_for_url, get_keys,
@@ -29,9 +26,8 @@ use crate::types::http::{
     HttpRequest, HttpResponse, StreamingCallbackHttpResponse, StreamingCallbackToken,
 };
 use crate::types::interface::{CommitBatch, Del, InitUpload, UploadChunk};
-use crate::types::state::{Assets, RuntimeState, StableState, State};
+use crate::types::state::{RuntimeState, StableState, State};
 use crate::types::store::{Asset, AssetKey, Chunk};
-use crate::types_mo::mo::state::MoState;
 use crate::utils::{is_manager, principal_not_equal};
 
 thread_local! {
@@ -82,35 +78,6 @@ fn post_upgrade() {
 }
 
 fn stable_state_to_upgrade() -> StableState {
-    if MIGRATE_MOTOKO_STATE {
-        // TODO: delete after migration from Motoko to Rust
-        // By senior.joinu - not all heroes wear capes
-        let mut stable_length_buf = [0u8; std::mem::size_of::<u32>()];
-        api::stable::stable_read(0, &mut stable_length_buf);
-        let stable_length = u32::from_le_bytes(stable_length_buf); // maybe use from_be_bytes, I don't remember what endianess is candid
-
-        let mut buf = vec![0u8; stable_length as usize];
-        api::stable::stable_read(std::mem::size_of::<u32>() as u32, &mut buf);
-
-        let (mo_state,): (MoState,) = decode_args(&buf).unwrap();
-
-        let user: Option<Principal> = mo_state.user.clone();
-
-        fn migrate_assets(MoState { entries, user: _ }: MoState) -> Assets {
-            match entries {
-                None => HashMap::new(),
-                Some(e) => e
-                    .iter()
-                    .map(|(key, mo_asset)| (key.clone(), Asset::from(mo_asset)))
-                    .collect(),
-            }
-        }
-
-        let assets: Assets = migrate_assets(mo_state);
-
-        return StableState { user, assets };
-    }
-
     let (stable,): (StableState,) = storage::stable_restore().unwrap();
     stable
 }
