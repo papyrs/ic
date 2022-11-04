@@ -5,7 +5,11 @@ export interface PublishMeta {
   dataId: string;
 }
 
-export interface PublishHoistedData {
+export interface PublishCanisterIds {
   data_canister_id: string;
+  storage_canister_id: string;
+}
+
+export interface PublishHoistedData extends PublishCanisterIds {
   data_id: string;
 }

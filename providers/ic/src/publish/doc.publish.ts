@@ -2,6 +2,7 @@ import {Doc, DocData, docPublishData, DocPublishData, PublishData} from '@deckde
 import {get, update} from 'idb-keyval';
 import {setData} from '../services/data.services';
 import {EnvStore} from '../stores/env.store';
+import {PublishCanisterIds} from '../types/publish.types';
 import {
   initIndexHTML,
   initUpload,
@@ -13,10 +14,12 @@ import {uploadSocialImage} from './social.publish';
 
 export const publishDoc = async ({
   doc: docSource,
-  config
+  config,
+  canisterIds
 }: {
   doc: Doc;
   config: Record<string, string>;
+  canisterIds: PublishCanisterIds;
 }): Promise<{
   doc: Doc;
   storageUpload: StorageUpload;
@@ -28,7 +31,8 @@ export const publishDoc = async ({
   // 1. Init and fill HTML
   const indexHTML: {html: string; publishData: DocPublishData} = await initDocIndexHTML({
     doc: docSource,
-    config
+    config,
+    canisterIds
   });
   const {storageUpload, publishData} = await initUpload({
     indexHTML,
@@ -75,10 +79,12 @@ export const publishDoc = async ({
 
 const initDocIndexHTML = async ({
   doc,
-  config
+  config,
+  canisterIds
 }: {
   doc: Doc;
   config: Record<string, string>;
+  canisterIds: PublishCanisterIds;
 }): Promise<{html: string; publishData: DocPublishData}> => {
   const {theme, socialImgPath} = config;
 
@@ -105,6 +111,7 @@ const initDocIndexHTML = async ({
 
   const {html}: {html: string} = await initIndexHTML({
     publishData,
+    canisterIds,
     updateTemplateContent,
     sourceFolder: 'd'
   });

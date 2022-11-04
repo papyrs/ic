@@ -8,6 +8,7 @@ import {emitDocPublished, publishDoc} from '../../publish/doc.publish';
 import {publishDeckMetas, publishDocMetas, updateIndexHtml} from '../../publish/metas.publish';
 import {uploadResources} from '../../publish/resources.publish';
 import {EnvStore} from '../../stores/env.store';
+import {PublishCanisterIds} from '../../types/publish.types';
 import {BucketActor} from '../../utils/manager.utils';
 import {getIdentity} from '../auth/auth.providers';
 
@@ -17,22 +18,23 @@ export const deckPublish: DeckPublish = async ({
   deck: Deck;
   config: Record<string, string>;
 }): Promise<Deck> => {
-  const {bucketId} = await getDataBucketActor();
+  const canisterIds: PublishCanisterIds = await getCanisterIds();
 
   await uploadResources({
     meta: deck.data.meta,
     hoisted: {
-      data_canister_id: bucketId.toText(),
+      ...canisterIds,
       data_id: deck.id
     }
   });
 
-  const {storageUpload, publishData, deck: updatedDeck} = await publishDeck({deck});
+  const {storageUpload, publishData, deck: updatedDeck} = await publishDeck({deck, canisterIds});
 
   await publishDeckMetas({
     storageUpload,
     publishData,
-    owner_id: deck.data.owner_id
+    owner_id: deck.data.owner_id,
+    canisterIds
   });
 
   emitDeckPublished(updatedDeck);
@@ -47,27 +49,44 @@ export const docPublish: DocPublish = async ({
   doc: Doc;
   config: Record<string, string>;
 }): Promise<Doc> => {
-  const {bucketId} = await getDataBucketActor();
+  const canisterIds: PublishCanisterIds = await getCanisterIds();
 
   await uploadResources({
     meta: doc.data.meta,
     hoisted: {
-      data_canister_id: bucketId.toText(),
+      ...canisterIds,
       data_id: doc.id
     }
   });
 
-  const {storageUpload, publishData, doc: updatedDoc} = await publishDoc({doc, config});
+  const {
+    storageUpload,
+    publishData,
+    doc: updatedDoc
+  } = await publishDoc({doc, config, canisterIds});
 
   await publishDocMetas({
     storageUpload,
     publishData,
-    owner_id: doc.data.owner_id
+    owner_id: doc.data.owner_id,
+    canisterIds
   });
 
   emitDocPublished(updatedDoc);
 
   return updatedDoc;
+};
+
+const getCanisterIds = async (): Promise<PublishCanisterIds> => {
+  const [{bucketId: dataBucketId}, {bucketId: storageBucketId}] = await Promise.all([
+    getDataBucketActor(),
+    getStorageActor()
+  ]);
+
+  return {
+    data_canister_id: dataBucketId.toText(),
+    storage_canister_id: storageBucketId.toText()
+  };
 };
 
 export const publishUrl: PublishUrl = async (): Promise<string> => {
