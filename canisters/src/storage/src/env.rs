@@ -6,6 +6,3 @@ pub static ADMIN: [&str; 2] = [
 ];
 
 pub static MANAGER: [&str; 1] = ["kulzz-yaaaa-aaaal-aai3a-cai"];
-
-// TODO: TODO: to be deleted
-pub static MIGRATE_MOTOKO_STATE: bool = true;
