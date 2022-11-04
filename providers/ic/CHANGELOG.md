@@ -1,3 +1,9 @@
+# 0.1.3 (2022-11-04)
+
+### Fix
+
+- support for multiple `docIds` in blogs ("not only being able to like the last post that was published")
+
 # 0.1.2 (2022-11-04)
 
 ### Build
