@@ -1,3 +1,9 @@
+# 0.1.1 (2022-11-04)
+
+### Features
+
+- pass data and storage canister ids to update template on publish
+
 # 0.1.0 (2022-11-04)
 
 ### Features
