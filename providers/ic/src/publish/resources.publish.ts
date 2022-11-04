@@ -192,6 +192,7 @@ const getKit = async (): Promise<Kit[]> => {
         src,
         mimeType: 'text/javascript',
         sha256,
+        // @deprecated not really use anymore - we inject a script in each page now
         updateContent: ({
           content,
           ids: {data_canister_id, data_id, storage_canister_id}
