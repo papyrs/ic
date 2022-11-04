@@ -1,15 +1,15 @@
 // Non snake case for backwards compatibility
 #![allow(non_snake_case)]
 
+use ic_cdk::api::time;
 use std::collections::HashMap;
-use ic_cdk::{api::{time}};
 
-use crate::{STATE};
-use crate::cert::{update_certified_data};
+use crate::cert::update_certified_data;
 use crate::constants::ASSET_ENCODING_KEY_RAW;
-use crate::types::state:: {State, RuntimeState, StableState};
-use crate::types::store::{Asset, AssetEncoding, AssetKey, Batch, Chunk};
 use crate::types::interface::{CommitBatch, Del};
+use crate::types::state::{RuntimeState, StableState, State};
+use crate::types::store::{Asset, AssetEncoding, AssetKey, Batch, Chunk};
+use crate::STATE;
 
 //
 // Getter, list and delete
@@ -49,21 +49,27 @@ pub fn get_keys(folder: Option<String>) -> Vec<AssetKey> {
     STATE.with(|state| get_keys_impl(folder, &state.borrow().stable))
 }
 
-fn get_asset_impl(full_path: String, token: Option<String>, state: &StableState) -> Result<Asset, &'static str> {
+fn get_asset_impl(
+    full_path: String,
+    token: Option<String>,
+    state: &StableState,
+) -> Result<Asset, &'static str> {
     let asset = state.assets.get(&full_path);
 
     match asset {
         None => Err("No asset."),
-        Some(asset) => {
-            match &asset.key.token {
-                None => Ok(asset.clone()),
-                Some(assetToken) => get_protected_asset(asset, assetToken, token)
-            }
-        }
+        Some(asset) => match &asset.key.token {
+            None => Ok(asset.clone()),
+            Some(assetToken) => get_protected_asset(asset, assetToken, token),
+        },
     }
 }
 
-fn get_protected_asset(asset: &Asset, assetToken: &String, token: Option<String>) -> Result<Asset, &'static str> {
+fn get_protected_asset(
+    asset: &Asset,
+    assetToken: &String,
+    token: Option<String>,
+) -> Result<Asset, &'static str> {
     match token {
         None => Err("No token provided."),
         Some(token) => {
@@ -85,11 +91,17 @@ fn get_keys_impl(folder: Option<String>, state: &StableState) -> Vec<AssetKey> {
 
     match folder {
         None => all_keys.clone(),
-        Some(folder) => all_keys.into_iter().filter(|key| key.folder == folder).collect()
+        Some(folder) => all_keys
+            .into_iter()
+            .filter(|key| key.folder == folder)
+            .collect(),
     }
 }
 
-fn delete_asset_impl(Del { full_path, token }: Del, state: &mut State) -> Result<Asset, &'static str> {
+fn delete_asset_impl(
+    Del { full_path, token }: Del,
+    state: &mut State,
+) -> Result<Asset, &'static str> {
     let result = get_asset_impl(full_path.clone(), token, &state.stable);
 
     match result {
@@ -131,10 +143,13 @@ fn create_batch_impl(key: AssetKey, state: &mut RuntimeState) -> u128 {
 
         NEXT_BACK_ID = NEXT_BACK_ID + 1;
 
-        state.batches.insert(NEXT_BACK_ID, Batch {
-            key,
-            expires_at: now + BATCH_EXPIRY_NANOS,
-        });
+        state.batches.insert(
+            NEXT_BACK_ID,
+            Batch {
+                key,
+                expires_at: now + BATCH_EXPIRY_NANOS,
+            },
+        );
 
         NEXT_BACK_ID
     }
@@ -151,18 +166,20 @@ fn create_chunk_impl(
         Some(b) => {
             let now = time();
 
-            state.batches.insert(batch_id, Batch {
-                key: b.key.clone(),
-                expires_at: now + BATCH_EXPIRY_NANOS,
-            });
+            state.batches.insert(
+                batch_id,
+                Batch {
+                    key: b.key.clone(),
+                    expires_at: now + BATCH_EXPIRY_NANOS,
+                },
+            );
 
             unsafe {
                 NEXT_CHUNK_ID = NEXT_CHUNK_ID + 1;
 
-                state.chunks.insert(NEXT_CHUNK_ID, Chunk {
-                    batch_id,
-                    content,
-                });
+                state
+                    .chunks
+                    .insert(NEXT_CHUNK_ID, Chunk { batch_id, content });
 
                 Ok(NEXT_CHUNK_ID)
             }
@@ -188,12 +205,16 @@ fn commit_batch_impl(
                     Ok("Batch committed and certified assets updated.")
                 }
             }
-        },
+        }
     }
 }
 
 fn commit_chunks(
-    CommitBatch { chunk_ids, batch_id, headers }: CommitBatch,
+    CommitBatch {
+        chunk_ids,
+        batch_id,
+        headers,
+    }: CommitBatch,
     batch: &Batch,
     state: &mut State,
 ) -> Result<Asset, &'static str> {
@@ -204,7 +225,7 @@ fn commit_chunks(
         return Err("Batch did not complete in time. Chunks cannot be committed.");
     }
 
-    let mut content_chunks: Vec<Vec<u8>> = vec!();
+    let mut content_chunks: Vec<Vec<u8>> = vec![];
 
     for chunk_id in chunk_ids.iter() {
         let chunk = state.runtime.chunks.get(&chunk_id);
@@ -231,7 +252,10 @@ fn commit_chunks(
 
     // We only use raw at the moment
     let mut encodings = HashMap::new();
-    encodings.insert(ASSET_ENCODING_KEY_RAW.to_string(), AssetEncoding::from(&content_chunks));
+    encodings.insert(
+        ASSET_ENCODING_KEY_RAW.to_string(),
+        AssetEncoding::from(&content_chunks),
+    );
 
     let asset: Asset = Asset {
         key,
@@ -239,7 +263,10 @@ fn commit_chunks(
         encodings,
     };
 
-    state.stable.assets.insert(batch.clone().key.full_path, asset.clone());
+    state
+        .stable
+        .assets
+        .insert(batch.clone().key.full_path, asset.clone());
 
     clear_batch(batch_id, chunk_ids, &mut state.runtime);
 

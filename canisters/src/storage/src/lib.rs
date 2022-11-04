@@ -1,34 +1,38 @@
-mod constants;
-mod types;
-mod impls;
-mod store;
-mod env;
-mod utils;
 mod cert;
+mod constants;
+mod env;
 mod http;
+mod impls;
 mod impls_mo;
+mod store;
+mod types;
 mod types_mo;
+mod utils;
 
-use ic_cdk::api::management_canister::main::{CanisterIdRecord, deposit_cycles};
-use ic_cdk::api::{canister_balance128, caller, trap};
-use ic_cdk_macros::{init, update, pre_upgrade, post_upgrade, query};
-use ic_cdk::export::candid::{candid_method, export_service};
-use ic_cdk::{storage, api};
 use candid::{decode_args, Principal};
+use ic_cdk::api::management_canister::main::{deposit_cycles, CanisterIdRecord};
+use ic_cdk::api::{caller, canister_balance128, trap};
+use ic_cdk::export::candid::{candid_method, export_service};
+use ic_cdk::{api, storage};
+use ic_cdk_macros::{init, post_upgrade, pre_upgrade, query, update};
 use std::cell::RefCell;
 use std::collections::HashMap;
 
-use crate::store::{commit_batch, create_batch, create_chunk, delete_asset, get_asset, get_asset_for_url, get_keys};
-use crate::types::assets::{AssetHashes};
-use crate::utils::{principal_not_equal, is_manager};
-use crate::types::interface::{InitUpload, UploadChunk, CommitBatch, Del};
-use crate::types::state::{State, StableState, RuntimeState, Assets};
-use crate::types::store::{AssetKey, Chunk, Asset};
-use crate::types::http::{HttpRequest, HttpResponse, StreamingCallbackToken, StreamingCallbackHttpResponse};
-use crate::types_mo::mo::state::MoState;
-use crate::cert::{update_certified_data};
+use crate::cert::update_certified_data;
 use crate::env::MIGRATE_MOTOKO_STATE;
 use crate::http::{build_headers, create_token, streaming_strategy};
+use crate::store::{
+    commit_batch, create_batch, create_chunk, delete_asset, get_asset, get_asset_for_url, get_keys,
+};
+use crate::types::assets::AssetHashes;
+use crate::types::http::{
+    HttpRequest, HttpResponse, StreamingCallbackHttpResponse, StreamingCallbackToken,
+};
+use crate::types::interface::{CommitBatch, Del, InitUpload, UploadChunk};
+use crate::types::state::{Assets, RuntimeState, StableState, State};
+use crate::types::store::{Asset, AssetKey, Chunk};
+use crate::types_mo::mo::state::MoState;
+use crate::utils::{is_manager, principal_not_equal};
 
 thread_local! {
     static STATE: RefCell<State> = RefCell::default();
@@ -53,7 +57,7 @@ fn init(user: Principal) {
 
 #[pre_upgrade]
 fn pre_upgrade() {
-    STATE.with(|state| storage::stable_save((&state.borrow().stable, )).unwrap());
+    STATE.with(|state| storage::stable_save((&state.borrow().stable,)).unwrap());
 }
 
 #[post_upgrade]
@@ -63,13 +67,15 @@ fn post_upgrade() {
     let asset_hashes = AssetHashes::from(&stable.assets);
 
     // Populate state
-    STATE.with(|state| *state.borrow_mut() = State {
-        stable,
-        runtime: RuntimeState {
-            chunks: HashMap::new(),
-            batches: HashMap::new(),
-            asset_hashes: asset_hashes.clone(),
-        },
+    STATE.with(|state| {
+        *state.borrow_mut() = State {
+            stable,
+            runtime: RuntimeState {
+                chunks: HashMap::new(),
+                batches: HashMap::new(),
+                asset_hashes: asset_hashes.clone(),
+            },
+        }
     });
 
     update_certified_data(&asset_hashes);
@@ -86,26 +92,26 @@ fn stable_state_to_upgrade() -> StableState {
         let mut buf = vec![0u8; stable_length as usize];
         api::stable::stable_read(std::mem::size_of::<u32>() as u32, &mut buf);
 
-        let (mo_state, ): (MoState, ) = decode_args(&buf).unwrap();
+        let (mo_state,): (MoState,) = decode_args(&buf).unwrap();
 
         let user: Option<Principal> = mo_state.user.clone();
 
         fn migrate_assets(MoState { entries, user: _ }: MoState) -> Assets {
             match entries {
                 None => HashMap::new(),
-                Some(e) => e.iter().map(|(key, mo_asset)| (key.clone(), Asset::from(mo_asset))).collect()
+                Some(e) => e
+                    .iter()
+                    .map(|(key, mo_asset)| (key.clone(), Asset::from(mo_asset)))
+                    .collect(),
             }
         }
 
         let assets: Assets = migrate_assets(mo_state);
 
-        return StableState {
-            user,
-            assets,
-        };
+        return StableState { user, assets };
     }
 
-    let (stable, ): (StableState, ) = storage::stable_restore().unwrap();
+    let (stable,): (StableState,) = storage::stable_restore().unwrap();
     stable
 }
 
@@ -115,7 +121,14 @@ fn stable_state_to_upgrade() -> StableState {
 
 #[query]
 #[candid_method(query)]
-fn http_request(HttpRequest { method, url, headers: _, body: _ }: HttpRequest) -> HttpResponse {
+fn http_request(
+    HttpRequest {
+        method,
+        url,
+        headers: _,
+        body: _,
+    }: HttpRequest,
+) -> HttpResponse {
     if method != "GET" {
         return HttpResponse {
             body: "Method Not Allowed.".as_bytes().to_vec(),
@@ -132,7 +145,11 @@ fn http_request(HttpRequest { method, url, headers: _, body: _ }: HttpRequest) -
             let headers = build_headers(&asset);
 
             let encoding = asset.encoding_raw();
-            let Asset { key, headers: _, encodings: _ } = &asset;
+            let Asset {
+                key,
+                headers: _,
+                encodings: _,
+            } = &asset;
 
             match headers {
                 Ok(headers) => HttpResponse {
@@ -142,25 +159,39 @@ fn http_request(HttpRequest { method, url, headers: _, body: _ }: HttpRequest) -
                     streaming_strategy: streaming_strategy(&key, &encoding, &headers),
                 },
                 Err(err) => HttpResponse {
-                    body: ["Permission denied. Invalid headers. ", err].join("").as_bytes().to_vec(),
+                    body: ["Permission denied. Invalid headers. ", err]
+                        .join("")
+                        .as_bytes()
+                        .to_vec(),
                     headers: Vec::new(),
                     status_code: 405,
                     streaming_strategy: None,
-                }
+                },
             }
         }
         Err(err) => HttpResponse {
-            body: ["Permission denied. Could not perform this operation. ", err].join("").as_bytes().to_vec(),
+            body: ["Permission denied. Could not perform this operation. ", err]
+                .join("")
+                .as_bytes()
+                .to_vec(),
             headers: Vec::new(),
             status_code: 405,
             streaming_strategy: None,
-        }
+        },
     }
 }
 
 #[query]
 #[candid_method(query)]
-fn http_request_streaming_callback(StreamingCallbackToken { token, headers, index, sha256: _, full_path }: StreamingCallbackToken) -> StreamingCallbackHttpResponse {
+fn http_request_streaming_callback(
+    StreamingCallbackToken {
+        token,
+        headers,
+        index,
+        sha256: _,
+        full_path,
+    }: StreamingCallbackToken,
+) -> StreamingCallbackHttpResponse {
     let result = get_asset(full_path, token);
 
     match result {
@@ -207,8 +238,8 @@ fn uploadChunk(chunk: Chunk) -> UploadChunk {
     let result = create_chunk(chunk);
 
     match result {
-        Ok(chunk_id) => { UploadChunk { chunk_id } }
-        Err(error) => trap(error)
+        Ok(chunk_id) => UploadChunk { chunk_id },
+        Err(error) => trap(error),
     }
 }
 
@@ -226,7 +257,7 @@ fn commitUpload(commit: CommitBatch) {
 
     match result {
         Ok(_) => (),
-        Err(error) => trap(error)
+        Err(error) => trap(error),
     }
 }
 
@@ -261,7 +292,7 @@ fn del(param: Del) {
 
     match result {
         Ok(_) => (),
-        Err(error) => trap(&*["Asset cannot be deleted: ", error].join(""))
+        Err(error) => trap(&*["Asset cannot be deleted: ", error].join("")),
     }
 }
 
@@ -288,7 +319,9 @@ async fn transferFreezingThresholdCycles() {
     let cycles: u128 = balance - 100_000_000_000u128;
 
     if cycles > 0 {
-        let arg_deposit = CanisterIdRecord { canister_id: caller };
+        let arg_deposit = CanisterIdRecord {
+            canister_id: caller,
+        };
         deposit_cycles(arg_deposit, cycles).await.unwrap();
     }
 }
@@ -326,7 +359,13 @@ mod tests {
         use std::path::PathBuf;
 
         let dir = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap());
-        let dir = dir.parent().unwrap().parent().unwrap().join("src").join("storage");
+        let dir = dir
+            .parent()
+            .unwrap()
+            .parent()
+            .unwrap()
+            .join("src")
+            .join("storage");
         write(dir.join("storage.did"), export_candid()).expect("Write failed.");
     }
 }

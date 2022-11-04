@@ -1,8 +1,8 @@
-use candid::{Principal};
+use candid::Principal;
 
 use crate::env::{ADMIN, MANAGER};
 
-pub fn principal_not_equal(x : Principal, y : Principal) -> bool {
+pub fn principal_not_equal(x: Principal, y: Principal) -> bool {
     x != y
 }
 
@@ -25,6 +25,6 @@ fn has_privilege(caller: Principal, privileges: Vec<&str>) -> bool {
 
     match admin {
         None => false,
-        Some(_admin) => true
+        Some(_admin) => true,
     }
 }

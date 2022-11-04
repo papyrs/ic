@@ -15,7 +15,7 @@
     "feed:list": "node ./scripts/ic.feed.mjs --list-proposals=open",
     "build": "npm run ic:types && cd providers/ic && npm run build",
     "postbuild": "npm run format",
-    "format": "prettier --write ."
+    "format": "prettier --write . && cargo fmt"
   },
   "workspaces": [
     "providers/*"

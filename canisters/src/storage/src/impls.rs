@@ -1,9 +1,9 @@
+use ic_cdk::api::time;
 use sha2::{Digest, Sha256};
-use ic_cdk::{api::{time}};
 
 use crate::constants::ASSET_ENCODING_KEY_RAW;
-use crate::types::assets::{AssetHashes};
-use crate::types::state::{Assets};
+use crate::types::assets::AssetHashes;
+use crate::types::state::Assets;
 use crate::types::store::{Asset, AssetEncoding};
 
 impl From<&Assets> for AssetHashes {
@@ -20,15 +20,12 @@ impl From<&Assets> for AssetHashes {
 
 impl AssetHashes {
     pub(crate) fn insert(&mut self, asset: &Asset) {
-        self
-            .tree
+        self.tree
             .insert(asset.key.full_path.clone(), asset.encoding_raw().sha256);
     }
 
     pub(crate) fn delete(&mut self, full_path: &String) {
-        self
-            .tree
-            .delete(full_path.as_bytes());
+        self.tree.delete(full_path.as_bytes());
     }
 }
 
@@ -50,11 +47,10 @@ impl From<&Vec<Vec<u8>>> for AssetEncoding {
             modified: time(),
             content_chunks: content_chunks.clone(),
             total_length,
-            sha256
+            sha256,
         }
     }
 }
-
 
 impl Asset {
     pub(crate) fn encoding_raw(&self) -> &AssetEncoding {

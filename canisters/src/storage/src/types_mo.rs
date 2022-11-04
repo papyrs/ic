@@ -7,8 +7,8 @@
 
 pub mod mo {
     pub mod state {
-        use candid::{CandidType, Deserialize, Principal};
         use crate::types_mo::mo::store::MoAsset;
+        use candid::{CandidType, Deserialize, Principal};
 
         #[derive(CandidType, Deserialize)]
         pub struct MoState {
@@ -18,10 +18,10 @@ pub mod mo {
     }
 
     pub mod store {
+        use crate::types::http::HeaderField;
         use candid::{CandidType, Int};
         use serde::Deserialize;
         use std::clone::Clone;
-        use crate::types::http::HeaderField;
 
         #[derive(CandidType, Deserialize, Clone)]
         pub struct MoChunk {

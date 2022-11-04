@@ -1,13 +1,17 @@
 use ic_cdk::id;
 use serde_bytes::ByteBuf;
 
-use crate::STATE;
-use crate::cert::{build_asset_certificate_header};
+use crate::cert::build_asset_certificate_header;
 use crate::types::http::{HeaderField, StreamingCallbackToken, StreamingStrategy};
-use crate::types::state::{RuntimeState};
+use crate::types::state::RuntimeState;
 use crate::types::store::{Asset, AssetEncoding, AssetKey};
+use crate::STATE;
 
-pub fn streaming_strategy(key: &AssetKey, encoding: &AssetEncoding, headers: &Vec<HeaderField>) -> Option<StreamingStrategy> {
+pub fn streaming_strategy(
+    key: &AssetKey,
+    encoding: &AssetEncoding,
+    headers: &Vec<HeaderField>,
+) -> Option<StreamingStrategy> {
     let streaming_token: Option<StreamingCallbackToken> = create_token(key, 0, encoding, headers);
 
     match streaming_token {
@@ -18,11 +22,16 @@ pub fn streaming_strategy(key: &AssetKey, encoding: &AssetEncoding, headers: &Ve
                 principal: id(),
             },
             token: streaming_token,
-        })
+        }),
     }
 }
 
-pub fn create_token(key: &AssetKey, chunk_index: usize, encoding: &AssetEncoding, headers: &Vec<HeaderField>) -> Option<StreamingCallbackToken> {
+pub fn create_token(
+    key: &AssetKey,
+    chunk_index: usize,
+    encoding: &AssetEncoding,
+    headers: &Vec<HeaderField>,
+) -> Option<StreamingCallbackToken> {
     if chunk_index + 1 >= encoding.content_chunks.len() {
         return None;
     }
@@ -53,7 +62,14 @@ fn build_certified_headers(asset: &Asset) -> Result<HeaderField, &'static str> {
     STATE.with(|state| build_certified_headers_impl(asset, &state.borrow().runtime))
 }
 
-fn build_certified_headers_impl(Asset { key, headers: _, encodings: _ }: &Asset, state: &RuntimeState) -> Result<HeaderField, &'static str> {
+fn build_certified_headers_impl(
+    Asset {
+        key,
+        headers: _,
+        encodings: _,
+    }: &Asset,
+    state: &RuntimeState,
+) -> Result<HeaderField, &'static str> {
     build_asset_certificate_header(&state.asset_hashes, key.full_path.clone())
 }
 

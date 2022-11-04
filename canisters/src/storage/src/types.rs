@@ -1,8 +1,8 @@
 pub mod state {
-    use std::collections::HashMap;
-    use candid::{CandidType, Deserialize, Principal};
     use crate::types::assets::AssetHashes;
     use crate::types::store::{Asset, Batch, Chunk};
+    use candid::{CandidType, Deserialize, Principal};
+    use std::collections::HashMap;
 
     pub type Batches = HashMap<u128, Batch>;
     pub type Chunks = HashMap<u128, Chunk>;
@@ -29,8 +29,8 @@ pub mod state {
 }
 
 pub mod assets {
-    use std::clone::Clone;
     use ic_certified_map::{Hash, RbTree};
+    use std::clone::Clone;
 
     #[derive(Default, Clone)]
     pub struct AssetHashes {
@@ -39,12 +39,12 @@ pub mod assets {
 }
 
 pub mod store {
-    use candid::{CandidType};
+    use crate::types::http::HeaderField;
+    use candid::CandidType;
+    use ic_certified_map::Hash;
     use serde::Deserialize;
     use std::clone::Clone;
     use std::collections::HashMap;
-    use crate::types::http::HeaderField;
-    use ic_certified_map::{Hash};
 
     #[derive(CandidType, Deserialize, Clone)]
     pub struct Chunk {
