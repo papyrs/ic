@@ -9,7 +9,12 @@ export const deleteDeck: DeleteDeck = async (
   deckId: string,
   updated_at?: Date | number | BigInt
 ): Promise<void> =>
-  deleteData({key: `/decks/${deckId}`, ...(updated_at !== undefined && {id: deckId, updated_at})});
+  deleteData({
+    key: `/decks/${deckId}`,
+    ...(updated_at !== undefined && {
+      data: {id: deckId, updated_at: updated_at as unknown as bigint}
+    })
+  });
 
 // Backwards compatibility with current publish mask in studio and Firebase support. In case of IC we actually do not need a snapshot, publish is synchronous on the client side.
 export const snapshotDeck: SnapshotDeck = async ({
