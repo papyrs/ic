@@ -1,3 +1,9 @@
+# 0.1.4 (2023-01-08)
+
+### Fix
+
+- missing `updated_at` timestamp to delete data 
+
 # 0.1.3 (2022-11-04)
 
 ### Fix

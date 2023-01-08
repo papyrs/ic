@@ -40,7 +40,9 @@ export const updateTemplate = async ({
   const {data_canister_id, storage_canister_id} = ids;
   const {data_id} = ids as PublishIds;
 
-  const idsScript: string = `window.data_canister_id = "${data_canister_id}";window.storage_canister_id = "${storage_canister_id}";window.data_id = "${data_id ?? ''}";`;
+  const idsScript: string = `window.data_canister_id = "${data_canister_id}";window.storage_canister_id = "${storage_canister_id}";window.data_id = "${
+    data_id ?? ''
+  }";`;
 
   const templateWithScript: string = updatedTemplate.replaceAll(
     '<!-- DECKDECKGO_IDS_SCRIPT -->',
@@ -49,7 +51,10 @@ export const updateTemplate = async ({
 
   // 3. Calculate a sha256 for the above script and parse it in the CSP
   const sha256: string = sha256ToBase64String(new Uint8Array(await digestMessage(idsScript)));
-  const templateWithCSP: string = templateWithScript.replaceAll('{{DECKDECKGO_IDS_SHAS}}', `'sha256-${sha256}'`);
+  const templateWithCSP: string = templateWithScript.replaceAll(
+    '{{DECKDECKGO_IDS_SHAS}}',
+    `'sha256-${sha256}'`
+  );
 
   return templateWithCSP;
 };
