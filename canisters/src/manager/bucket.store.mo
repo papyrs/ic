@@ -190,6 +190,6 @@ module {
         Principal.hash
       );
     };
-  }
+  };
 
 };
