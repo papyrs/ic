@@ -13,7 +13,7 @@ const publishUrl = ({key, local}) => {
     return `http://${storageId}.localhost:8000`;
   }
 
-  return `https://${storageId}.raw.ic0.app`;
+  return `https://${storageId}.raw.icp0.io`;
 };
 
 const listProposals = async ({type, actor}) => {

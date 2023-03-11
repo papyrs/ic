@@ -6,7 +6,7 @@ import {E8S_PER_ICP, icpToE8s} from '../utils/icp.utils.mjs';
 const {HttpAgent, Actor} = pkgAgent;
 
 const icpXdrConversionRate = async () => {
-  const agent = new HttpAgent({fetch, host: 'https://ic0.app'});
+  const agent = new HttpAgent({fetch, host: 'https://icp0.io'});
 
   const actor = Actor.createActor(cmcIdlFactory, {
     agent,

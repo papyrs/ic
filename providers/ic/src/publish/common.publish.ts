@@ -76,7 +76,7 @@ export const initUpload = async ({
   // 2. Folder and filename
   const {filename, pathname} = uploadPaths({publishData, meta, folder});
 
-  const bucketUrl: string = `https://${bucketId.toText()}.raw.ic0.app`;
+  const bucketUrl: string = `https://${bucketId.toText()}.raw.icp0.io`;
   const fullUrl: string = `${bucketUrl}${pathname}`;
 
   // 3. Update URL

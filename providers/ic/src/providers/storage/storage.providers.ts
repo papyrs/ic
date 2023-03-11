@@ -73,7 +73,7 @@ export const uploadFileIC = async ({
     });
 
   return {
-    downloadUrl: `https://${bucketId.toText()}.raw.ic0.app${fullPath}?token=${token}`,
+    downloadUrl: `https://${bucketId.toText()}.raw.icp0.io${fullPath}?token=${token}`,
     fullPath,
     name: filename
   };
@@ -91,7 +91,7 @@ export const getFiles: GetFiles = async ({
 
   const assets: AssetKey[] = await actor.list(toNullable<string>(folder));
 
-  const host: string = `https://${bucketId.toText()}.raw.ic0.app`;
+  const host: string = `https://${bucketId.toText()}.raw.icp0.io`;
 
   return {
     items: assets.map(({name, full_path, token}: AssetKey) => ({

@@ -96,7 +96,7 @@ export const publishUrl: PublishUrl = async (): Promise<string> => {
     return `http://${bucketId.toText()}.localhost:8000`;
   }
 
-  return `https://${bucketId.toText()}.raw.ic0.app`;
+  return `https://${bucketId.toText()}.raw.icp0.io`;
 };
 
 export const updateLanding: UpdateLanding = async (): Promise<void> => {

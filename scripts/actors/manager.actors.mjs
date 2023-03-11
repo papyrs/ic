@@ -25,7 +25,7 @@ export const managerActorIC = async () => {
 
   const identity = initIdentity();
 
-  const agent = new HttpAgent({identity, fetch, host: 'https://ic0.app'});
+  const agent = new HttpAgent({identity, fetch, host: 'https://icp0.io'});
 
   return Actor.createActor(idlFactory, {
     agent,

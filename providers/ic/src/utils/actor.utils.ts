@@ -14,7 +14,7 @@ export const createActor = async <T = Record<string, ActorMethod>>({
 }): Promise<ActorSubclass<T>> => {
   const host: string = EnvStore.getInstance().localIdentity()
     ? 'http://localhost:8000/'
-    : 'https://ic0.app';
+    : 'https://icp0.io';
 
   const agent: HttpAgent = new HttpAgent({identity, ...(host && {host})});
 
