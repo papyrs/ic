@@ -1,23 +1,30 @@
 import {Identity} from '@dfinity/agent';
-import {IdbStorage} from '@dfinity/auth-client';
-import {DelegationChain, DelegationIdentity, Ed25519KeyIdentity} from '@dfinity/identity';
+import {KEY_STORAGE_DELEGATION, KEY_STORAGE_KEY} from '@dfinity/auth-client';
+import {DelegationChain, DelegationIdentity, ECDSAKeyIdentity} from '@dfinity/identity';
+import {createStore, getMany} from 'idb-keyval';
 
 export const internetIdentityAuth = async (): Promise<
-  [delegationChain: string | null, identityKey: string | null]
+  [delegationChain: string | null, identityKey: CryptoKeyPair | null]
 > => {
-  const idbStorage: IdbStorage = new IdbStorage();
-  return Promise.all([idbStorage.get('delegation'), idbStorage.get('identity')]);
+  const customStore = createStore('auth-client-db', 'ic-keyval');
+
+  const [identityKey, delegationChain] = await getMany(
+    [KEY_STORAGE_KEY, KEY_STORAGE_DELEGATION],
+    customStore
+  );
+
+  return [delegationChain, identityKey];
 };
 
-export const initIdentity = ({
+export const initIdentity = async ({
   identityKey,
   delegationChain
 }: {
-  identityKey: string | null;
+  identityKey: CryptoKeyPair | null;
   delegationChain: string | null;
-}): Identity => {
+}): Promise<Identity> => {
   const chain: DelegationChain = DelegationChain.fromJSON(delegationChain);
-  const key: Ed25519KeyIdentity = Ed25519KeyIdentity.fromJSON(identityKey);
+  const key: ECDSAKeyIdentity = await ECDSAKeyIdentity.fromKeyPair(identityKey);
 
   return DelegationIdentity.fromDelegation(key, chain);
 };

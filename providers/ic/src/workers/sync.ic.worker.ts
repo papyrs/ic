@@ -60,7 +60,7 @@ export const uploadWorker = async (
 
   EnvStore.getInstance().set(env);
 
-  const identity: Identity = initIdentity({identityKey, delegationChain});
+  const identity: Identity = await initIdentity({identityKey, delegationChain});
 
   const {
     updateDecks,

@@ -1,5 +1,4 @@
-import {isDelegationValid} from '@dfinity/authentication';
-import {DelegationChain} from '@dfinity/identity';
+import {DelegationChain, isDelegationValid} from '@dfinity/identity';
 import {SignOutWindow} from '../types/sync.window';
 import {internetIdentityAuth} from '../utils/identity.utils';
 
