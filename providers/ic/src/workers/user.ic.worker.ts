@@ -34,7 +34,7 @@ const initUser = async (onInitUserSuccess: (user: User) => Promise<void>, log: L
       return;
     }
 
-    const identity: Identity = initIdentity({identityKey, delegationChain});
+    const identity: Identity = await initIdentity({identityKey, delegationChain});
 
     const {actor}: BucketActor<DataBucketActor> = await getDataBucket({
       identity
