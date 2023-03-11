@@ -21,6 +21,7 @@
     "providers/*"
   ],
   "devDependencies": {
+    "@dfinity/identity-secp256k1": "^0.15.4",
     "@stencil/core": "^2.19.2",
     "@stencil/postcss": "^2.1.0",
     "@stencil/sass": "^2.0.0",

@@ -1,8 +1,8 @@
-import pkgIdentity from '@dfinity/identity';
 import crypto from 'crypto';
 import {readFileSync} from 'fs';
+import pkgIdentity256k1 from '@dfinity/identity-secp256k1';
 
-const {Secp256k1KeyIdentity} = pkgIdentity;
+const { Secp256k1KeyIdentity } = pkgIdentity256k1;
 
 /**
  * ! Replicating the dfx identity in a nodejs script is NOT possible at the moment !
