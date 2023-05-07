@@ -50,7 +50,16 @@ export const initAuth: InitAuth = async ({
   const onInitUserSuccess: (user: User) => Promise<void> = async (user: User) =>
     await authenticatedUser({user, success});
 
-  await initUserWorker({env: EnvStore.getInstance().get()}, onInitUserSuccess, log);
+  try {
+    await initUserWorker({env: EnvStore.getInstance().get()}, onInitUserSuccess, log);
+  } catch (err: unknown) {
+    const $event: CustomEvent<unknown> = new CustomEvent<unknown>('ddgInitUserError', {
+      detail: err,
+      bubbles: true
+    });
+    document.dispatchEvent($event);
+    return;
+  }
 
   const onSignOut: SignOutWindow = (): void => {
     const $event: CustomEvent<void> = new CustomEvent<void>('ddgSignOut', {
