@@ -34,24 +34,28 @@ const initUser = async (onInitUserSuccess: (user: User) => Promise<void>, log: L
       return;
     }
 
-    const identity: Identity = await initIdentity({identityKey, delegationChain});
+    try {
+      const identity: Identity = await initIdentity({identityKey, delegationChain});
 
-    const {actor}: BucketActor<DataBucketActor> = await getDataBucket({
-      identity
-    });
+      const {actor}: BucketActor<DataBucketActor> = await getDataBucket({
+        identity
+      });
 
-    if (!actor) {
-      setTimeout(async () => {
-        await initUser(onInitUserSuccess, log);
-        resolve();
-      }, 2000);
-      return;
+      if (!actor) {
+        setTimeout(async () => {
+          await initUser(onInitUserSuccess, log);
+          resolve();
+        }, 2000);
+        return;
+      }
+
+      const user: User = await initUserData({actor, log});
+      await onInitUserSuccess(user);
+
+      resolve();
+    } catch (err: unknown) {
+      reject(err);
     }
-
-    const user: User = await initUserData({actor, log});
-    await onInitUserSuccess(user);
-
-    resolve();
   });
 
 const initUserData = async ({
