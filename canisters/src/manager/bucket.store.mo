@@ -44,7 +44,7 @@ module {
               return #ok bucket;
             };
             case null {
-              return await initBucket(manager, user, initNewBucket);
+              return #err "Unkown user.";
             };
           };
         };
