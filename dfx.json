@@ -16,6 +16,18 @@
       "type": "rust",
       "package": "storage",
       "candid": "canisters/src/storage/storage.did"
+    },
+    "internet_identity": {
+      "type": "custom",
+      "candid": "https://github.com/dfinity/internet-identity/releases/latest/download/internet_identity.did",
+      "wasm": "https://github.com/dfinity/internet-identity/releases/latest/download/internet_identity_dev.wasm.gz",
+      "shrink": false,
+      "remote": {
+        "candid": "internet_identity.did",
+        "id": {
+          "ic": "rdmx6-jaaaa-aaaaa-aaadq-cai"
+        }
+      }
     }
   },
   "defaults": {
@@ -23,7 +35,7 @@
       "packtool": ""
     }
   },
-  "dfx": "0.11.2",
+  "dfx": "0.13.1",
   "networks": {
     "local": {
       "bind": "127.0.0.1:8000",

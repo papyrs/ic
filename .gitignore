@@ -42,3 +42,7 @@ install.error.txt
 install.ignore.txt
 
 target/
+
+internet_identity.did
+internet_identity.wasm
+internet_identity.wasm.gz
