@@ -1,8 +1,15 @@
 import {Identity} from '@dfinity/agent';
 import {Principal} from '@dfinity/principal';
 import {_SERVICE as DataBucketActor} from '../../canisters/data/data.did';
+import {_SERVICE as ManagerActor} from '../../canisters/manager/manager.did';
 import {_SERVICE as StorageBucketActor} from '../../canisters/storage/storage.did';
-import {BucketActor, getDataBucket, getStorageBucket} from '../../utils/manager.utils';
+import {fromNullable} from '../../utils/did.utils';
+import {
+  BucketActor,
+  createManagerActor,
+  getDataBucket,
+  getStorageBucket
+} from '../../utils/manager.utils';
 import {getIdentity} from '../auth/auth.providers';
 
 export interface CanisterBalance {
@@ -51,4 +58,48 @@ export const canistersBalance = async (): Promise<CanistersBalance> => {
       balance: storageBalance
     }
   };
+};
+
+export interface CanisterControllers {
+  data: Principal[];
+  storage: Principal[];
+}
+
+export const canistersControllers = async (): Promise<CanisterControllers> => {
+  const identity: Identity | undefined = getIdentity();
+
+  if (!identity) {
+    throw new Error('No internet identity to get the canisters controllers');
+  }
+
+  const {getDataControllers, getStorageControllers}: ManagerActor = await createManagerActor({
+    identity
+  });
+
+  const [dataControllers, storageControllers] = await Promise.all([
+    getDataControllers(),
+    getStorageControllers()
+  ]);
+
+  return {
+    data: fromNullable(dataControllers) ?? [],
+    storage: fromNullable(storageControllers) ?? []
+  };
+};
+
+export const addCanistersController = async (controller: string) => {
+  const identity: Identity | undefined = getIdentity();
+
+  if (!identity) {
+    throw new Error('No internet identity to add the canisters controller');
+  }
+
+  const {setDataController, setStorageController}: ManagerActor = await createManagerActor({
+    identity
+  });
+
+  await Promise.all([
+    setDataController(Principal.fromText(controller)),
+    setStorageController(Principal.fromText(controller)),
+  ]);
 };

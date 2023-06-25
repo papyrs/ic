@@ -1,6 +1,7 @@
 import Principal "mo:base/Principal";
 import Blob "mo:base/Blob";
 import Error "mo:base/Error";
+import Array "mo:base/Array";
 
 import Types "../types/types";
 import IC "../types/ic.types";
@@ -40,6 +41,29 @@ module {
         canister_id = canisterId;
         settings = {
           controllers = controllers;
+          freezing_threshold = null;
+          memory_allocation = null;
+          compute_allocation = null;
+        };
+      }));
+    };
+
+    public func addController(canisterId : Principal, controller : Principal) : async () {
+      let status = await canisterStatus(?canisterId);
+
+      var controllers : [Principal] = [controller];
+
+      switch (status.settings.controllers) {
+        case (?c) {
+          controllers := Array.append<Principal>(c, controllers);
+        };
+        case null {};
+      };
+
+      await ic.update_settings(({
+        canister_id = canisterId;
+        settings = {
+          controllers = ?controllers;
           freezing_threshold = null;
           memory_allocation = null;
           compute_allocation = null;

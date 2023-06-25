@@ -89,6 +89,14 @@ actor Manager {
     return await delBucket(caller, dataStore);
   };
 
+  public shared ({caller}) func setDataController(controller : Principal) {
+    await setBucketController(caller, controller, dataStore);
+  };
+
+  public shared ({caller}) func getDataControllers() : async (?[Principal]) {
+    await getBucketControllers(caller, dataStore);
+  };
+
   /**
      * Storages
      */
@@ -142,6 +150,14 @@ actor Manager {
     return await delBucket(caller, storagesStore);
   };
 
+  public shared ({caller}) func setStorageController(controller : Principal) {
+    await setBucketController(caller, controller, storagesStore);
+  };
+
+  public shared ({caller}) func getStorageControllers() : async (?[Principal]) {
+    await getBucketControllers(caller, storagesStore);
+  };
+
   /**
      * Buckets
      */
@@ -177,6 +193,46 @@ actor Manager {
         return exists;
       };
     };
+  };
+
+  private func setBucketController(caller : Principal, controller : Principal, store : BucketStore.BucketStore) : async () {
+    let bucket = await getBucket(caller, store);
+
+    switch (bucket.bucketId) {
+      case (?bucketId) {
+        await canisterUtils.addController(bucketId, controller);
+      };
+      case null {
+        throw Error.reject("Caller has no known bucket.");
+      };
+    };
+  };
+
+  private func getBucketControllers(caller : Principal, store : BucketStore.BucketStore) : async (?[Principal]) {
+    let bucket = await getBucket(caller, store);
+    
+    let status = await canisterUtils.canisterStatus(bucket.bucketId);
+    return status.settings.controllers;
+  };
+
+  private func getBucket(caller : Principal, store : BucketStore.BucketStore): async (Bucket) {
+    let result : Result.Result<?Bucket, Text> = store.getBucket(caller);  
+
+    switch (result) {
+      case (#err error) {
+        throw Error.reject(error);
+      };
+      case (#ok bucket) {
+        switch (bucket) {
+          case (?bucket) {
+            return bucket;
+          };
+          case null {};
+        };
+      };
+    };
+
+    throw Error.reject("Caller has no known bucket.");
   };
 
   /**
