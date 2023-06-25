@@ -1,3 +1,4 @@
+type UserId__1 = principal;
 type UserId = principal;
 type BucketId = principal;
 type Bucket = record {
@@ -9,12 +10,17 @@ service : {
   delData : () -> (bool);
   delStorage : () -> (bool);
   getData : () -> (opt Bucket) query;
+  getDataControllers : () -> (opt vec principal);
   getStorage : () -> (opt Bucket) query;
+  getStorageControllers : () -> (opt vec principal);
   initData : () -> (Bucket);
   initStorage : () -> (Bucket);
   installCode : (principal, blob, blob) -> ();
   knownBucket : (text, text) -> (bool);
+  knownUser : (UserId__1, text) -> (bool);
   list : (text) -> (vec Bucket) query;
+  setDataController : (principal) -> () oneway;
+  setStorageController : (principal) -> () oneway;
   storageLoadWasm : (vec nat8) -> (
     record {
       chunks : nat;
