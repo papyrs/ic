@@ -86,3 +86,20 @@ export const canistersControllers = async (): Promise<CanisterControllers> => {
     storage: fromNullable(storageControllers) ?? []
   };
 };
+
+export const addCanistersController = async (controller: string) => {
+  const identity: Identity | undefined = getIdentity();
+
+  if (!identity) {
+    throw new Error('No internet identity to add the canisters controller');
+  }
+
+  const {setDataController, setStorageController}: ManagerActor = await createManagerActor({
+    identity
+  });
+
+  await Promise.all([
+    setDataController(Principal.fromText(controller)),
+    setStorageController(Principal.fromText(controller)),
+  ]);
+};
