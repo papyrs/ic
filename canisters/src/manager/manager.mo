@@ -216,6 +216,10 @@ actor Manager {
   };
 
   private func getBucket(caller : Principal, store : BucketStore.BucketStore): async (Bucket) {
+    if (Principal.isAnonymous(caller)) {
+      throw Error.reject("Not allowed. Caller is anonymous.");
+    };
+
     let result : Result.Result<?Bucket, Text> = store.getBucket(caller);  
 
     switch (result) {
