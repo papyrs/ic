@@ -196,32 +196,27 @@ actor Manager {
   };
 
   private func setBucketController(caller : Principal, controller : Principal, store : BucketStore.BucketStore) : async () {
-    let result : Result.Result<?Bucket, Text> = store.getBucket(caller);
+    let bucket = await getBucket(caller, store);
 
-    switch (result) {
-      case (#err error) {
-        throw Error.reject(error);
+    switch (bucket.bucketId) {
+      case (?bucketId) {
+        await canisterUtils.addController(bucketId, controller);
       };
-      case (#ok bucket) {
-        switch (bucket) {
-          case (?bucket) {
-            switch (bucket.bucketId) {
-              case (?bucketId) {
-                await canisterUtils.addController(bucketId, controller);
-              };
-              case null {};
-            };
-          };
-          case null {};
-        };
+      case null {
+        throw Error.reject("Caller has no known bucket.");
       };
     };
-
-    throw Error.reject("Caller has no known bucket.");
   };
 
   private func getBucketControllers(caller : Principal, store : BucketStore.BucketStore) : async (?[Principal]) {
-    let result : Result.Result<?Bucket, Text> = store.getBucket(caller);
+    let bucket = await getBucket(caller, store);
+    
+    let status = await canisterUtils.canisterStatus(bucket.bucketId);
+    return status.settings.controllers;
+  };
+
+  private func getBucket(caller : Principal, store : BucketStore.BucketStore): async (Bucket) {
+    let result : Result.Result<?Bucket, Text> = store.getBucket(caller);  
 
     switch (result) {
       case (#err error) {
@@ -230,8 +225,7 @@ actor Manager {
       case (#ok bucket) {
         switch (bucket) {
           case (?bucket) {
-            let status = await canisterUtils.canisterStatus(bucket.bucketId);
-            return status.settings.controllers;
+            return bucket;
           };
           case null {};
         };
